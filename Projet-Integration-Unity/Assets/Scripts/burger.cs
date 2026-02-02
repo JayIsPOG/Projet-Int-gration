@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using System.Security.Cryptography;
 class Quaternion {
     public float x, y, z, w;
     public Quaternion(float X = 0, float Y = 0, float Z = 0, float W = 1) { 
@@ -55,193 +54,147 @@ public class burger : MonoBehaviour
 {
     static Color32 white = new Color32(255, 255, 255, 255);
     static Color32 black = new Color32(0, 0, 0, 255);
-    static Color32 red = new Color32(255, 0, 0, 255);
+    static Color32 transparent = new Color32(0, 0, 0, 0);
     
-    float face_dimension = 16;
-    Color32[][][] faces = new Color32[][][]{
-	new Color32[][]{
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,black,black,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,black,black,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black}
-},
-	new Color32[][]{
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black}
-
-},
-	new Color32[][]{
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,black,black,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,black,black,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black}
-},
-	new Color32[][]{
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black}
-},
-	new Color32[][]{
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,black,black,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,black,black,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black}
-},
-	new Color32[][]{
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,black,black,white,white,white,white,white,white,black,black,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,white,white,white,white,white,white,white,white,white,white,white,white,white,white,black},
-		new Color32[]{black,black,black,black,black,black,black,black,black,black,black,black,black,black,black,black}
-	}
-};
+    float faceWidth;
+    float faceHeight;
     public float cubeWidth = 32;
     public int distanceFromCam = 200;
-    public float K1 = 160;
+    public float K1 = 92;
     public float deltaTime = 0.5f;
-    const int steps = 16;
+    const int steps = 12;
     float[] yBob = new float[steps];
     float[] xBob = new float[steps];
     float[] zBuffer;
-    float yoff;
-    float xoff;
     float zoff;
     static Vector3 xAxis = new Vector3(1, 0, 0);
     static Vector3 yAxis = new Vector3(0, 1, 0);
     static Vector3 zAxis = new Vector3(0, 0, 1);
     Quaternion currentRotation = new Quaternion(0, 0, 0, 1);
-    Quaternion downRotation = new Quaternion(xAxis, (Mathf.PI / 2) / steps);
+    Quaternion downRotation = new Quaternion(xAxis, -(Mathf.PI / 2) / steps);
     Quaternion leftRotation = new Quaternion(yAxis, (Mathf.PI / 2) / steps);
-    Quaternion upRotation = new Quaternion(xAxis, -(Mathf.PI / 2) / steps);
+    Quaternion upRotation = new Quaternion(xAxis, (Mathf.PI / 2) / steps);
     Quaternion rightRotation = new Quaternion(yAxis, -(Mathf.PI / 2) / steps);
     private SpriteRenderer spriteRenderer;
     private Texture2D texture;
+
+
     private Sprite sprite;
+    Color32[] face1, face2, face3, face4, face5, face6;
 
     Color32[] pixels;
-
     bool is_rolling;
     public void Start()
     {
         is_rolling = false;
+
         spriteRenderer = GetComponent<SpriteRenderer>();
+        Color32[] faces = spriteRenderer.sprite.texture.GetPixels32();
+        faceWidth = spriteRenderer.sprite.texture.width;
+        faceHeight = spriteRenderer.sprite.texture.height / 6;
 
-        for (int i = 0; i < steps; i++) {
-        float angle = Mathf.PI / 4 + (Mathf.PI * i) / (steps * 2);
-            //xBob[steps - i - 1] = (Mathf.Cos(angle) + Mathf.Cos(Mathf.PI / 4)) * Mathf.Sqrt((cubeWidth / 2) * (cubeWidth / 2));
-            //yBob[steps - i - 1] = (Mathf.Sin(angle) + Mathf.Sin(Mathf.PI / 4)) * Mathf.Sqrt((cubeWidth / 2) * (cubeWidth / 2));
-            xBob[steps - i - 1] = 0;
-            yBob[steps - i - 1] = 0;
-        }
+        int size = (int)(faceWidth * faceHeight);
 
-        // Create a new texture from the existing sprite
-        Sprite originalSprite = spriteRenderer.sprite;
-        texture = new Texture2D((int)originalSprite.rect.width, (int)originalSprite.rect.height);
-        texture.filterMode = FilterMode.Point; // For Mathf.PIxel art
-        
-        // Copy Mathf.PIxels from original sprite
-        pixels = originalSprite.texture.GetPixels32();
-        texture.SetPixels32(pixels);
-        texture.Apply();
-        
-        // Create new sprite from the texture
-        sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        face1 = new Color32[size];
+        face2 = new Color32[size];
+        face3 = new Color32[size];
+        face4 = new Color32[size];
+        face5 = new Color32[size];
+        face6 = new Color32[size];
+
+        System.Array.Copy(faces, size * 0, face1, 0, size);
+        System.Array.Copy(faces, size * 1, face2, 0, size);
+        System.Array.Copy(faces, size * 2, face3, 0, size);
+        System.Array.Copy(faces, size * 3, face4, 0, size);
+        System.Array.Copy(faces, size * 4, face5, 0, size);
+        System.Array.Copy(faces, size * 5, face6, 0, size);
+
+        texture = new Texture2D(32, 32); // make dimensions adaptable
+        texture.filterMode = FilterMode.Point;
+        pixels = texture.GetPixels32();
+
+        sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), transform.position, spriteRenderer.sprite.pixelsPerUnit);
         spriteRenderer.sprite = sprite;
         
         zBuffer = new float[texture.width * texture.height];
+
+        for (int i = 0; i < steps; i++) {
+            float angle = Mathf.PI / 4 + (Mathf.PI * i) / (steps * 2);
+            xBob[steps - i - 1] = (Mathf.Cos(angle) + Mathf.Cos(Mathf.PI / 4)) / Mathf.Sqrt(2); // pretty fucking dumb
+            yBob[steps - i - 1] = (Mathf.Sin(angle) + Mathf.Sin(Mathf.PI / 4)) * (cubeWidth / Mathf.Sqrt(2));
+            //xBob[steps - i - 1] = 0;
+        }
+        
+        for (int i = steps - 1; i > 0; i--)
+        {
+            xBob[i] -= xBob[i - 1];
+        }
     }
 
     public void Update()
     {
         if(is_rolling) return;
-        StartCoroutine(roll());
+        if(Input.GetKey ("up")) StartCoroutine(upRoll());
+        else if(Input.GetKey ("left")) StartCoroutine(leftRoll());
+        else if(Input.GetKey ("down")) StartCoroutine(downRoll());
+        else if(Input.GetKey ("right")) StartCoroutine(rightRoll());
     }
 
-    IEnumerator roll()
+    IEnumerator rightRoll()
     {
         is_rolling = true;
 
-        yoff = 0;
         for (int i = 0; i < steps; i++) {
             zoff = distanceFromCam - yBob[i];
-            xoff = xBob[i];
             currentRotation = rightRotation.multiply(currentRotation);
             //currentRotation.normalize();
-            drawCube1();
+            drawCube();
+            transform.position += new Vector3(xBob[i], 0, 0);
+            yield return new WaitForSeconds(deltaTime);
+        }
+        
+        is_rolling = false;
+    }
+    IEnumerator leftRoll()
+    {
+        is_rolling = true;
+
+        for (int i = 0; i < steps; i++) {
+            zoff = distanceFromCam - yBob[i];
+            currentRotation = leftRotation.multiply(currentRotation);
+            //currentRotation.normalize();
+            drawCube();
+            transform.position += new Vector3(-xBob[i], 0, 0);
+            yield return new WaitForSeconds(deltaTime);
+        }
+        
+        is_rolling = false;
+    }
+    IEnumerator upRoll()
+    {
+        is_rolling = true;
+
+        for (int i = 0; i < steps; i++) {
+            zoff = distanceFromCam - yBob[i];
+            currentRotation = upRotation.multiply(currentRotation);
+            //currentRotation.normalize();
+            drawCube();
+            transform.position += new Vector3(0, xBob[i], 0);
+            yield return new WaitForSeconds(deltaTime);
+        }
+        
+        is_rolling = false;
+    }
+    IEnumerator downRoll()
+    {
+        is_rolling = true;
+
+        for (int i = 0; i < steps; i++) {
+            zoff = distanceFromCam - yBob[i];
+            currentRotation = downRotation.multiply(currentRotation);
+            //currentRotation.normalize();
+            drawCube();
+            transform.position += new Vector3(0, -xBob[i], 0);
             yield return new WaitForSeconds(deltaTime);
         }
         
@@ -271,22 +224,21 @@ public class burger : MonoBehaviour
         }
     }
 }
-    void drawCube1() {
+    void drawCube() {
         for(int i = 0; i < texture.height * texture.width; i++) {
-            pixels[i] = white;
+            pixels[i] = transparent;
             zBuffer[i] = 0;
         }
 
         for (float cubeX = -cubeWidth / 2; cubeX < cubeWidth / 2; cubeX += 1) {
             for (float cubeY = -cubeWidth / 2; cubeY < cubeWidth / 2; cubeY += 1) {
-                int i = (int)((cubeY + cubeWidth / 2) * (face_dimension / cubeWidth));
-                int j = (int)((cubeX + cubeWidth / 2) * (face_dimension / cubeWidth));
-                calculateForSurface(cubeX, cubeY, -cubeWidth / 2, faces[0][i][j]);
-                calculateForSurface(cubeX, cubeY, cubeWidth / 2, faces[2][i][j]);
-                calculateForSurface(cubeWidth / 2, cubeY, cubeX, faces[1][i][j]);
-                calculateForSurface(-cubeWidth / 2, cubeY, cubeX, faces[4][i][j]);
-                calculateForSurface(cubeY, cubeWidth / 2, cubeX, faces[3][i][j]);
-                calculateForSurface(cubeY, -cubeWidth / 2, cubeX, faces[5][i][j]);
+                int index = (int)(((cubeY + cubeWidth / 2) * (faceHeight / cubeWidth)) * faceWidth + ((cubeX + cubeWidth / 2) * (faceWidth / cubeWidth)));
+                calculateForSurface(cubeX, cubeY, -cubeWidth / 2, face1[index]);
+                calculateForSurface(cubeX, cubeY, cubeWidth / 2, face3[index]);
+                calculateForSurface(cubeWidth / 2, cubeY, cubeX, face2[index]);
+                calculateForSurface(-cubeWidth / 2, cubeY, cubeX, face5[index]);
+                calculateForSurface(cubeY, cubeWidth / 2, cubeX, face4[index]);
+                calculateForSurface(cubeY, -cubeWidth / 2, cubeX, face6[index]);
             }
         }
 
@@ -300,13 +252,14 @@ public class burger : MonoBehaviour
         float newZ = currentRotation.w * cubeZ + currentRotation.x * cubeY - currentRotation.y * cubeX;
         float newW = -currentRotation.x * cubeX - currentRotation.y * cubeY - currentRotation.z * cubeZ;
 
-        float x = newW * -currentRotation.x + newX * currentRotation.w + newY * -currentRotation.z - newZ * -currentRotation.y + xoff;
-        float y = newW * -currentRotation.y - newX * -currentRotation.z + newY * currentRotation.w + newZ * -currentRotation.x + yoff;
+        float x = newW * -currentRotation.x + newX * currentRotation.w + newY * -currentRotation.z - newZ * -currentRotation.y;
+        float y = newW * -currentRotation.y - newX * -currentRotation.z + newY * currentRotation.w + newZ * -currentRotation.x;
         float z = newW * -currentRotation.z + newX * -currentRotation.y - newY * -currentRotation.x + newZ * currentRotation.w + zoff;
 
         float ooz = 1 / z;
         int xp = (int)(texture.width / 2 + K1 * ooz * x);
         int yp = (int)(texture.height / 2 + K1 * ooz * y);
+
         int idx = xp + yp * texture.width;
         if(0 <= xp && xp < texture.width && 0 <= yp && yp < texture.height){
             if (ooz > zBuffer[idx]) {
