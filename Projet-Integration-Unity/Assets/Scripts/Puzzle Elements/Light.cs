@@ -25,6 +25,9 @@ public class Light : MonoBehaviour
                 Destroy(hitSaved.GetComponent<Mirror>().line.gameObject);
                 //hitSaved.GetComponent<Mirror>().lightSource = null;
             }catch{}
+            try{
+                hitSaved.GetComponent<LightReceiver>().hitByLight = false;
+            }catch{}
             hitSaved = hitNew;
             try{
                 if(hitSaved.GetComponent<Mirror>().line == null)
@@ -32,6 +35,9 @@ public class Light : MonoBehaviour
                     hitSaved.GetComponent<Mirror>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
                 }
                 hitSaved.GetComponent<Mirror>().lightSource = transform;
+            }catch{}
+            try{
+                hitSaved.GetComponent<LightReceiver>().hitByLight = true;
             }catch{}
         }
 

@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 4641168346201923188}
   - component: {fileID: 4641168346201923191}
   - component: {fileID: 4641168346201923178}
+  - component: {fileID: 4792481389240461528}
   - component: {fileID: 4641168346201923176}
   - component: {fileID: 4641168346201923177}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: knight
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -73,8 +74,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -49442815
-  m_SortingLayer: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 33a92f03758a42446840be6658ce76ff, type: 3}
   m_Color: {r: 0.7264151, g: 0.7264151, b: 0.7264151, a: 1}
@@ -100,6 +101,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementSpeed: 7
+--- !u!114 &4792481389240461528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4641168346201923190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b20075cc1ef7c149b937066e1516076, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!50 &4641168346201923176
 Rigidbody2D:
   serializedVersion: 4
