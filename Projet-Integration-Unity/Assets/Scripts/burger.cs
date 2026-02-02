@@ -232,7 +232,7 @@ public class burger : MonoBehaviour
 
         for (float cubeX = -cubeWidth / 2; cubeX < cubeWidth / 2; cubeX += 1) {
             for (float cubeY = -cubeWidth / 2; cubeY < cubeWidth / 2; cubeY += 1) {
-                int index = (int)(((cubeY + cubeWidth / 2) * (faceHeight / cubeWidth)) * faceWidth + ((cubeX + cubeWidth / 2) * (faceWidth / cubeWidth)));
+                int index = (int)((cubeY + cubeWidth / 2) * (faceHeight / cubeWidth)) * (int)faceWidth + (int)((cubeX + cubeWidth / 2) * (faceWidth / cubeWidth));
                 calculateForSurface(cubeX, cubeY, -cubeWidth / 2, face1[index]);
                 calculateForSurface(cubeX, cubeY, cubeWidth / 2, face3[index]);
                 calculateForSurface(cubeWidth / 2, cubeY, cubeX, face2[index]);
