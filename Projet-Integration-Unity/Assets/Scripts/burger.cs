@@ -1,15 +1,15 @@
 using UnityEngine;
 using System.Collections;
-class Quaternion {
+class CustomQuaternion {
     public float x, y, z, w;
-    public Quaternion(float X = 0, float Y = 0, float Z = 0, float W = 1) { 
+    public CustomQuaternion(float X = 0, float Y = 0, float Z = 0, float W = 1) { 
         x = X; 
         y = Y;
         z = Z;
         w = W;
     }
 
-    public Quaternion(Vector3 axis, float angle) {
+    public CustomQuaternion(Vector3 axis, float angle) {
         float halfAngle = angle / 2;
         float s = Mathf.Sin(halfAngle);
         x = axis.x * s;
@@ -18,15 +18,15 @@ class Quaternion {
         w = Mathf.Cos(halfAngle);
     }
 
-    public Quaternion multiply(Quaternion q) {
-        return new Quaternion(
+    public CustomQuaternion multiply(CustomQuaternion q) {
+        return new CustomQuaternion(
             w * q.x + x * q.w + y * q.z - z * q.y,
             w * q.y - x * q.z + y * q.w + z * q.x,
             w * q.z + x * q.y - y * q.x + z * q.w,
             w * q.w - x * q.x - y * q.y - z * q.z);
     }
 
-    public Quaternion normalize() {
+    public CustomQuaternion normalize() {
         float mag = 1 / Mathf.Sqrt(x * x + y * y + z * z + w * w);
         x *= mag;
         y *= mag;
@@ -70,11 +70,11 @@ public class burger : MonoBehaviour
     static Vector3 xAxis = new Vector3(1, 0, 0);
     static Vector3 yAxis = new Vector3(0, 1, 0);
     static Vector3 zAxis = new Vector3(0, 0, 1);
-    Quaternion currentRotation = new Quaternion(0, 0, 0, 1);
-    Quaternion downRotation = new Quaternion(xAxis, -(Mathf.PI / 2) / steps);
-    Quaternion leftRotation = new Quaternion(yAxis, (Mathf.PI / 2) / steps);
-    Quaternion upRotation = new Quaternion(xAxis, (Mathf.PI / 2) / steps);
-    Quaternion rightRotation = new Quaternion(yAxis, -(Mathf.PI / 2) / steps);
+    CustomQuaternion currentRotation = new CustomQuaternion(0, 0, 0, 1);
+    CustomQuaternion downRotation = new CustomQuaternion(xAxis, -(Mathf.PI / 2) / steps);
+    CustomQuaternion leftRotation = new CustomQuaternion(yAxis, (Mathf.PI / 2) / steps);
+    CustomQuaternion upRotation = new CustomQuaternion(xAxis, (Mathf.PI / 2) / steps);
+    CustomQuaternion rightRotation = new CustomQuaternion(yAxis, -(Mathf.PI / 2) / steps);
     private SpriteRenderer spriteRenderer;
     private Texture2D texture;
 
