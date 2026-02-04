@@ -55,13 +55,12 @@ public class burger : MonoBehaviour
     static Color32 white = new Color32(255, 255, 255, 255);
     static Color32 black = new Color32(0, 0, 0, 255);
     static Color32 transparent = new Color32(0, 0, 0, 0);
-    
     float faceWidth;
     float faceHeight;
-    public float cubeWidth = 32;
-    public int distanceFromCam = 200;
-    public float K1 = 92;
-    public float deltaTime = 0.5f;
+    public float cubeWidth = 16;
+    public int distanceFromCam = 1024;
+    public float K1 = 889;
+    public float deltaTime = 0.02f;
     const int steps = 12;
     float[] yBob = new float[steps];
     float[] xBob = new float[steps];
