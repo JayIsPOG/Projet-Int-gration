@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Tilemaps;
 
 public class ennemy_mouvement : MonoBehaviour
 {
@@ -8,14 +9,15 @@ public class ennemy_mouvement : MonoBehaviour
 
     private Rigidbody2D rb;
     private GridManager gridManager;
-
+    public Tilemap tilemap;
     private List<Node> currentPath;
     private int pathIndex = 0;
 
     private Vector3 anciennepos;
 
     void Awake()
-{
+    {
+    
     rb = GetComponent<Rigidbody2D>();
     gridManager = new GridManager();
 
