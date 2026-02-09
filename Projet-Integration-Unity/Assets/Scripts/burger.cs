@@ -121,7 +121,6 @@ public class burger : MonoBehaviour
             float angle = Mathf.PI / 4 + (Mathf.PI * i) / (steps * 2);
             xBob[steps - i - 1] = (Mathf.Cos(angle) + Mathf.Cos(Mathf.PI / 4)) / Mathf.Sqrt(2); // pretty fucking dumb
             yBob[steps - i - 1] = (Mathf.Sin(angle) + Mathf.Sin(Mathf.PI / 4)) * (cubeWidth / Mathf.Sqrt(2));
-            //xBob[steps - i - 1] = 0;
         }
         
         for (int i = steps - 1; i > 0; i--)
@@ -223,11 +222,23 @@ public class burger : MonoBehaviour
         }
     }
 }
+    float m00, m01, m02, m10, m11, m12, m20, m21, m22;
     void drawCube() {
         for(int i = 0; i < texture.height * texture.width; i++) {
             pixels[i] = transparent;
             zBuffer[i] = 0;
         }
+        m00 = 1 - 2*(currentRotation.y*currentRotation.y + currentRotation.z*currentRotation.z);
+        m01 = 2*(currentRotation.x*currentRotation.y - currentRotation.w*currentRotation.z);
+        m02 = 2*(currentRotation.x*currentRotation.z + currentRotation.w*currentRotation.y);
+
+        m10 = 2*(currentRotation.x*currentRotation.y + currentRotation.w*currentRotation.z);
+        m11 = 1 - 2*(currentRotation.x*currentRotation.x + currentRotation.z*currentRotation.z);
+        m12 = 2*(currentRotation.y*currentRotation.z - currentRotation.w*currentRotation.x);
+
+        m20 = 2*(currentRotation.x*currentRotation.z - currentRotation.w*currentRotation.y);
+        m21 = 2*(currentRotation.y*currentRotation.z + currentRotation.w*currentRotation.x);
+        m22 = 1 - 2*(currentRotation.x*currentRotation.x + currentRotation.y*currentRotation.y);
 
         for (float cubeX = -cubeWidth / 2; cubeX < cubeWidth / 2; cubeX += 1) {
             for (float cubeY = -cubeWidth / 2; cubeY < cubeWidth / 2; cubeY += 1) {
@@ -246,14 +257,9 @@ public class burger : MonoBehaviour
     }
     void calculateForSurface(float cubeX, float cubeY, float cubeZ, Color32 color) {
     
-        float newX = currentRotation.w * cubeX + currentRotation.y * cubeZ - currentRotation.z * cubeY;
-        float newY = currentRotation.w * cubeY - currentRotation.x * cubeZ + currentRotation.z * cubeX;
-        float newZ = currentRotation.w * cubeZ + currentRotation.x * cubeY - currentRotation.y * cubeX;
-        float newW = -currentRotation.x * cubeX - currentRotation.y * cubeY - currentRotation.z * cubeZ;
-
-        float x = newW * -currentRotation.x + newX * currentRotation.w + newY * -currentRotation.z - newZ * -currentRotation.y;
-        float y = newW * -currentRotation.y - newX * -currentRotation.z + newY * currentRotation.w + newZ * -currentRotation.x;
-        float z = newW * -currentRotation.z + newX * -currentRotation.y - newY * -currentRotation.x + newZ * currentRotation.w + zoff;
+        float x = m00*cubeX + m01*cubeY + m02*cubeZ;
+        float y = m10*cubeX + m11*cubeY + m12*cubeZ;
+        float z = m20*cubeX + m21*cubeY + m22*cubeZ + zoff;
 
         float ooz = 1 / z;
         int xp = (int)(texture.width / 2 + K1 * ooz * x);
