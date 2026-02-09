@@ -145,7 +145,7 @@ public class burger : MonoBehaviour
         for (int i = 0; i < steps; i++) {
             zoff = distanceFromCam - yBob[i];
             currentRotation = rightRotation.multiply(currentRotation);
-            //currentRotation.normalize();
+            currentRotation.normalize();
             drawCube();
             transform.position += new Vector3(xBob[i], 0, 0);
             yield return new WaitForSeconds(deltaTime);
@@ -160,7 +160,7 @@ public class burger : MonoBehaviour
         for (int i = 0; i < steps; i++) {
             zoff = distanceFromCam - yBob[i];
             currentRotation = leftRotation.multiply(currentRotation);
-            //currentRotation.normalize();
+            currentRotation.normalize();
             drawCube();
             transform.position += new Vector3(-xBob[i], 0, 0);
             yield return new WaitForSeconds(deltaTime);
@@ -175,7 +175,7 @@ public class burger : MonoBehaviour
         for (int i = 0; i < steps; i++) {
             zoff = distanceFromCam - yBob[i];
             currentRotation = upRotation.multiply(currentRotation);
-            //currentRotation.normalize();
+            currentRotation.normalize();
             drawCube();
             transform.position += new Vector3(0, xBob[i], 0);
             yield return new WaitForSeconds(deltaTime);
@@ -190,7 +190,7 @@ public class burger : MonoBehaviour
         for (int i = 0; i < steps; i++) {
             zoff = distanceFromCam - yBob[i];
             currentRotation = downRotation.multiply(currentRotation);
-            //currentRotation.normalize();
+            currentRotation.normalize();
             drawCube();
             transform.position += new Vector3(0, -xBob[i], 0);
             yield return new WaitForSeconds(deltaTime);
@@ -198,31 +198,7 @@ public class burger : MonoBehaviour
         
         is_rolling = false;
     }
-
-    void draw_line(int x0, int y0, int x1, int y1, Color32 color) {
-    int dx = Mathf.Abs(x1 - x0);
-    int sx = x0 < x1 ? 1 : -1;
-    int dy = -Mathf.Abs(y1 - y0);
-    int sy = y0 < y1 ? 1 : -1;
-    int err = dx + dy;
-    int e2;
-
-    while (x0 != x1 || y0 != y1) {
-        pixels[x0 + y0 * texture.width] = color;
-
-        e2 = err << 1;
-
-        if (e2 >= dy) { 
-            err += dy; 
-            x0 += sx; 
-        }
-        if (e2 <= dx) { 
-            err += dx; 
-            y0 += sy; 
-        }
-    }
-}
-    float m00, m01, m02, m10, m11, m12, m20, m21, m22;
+    private float m00, m01, m02, m10, m11, m12, m20, m21, m22;
     void drawCube() {
         for(int i = 0; i < texture.height * texture.width; i++) {
             pixels[i] = transparent;
