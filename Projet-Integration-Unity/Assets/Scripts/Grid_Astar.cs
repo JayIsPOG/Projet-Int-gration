@@ -75,7 +75,8 @@ public bool EstLibre(int x, int y)
 
     // On regarde s'il y a un collider dans un petit cercle autour du point
     Collider2D hit = Physics2D.OverlapCircle(point_test_collision, rayonTest, objetLayer);
-
+    if(hit != null)
+        Debug.Log("Case bloquée : (" + x + ", " + y + ")");
     // S'il y a un collider → la case n'est pas libre
     return hit == null;
 }
