@@ -12,7 +12,7 @@ TagManager:
   - Water
   - UI
   - Player
-  - Player Ignore
+  - IgnorePlayer
   - Air
   - 
   - 
@@ -39,17 +39,14 @@ TagManager:
   - 
   m_SortingLayers:
   - name: Ground
-    uniqueID: 3653640859
-    locked: 0
-  - name: Walls
-    uniqueID: 3764512381
+    uniqueID: 3944609425
     locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
   - name: Player
-    uniqueID: 4245524481
+    uniqueID: 3407165459
     locked: 0
   - name: UI
-    uniqueID: 1272502227
+    uniqueID: 1309831483
     locked: 0
