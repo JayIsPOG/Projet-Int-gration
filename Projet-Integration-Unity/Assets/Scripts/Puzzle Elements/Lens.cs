@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Mirror : MonoBehaviour
+public class Lens : MonoBehaviour
 {
     public LineRenderer linePrefab;
     public LineRenderer line;
@@ -11,7 +11,10 @@ public class Mirror : MonoBehaviour
     public LayerMask layerMask;
     public GameObject hitNew, hitSaved;
 
-    public float signedAngle;
+    [Range(1, 1.84f)]
+    public float nDensity = 1;
+
+    public float incomingAngle;
     
     void Start(){
         Physics2D.IgnoreLayerCollision(6, 7, true);
@@ -20,9 +23,13 @@ public class Mirror : MonoBehaviour
     void Update()
     {
         if(line) {
-            signedAngle = Vector3.SignedAngle(transform.up, lightSource.position - transform.position, Vector3.forward);
+            line.GetComponent<LightLine>().nDensity = nDensity;
 
-            Quaternion rotation = Quaternion.AngleAxis(-signedAngle, Vector3.forward);
+            incomingAngle = Vector3.SignedAngle(transform.up, lightSource.position - transform.position, Vector3.forward);
+
+            float outgoingAngle = Mathf.Asin((line.shadowBias * Mathf.Sin(incomingAngle * Mathf.Deg2Rad))/nDensity) * Mathf.Rad2Deg;
+
+            Quaternion rotation = Quaternion.AngleAxis(outgoingAngle + 180f, Vector3.forward);
             Vector3 rotatedVector = rotation * transform.up;
 
             Ray2D ray = new Ray2D(transform.position + rotatedVector * 0.01f, rotatedVector);
@@ -47,6 +54,9 @@ public class Mirror : MonoBehaviour
                     //hitSaved.GetComponent<Mirror>().lightSource = null;
                 }catch{}
                 try{
+                    Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
+                }catch{}
+                try{
                 hitSaved.GetComponent<LightReceiver>().hitByLight = false;
                 }catch{}
                 hitSaved = hitNew;
@@ -56,6 +66,14 @@ public class Mirror : MonoBehaviour
                         hitSaved.GetComponent<Mirror>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
                     }
                     hitSaved.GetComponent<Mirror>().lightSource = transform;
+                }catch{}
+                try{
+                    if(hitSaved.GetComponent<Lens>().line == null)
+                    {
+                        hitSaved.GetComponent<Lens>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                        hitSaved.GetComponent<Lens>().line.GetComponent<LightLine>().nDensity = nDensity;
+                    }
+                    hitSaved.GetComponent<Lens>().lightSource = transform;
                 }catch{}
                 try{
                 hitSaved.GetComponent<LightReceiver>().hitByLight = true;

@@ -9,6 +9,7 @@ public class LevelDoor : MonoBehaviour
     public GameObject signal;
     public GameObject icon;
     public Sprite spriteOpen, spriteClose;
+    public string lvlName;
     void Start()
     {
         
@@ -27,7 +28,7 @@ public class LevelDoor : MonoBehaviour
         }
 
         if(Input.GetKey(KeyCode.E) && open == true && player == true)
-            SceneManager.LoadScene("Puzzle 1");
+            SceneManager.LoadScene(lvlName);
     }
 
     void OnTriggerEnter2D(Collider2D other) {

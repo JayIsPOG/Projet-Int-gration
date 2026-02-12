@@ -8,6 +8,8 @@ public class Pushable : MonoBehaviour
     private bool grabbed;
     public Sprite[] grabIconSprites;
     public LayerMask wallLayer;
+    public bool xLocked,yLocked;
+
     void Start()
     {
         
@@ -24,19 +26,19 @@ public class Pushable : MonoBehaviour
         {
             grabIcon.SetActive(true);
 
-            if(Input.GetMouseButton(2))
+            if(Input.GetKey(KeyCode.Space))
             {
                 grabIcon.GetComponent<SpriteRenderer>().sprite = grabIconSprites[1];
-                if(Input.GetKey ("w") && Mathf.Floor(other.transform.position.y) < Mathf.Round(transform.position.y) ){
+                if(Input.GetKey ("w") && Mathf.Floor(other.transform.position.y) < Mathf.Round(transform.position.y) && !yLocked){
                     Drag(Vector3.up);
                 }
-                if(Input.GetKey ("s") && Mathf.Round(other.transform.position.y) > Mathf.Round(transform.position.y) ){
+                if(Input.GetKey ("s") && Mathf.Round(other.transform.position.y) > Mathf.Round(transform.position.y) && !yLocked){
                     Drag(-Vector3.up);
                 }
-                if(Input.GetKey ("d") && Mathf.Floor(other.transform.position.x) < Mathf.Floor(transform.position.x) ){
+                if(Input.GetKey ("d") && Mathf.Floor(other.transform.position.x) < Mathf.Floor(transform.position.x) && !xLocked ){
                     Drag(Vector3.right);
                 }
-                if(Input.GetKey ("a") && Mathf.Round(other.transform.position.x) > Mathf.Floor(transform.position.x) ){
+                if(Input.GetKey ("a") && Mathf.Round(other.transform.position.x) > Mathf.Floor(transform.position.x) && !xLocked){
                     Drag(-Vector3.right);
                 }
             }else{

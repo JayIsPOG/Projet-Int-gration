@@ -9,11 +9,13 @@ public class Light : MonoBehaviour
     public float distance;
     public LayerMask layerMask;
     public Transform lightPoint;
+    public float waveLenght = 700;
 
     private GameObject hitNew, hitSaved;
     void Start()
     {
         line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+        line.GetComponent<LightLine>().waveLenght = waveLenght;
     }
 
     // Update is called once per frame
@@ -26,6 +28,9 @@ public class Light : MonoBehaviour
                 //hitSaved.GetComponent<Mirror>().lightSource = null;
             }catch{}
             try{
+                Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
+            }catch{}
+            try{
                 hitSaved.GetComponent<LightReceiver>().hitByLight = false;
             }catch{}
             hitSaved = hitNew;
@@ -33,8 +38,16 @@ public class Light : MonoBehaviour
                 if(hitSaved.GetComponent<Mirror>().line == null)
                 {
                     hitSaved.GetComponent<Mirror>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                    hitSaved.GetComponent<Mirror>().line.GetComponent<LightLine>().waveLenght = waveLenght;
                 }
                 hitSaved.GetComponent<Mirror>().lightSource = transform;
+            }catch{}
+            try{if(hitSaved.GetComponent<Lens>().line == null)
+                {
+                    hitSaved.GetComponent<Lens>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                    hitSaved.GetComponent<Lens>().line.GetComponent<LightLine>().waveLenght = waveLenght;
+                }
+                hitSaved.GetComponent<Lens>().lightSource = transform;
             }catch{}
             try{
                 hitSaved.GetComponent<LightReceiver>().hitByLight = true;
