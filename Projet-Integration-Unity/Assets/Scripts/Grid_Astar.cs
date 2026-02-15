@@ -1,36 +1,54 @@
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 
 public class GridManager
 {
+    HashSet<Vector2Int> casesBloquees = new HashSet<Vector2Int>()
+    {
+    new Vector2Int(10, 10),
+    new Vector2Int(11, 10),
+    new Vector2Int(12, 10),
+
+    new Vector2Int(5, 5),
+    new Vector2Int(5, 6),
+    new Vector2Int(5, 7)
+    };
+
     int largeur = 37;
     int hauteur = 29;
+
     Node[,] grid;
+    Tilemap tilemap;
 
-    public GridManager()
+    public GridManager(Tilemap tilemap)
+{
+    this.tilemap = tilemap;
+
+    grid = new Node[largeur, hauteur];
+
+    for (int x = 0; x < largeur; x++)
     {
-        grid = new Node[largeur, hauteur];
+        for (int y = 0; y < hauteur; y++)
+        {
+            Vector3Int cell = new Vector3Int(x - 8, 7 - y, 0);
 
-        for(int x = 0; x < largeur; x++) {
+            bool walkable = !tilemap.HasTile(cell);
 
-            for(int y = 0; y < hauteur; y++)
-            {
-                grid[x,y] = new Node(x,y,EstLibre(x,y));
-            }
+            grid[x, y] = new Node(x, y, walkable);
         }
     }
+}
 
-    public List<Node> TrouverVoisins(Node node)
+
+public List<Node> TrouverVoisins(Node node)
 {
     List<Node> voisins = new List<Node>();
 
     int x = node.x;
     int y = node.y;
 
-    // Directions cardinales
     if (x + 1 < largeur)
         voisins.Add(grid[x + 1, y]);
 
@@ -43,8 +61,7 @@ public class GridManager
     if (y - 1 >= 0)
         voisins.Add(grid[x, y - 1]);
 
-    // ---- AJOUT DES DIAGONALES ----
-
+    // Diagonales
     if (x + 1 < largeur && y + 1 < hauteur)
         voisins.Add(grid[x + 1, y + 1]);
 
@@ -67,17 +84,15 @@ public bool EstLibre(int x, int y)
 
     Vector2 point_test_collision = new Vector2(x - offsetX, offsetY - y);
 
-    // Petite marge de sécurité (rayon très petit)
     float rayonTest = 0.2f;
 
-    // On teste seulement la layer Walls
     int objetLayer = LayerMask.GetMask("Default");
 
-    // On regarde s'il y a un collider dans un petit cercle autour du point
     Collider2D hit = Physics2D.OverlapCircle(point_test_collision, rayonTest, objetLayer);
-    if(hit != null)
+
+    if (hit != null)
         Debug.Log("Case bloquée : (" + x + ", " + y + ")");
-    // S'il y a un collider → la case n'est pas libre
+
     return hit == null;
 }
 
@@ -137,8 +152,7 @@ public bool EstLibre(int x, int y)
                 if (!neighbour.walkable || closedSet.Contains(neighbour))
                     continue;
 
-                int newCost = currentNode.gCost + GetDistance(currentNode, neighbour);
-
+                int newCost = currentNode.gCost + 1;
 
                 if (newCost < neighbour.gCost || !openSet.Contains(neighbour))
                 {
@@ -156,16 +170,10 @@ public bool EstLibre(int x, int y)
     }
 
 
-  int GetDistance(Node a, Node b)
-{
-    int dstX = Mathf.Abs(a.x - b.x);
-    int dstY = Mathf.Abs(a.y - b.y);
-
-    if (dstX > dstY)
-        return 14 * dstY + 10 * (dstX - dstY);
-    return 14 * dstX + 10 * (dstY - dstX);
-}
-
+    int GetDistance(Node a, Node b)
+        {
+            return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+        }
 
     List<Node> RetracePath(Node startNode, Node endNode)
     {
