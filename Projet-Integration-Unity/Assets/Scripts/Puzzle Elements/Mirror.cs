@@ -10,6 +10,7 @@ public class Mirror : MonoBehaviour
     public float distance;
     public LayerMask layerMask;
     public GameObject hitNew, hitSaved;
+    public float nDensity;
 
     public float signedAngle;
     
@@ -20,6 +21,8 @@ public class Mirror : MonoBehaviour
     void Update()
     {
         if(line) {
+            line.GetComponent<LightLine>().nDensity = nDensity;
+
             signedAngle = Vector3.SignedAngle(transform.up, lightSource.position - transform.position, Vector3.forward);
 
             Quaternion rotation = Quaternion.AngleAxis(-signedAngle, Vector3.forward);
@@ -47,6 +50,9 @@ public class Mirror : MonoBehaviour
                     //hitSaved.GetComponent<Mirror>().lightSource = null;
                 }catch{}
                 try{
+                    Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
+                }catch{}
+                try{
                 hitSaved.GetComponent<LightReceiver>().hitByLight = false;
                 }catch{}
                 hitSaved = hitNew;
@@ -54,17 +60,36 @@ public class Mirror : MonoBehaviour
                     if(hitSaved.GetComponent<Mirror>().line == null)
                     {
                         hitSaved.GetComponent<Mirror>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                        hitSaved.GetComponent<Mirror>().nDensity = nDensity;
+                        hitSaved.GetComponent<Mirror>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
                     }
                     hitSaved.GetComponent<Mirror>().lightSource = transform;
                 }catch{}
                 try{
-                hitSaved.GetComponent<LightReceiver>().hitByLight = true;
+                    if(hitSaved.GetComponent<Lens>().line == null)
+                    {
+                        hitSaved.GetComponent<Lens>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                        hitSaved.GetComponent<Lens>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
+                    }
+                    hitSaved.GetComponent<Lens>().lightSource = transform;
                 }catch{}
+                try{
+                hitSaved.GetComponent<LightReceiver>().hitByLight = true;
+                hitSaved.GetComponent<LightReceiver>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
+                }catch{}
+            }
+            if(hitSaved)
+            {
+                if(hitSaved.GetComponent<LightReceiver>())
+                    hitSaved.GetComponent<LightReceiver>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
             }
         }else{
             try{
                 Destroy(hitSaved.GetComponent<Mirror>().line.gameObject);
                 //hitSaved.GetComponent<Mirror>().lightSource = null;
+            }catch{}
+             try{
+                Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
             }catch{}
             try{
             hitSaved.GetComponent<LightReceiver>().hitByLight = false;

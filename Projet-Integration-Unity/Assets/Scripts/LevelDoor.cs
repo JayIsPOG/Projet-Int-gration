@@ -18,7 +18,7 @@ public class LevelDoor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(signal.GetComponent<LightReceiver>().hitByLight)
+        if(signal.GetComponent<LightReceiver>().open)
         {
             open = true;
             GetComponent<SpriteRenderer>().sprite = spriteOpen;

@@ -256,13 +256,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7723dc68a519b514da024fcc3801c5ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  linePrefab: {fileID: 5696908965580082982, guid: 9d6e11850b2045e40a7257bc85e03b40, type: 3}
+  linePrefab: {fileID: 5872003086783311977, guid: a85b4547ac679754e9b687c6875e9507, type: 3}
   distance: 50
   layerMask:
     serializedVersion: 2
     m_Bits: 439
   lightPoint: {fileID: 2534942533070584557}
-  waveLenght: 700
+  waveLenght: 550
+  nDensity: 1
 --- !u!114 &2534942533397841919
 MonoBehaviour:
   m_ObjectHideFlags: 0

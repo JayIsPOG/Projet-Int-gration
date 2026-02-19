@@ -10,6 +10,7 @@ public class Light : MonoBehaviour
     public LayerMask layerMask;
     public Transform lightPoint;
     public float waveLenght = 700;
+    public float nDensity = 1;
 
     private GameObject hitNew, hitSaved;
     void Start()
@@ -38,6 +39,7 @@ public class Light : MonoBehaviour
                 if(hitSaved.GetComponent<Mirror>().line == null)
                 {
                     hitSaved.GetComponent<Mirror>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                    hitSaved.GetComponent<Mirror>().nDensity = nDensity;
                     hitSaved.GetComponent<Mirror>().line.GetComponent<LightLine>().waveLenght = waveLenght;
                 }
                 hitSaved.GetComponent<Mirror>().lightSource = transform;
@@ -51,6 +53,7 @@ public class Light : MonoBehaviour
             }catch{}
             try{
                 hitSaved.GetComponent<LightReceiver>().hitByLight = true;
+                hitSaved.GetComponent<LightReceiver>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
             }catch{}
         }
 

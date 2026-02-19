@@ -527,7 +527,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78ca829dcf551944ea469a90ba700993, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  linePrefab: {fileID: 5696908965580082982, guid: 9d6e11850b2045e40a7257bc85e03b40, type: 3}
+  linePrefab: {fileID: 5872003086783311977, guid: a85b4547ac679754e9b687c6875e9507, type: 3}
   line: {fileID: 0}
   lightSource: {fileID: 0}
   distance: 50
@@ -536,6 +536,7 @@ MonoBehaviour:
     m_Bits: 439
   hitNew: {fileID: 0}
   hitSaved: {fileID: 0}
+  nDensity: 0
   signedAngle: 0
 --- !u!68 &5967265511861656939
 EdgeCollider2D:
