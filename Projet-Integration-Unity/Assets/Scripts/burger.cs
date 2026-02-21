@@ -140,7 +140,7 @@ public class burger : MonoBehaviour
         else if(Input.GetKey ("right")) StartCoroutine(rightRoll());
     }
 
-    IEnumerator rightRoll()
+    public IEnumerator rightRoll()
     {
         is_rolling = true;
 
@@ -155,7 +155,7 @@ public class burger : MonoBehaviour
         
         is_rolling = false;
     }
-    IEnumerator leftRoll()
+    public IEnumerator leftRoll()
     {
         is_rolling = true;
 
@@ -170,7 +170,7 @@ public class burger : MonoBehaviour
         
         is_rolling = false;
     }
-    IEnumerator upRoll()
+    public IEnumerator upRoll()
     {
         is_rolling = true;
 
@@ -185,7 +185,7 @@ public class burger : MonoBehaviour
         
         is_rolling = false;
     }
-    IEnumerator downRoll()
+    public IEnumerator downRoll()
     {
         is_rolling = true;
 

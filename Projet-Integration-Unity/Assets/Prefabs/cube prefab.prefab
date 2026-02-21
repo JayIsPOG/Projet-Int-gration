@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayerID: 446366887
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 56167406354f4424cad5435cceee2385, type: 3}
   m_Color: {r: 0.5885506, g: 0.2264151, b: 0.9056604, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4723650837ab0174a80e51fd308f783a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 2
+  speed: 3
   player: {fileID: 0}
   tilemap: {fileID: 0}
 --- !u!50 &6246084981996547473

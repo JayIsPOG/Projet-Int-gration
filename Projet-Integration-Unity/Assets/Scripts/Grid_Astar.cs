@@ -4,7 +4,7 @@ using UnityEngine.Tilemaps;
 
 public class GridManager
 {
-    float rayonAgent = 0.4f; // ajuste selon la taille de ton cube
+    float rayonAgent = 0.4f;
     LayerMask wallLayer;
 
     int largeur = 37;
@@ -18,26 +18,25 @@ public class GridManager
     float offsetY = 7f;
 
     public GridManager(Tilemap tilemap)
-{
-    this.tilemap = tilemap;
-
-    wallLayer = LayerMask.GetMask("Ground");
-
-    grid = new Node[largeur, hauteur];
-
-    for (int x = 0; x < largeur; x++)
     {
-        for (int y = 0; y < hauteur; y++)
+        this.tilemap = tilemap;
+
+        wallLayer = LayerMask.GetMask("Ground");
+
+        grid = new Node[largeur, hauteur];
+
+        for (int x = 0; x < largeur; x++)
         {
-            Vector3 worldPos = new Vector3(x - offsetX, offsetY - y, 0);
+            for (int y = 0; y < hauteur; y++)
+            {
+                Vector3 worldPos = new Vector3(x - offsetX, offsetY - y, 0);
 
-            bool walkable = Physics2D.OverlapCircle(worldPos, rayonAgent, wallLayer) == null;
+                bool walkable = Physics2D.OverlapCircle(worldPos, rayonAgent, wallLayer) == null;
 
-            grid[x, y] = new Node(x, y, walkable);
+                grid[x, y] = new Node(x, y, walkable);
+            }
         }
     }
-}
-
 
     public Node GetNode(int x, int y)
     {
@@ -56,6 +55,7 @@ public class GridManager
         }
     }
 
+    // PLUS AUCUNE DIAGONALE
     public List<Node> TrouverVoisins(Node node)
     {
         List<Node> voisins = new List<Node>();
@@ -63,28 +63,17 @@ public class GridManager
         int x = node.x;
         int y = node.y;
 
-        bool droite = x + 1 < largeur && grid[x + 1, y].walkable;
-        bool gauche = x - 1 >= 0 && grid[x - 1, y].walkable;
-        bool haut = y + 1 < hauteur && grid[x, y + 1].walkable;
-        bool bas = y - 1 >= 0 && grid[x, y - 1].walkable;
+        if (x + 1 < largeur && grid[x + 1, y].walkable)
+            voisins.Add(grid[x + 1, y]);
 
-        if (droite) voisins.Add(grid[x + 1, y]);
-        if (gauche) voisins.Add(grid[x - 1, y]);
-        if (haut) voisins.Add(grid[x, y + 1]);
-        if (bas) voisins.Add(grid[x, y - 1]);
+        if (x - 1 >= 0 && grid[x - 1, y].walkable)
+            voisins.Add(grid[x - 1, y]);
 
-        // diagonales autorisées seulement si pas de mur
-        if (droite && haut && grid[x + 1, y + 1].walkable)
-            voisins.Add(grid[x + 1, y + 1]);
+        if (y + 1 < hauteur && grid[x, y + 1].walkable)
+            voisins.Add(grid[x, y + 1]);
 
-        if (gauche && haut && grid[x - 1, y + 1].walkable)
-            voisins.Add(grid[x - 1, y + 1]);
-
-        if (droite && bas && grid[x + 1, y - 1].walkable)
-            voisins.Add(grid[x + 1, y - 1]);
-
-        if (gauche && bas && grid[x - 1, y - 1].walkable)
-            voisins.Add(grid[x - 1, y - 1]);
+        if (y - 1 >= 0 && grid[x, y - 1].walkable)
+            voisins.Add(grid[x, y - 1]);
 
         return voisins;
     }
@@ -143,15 +132,13 @@ public class GridManager
         return null;
     }
 
+    // DISTANCE MANHATTAN
     int GetDistance(Node a, Node b)
     {
         int dstX = Mathf.Abs(a.x - b.x);
         int dstY = Mathf.Abs(a.y - b.y);
 
-        if (dstX > dstY)
-            return 14 * dstY + 10 * (dstX - dstY);
-
-        return 14 * dstX + 10 * (dstY - dstX);
+        return (dstX + dstY) * 10;
     }
 
     List<Node> RetracePath(Node startNode, Node endNode)
