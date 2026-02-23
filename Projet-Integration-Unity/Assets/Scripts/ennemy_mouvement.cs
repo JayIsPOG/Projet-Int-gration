@@ -31,9 +31,11 @@ public class ennemy_mouvement : MonoBehaviour
         if (p != null)
         {
             player = p.transform;
+            Debug.Log("Player trouvé automatiquement : " + player.name);
         }
         else
         {
+            Debug.LogError("Aucun objet avec le tag Player trouvé !");
         }
     }
 
@@ -49,15 +51,23 @@ public class ennemy_mouvement : MonoBehaviour
     {
         if (player == null)
         {
+            Debug.LogError("Player est null dans FixedUpdate !");
             return;
         }
 
         float distance = Vector2.Distance(anciennepos, player.transform.position);
+        Debug.Log(player.localPosition);
+        Debug.Log("Distance joueur depuis dernier calcul : " + distance);
 
         if (distance > 0.5f)
         {
+            Debug.Log("JOUEUR A BOUGÉ → recalcul du chemin");
             anciennepos = player.transform.position;
             ChoisirDestination();
+        }
+        else
+        {
+            Debug.Log("Joueur pas assez déplacé, on continue le chemin actuel");
         }
 
         SuivreChemin();
@@ -65,9 +75,11 @@ public class ennemy_mouvement : MonoBehaviour
 
     void ChoisirDestination()
     {
+        Debug.Log("---- CHOISIR DESTINATION ----");
 
         if (player == null)
         {
+            Debug.LogError("Player null dans ChoisirDestination");
             return;
         }
 
@@ -80,14 +92,18 @@ public class ennemy_mouvement : MonoBehaviour
         int targetX = Mathf.FloorToInt(player.transform.position.x + offsetX);
         int targetY = Mathf.FloorToInt(offsetY - player.transform.position.y);
 
+        Debug.Log($"Start grille : {startX}, {startY}");
+        Debug.Log($"Target grille : {targetX}, {targetY}");
 
         if (startX < 0 || startX >= 37 || startY < 0 || startY >= 29)
         {
+            Debug.LogError("Start hors de la grille !");
             return;
         }
 
         if (targetX < 0 || targetX >= 37 || targetY < 0 || targetY >= 29)
         {
+            Debug.LogError("Target hors de la grille !");
             return;
         }
 
@@ -96,6 +112,7 @@ public class ennemy_mouvement : MonoBehaviour
 
         if (!end.walkable)
         {
+            Debug.LogWarning("Case cible NON WALKABLE !");
             return;
         }
 
@@ -103,9 +120,11 @@ public class ennemy_mouvement : MonoBehaviour
 
         if (currentPath == null)
         {
+            Debug.LogError("AUCUN CHEMIN TROUVÉ PAR A* !");
         }
         else
         {
+            Debug.Log("Chemin trouvé ! Longueur : " + currentPath.Count);
         }
 
         pathIndex = 0;
@@ -115,11 +134,13 @@ public class ennemy_mouvement : MonoBehaviour
     {
         if (currentPath == null)
         {
+            Debug.Log("Pas de chemin actuel");
             return;
         }
 
         if (pathIndex >= currentPath.Count)
         {
+            Debug.Log("Chemin terminé");
             rb.velocity = Vector2.zero;
             currentPath = null;
             return;
@@ -132,6 +153,7 @@ public class ennemy_mouvement : MonoBehaviour
 
         Vector2 targetPosition = new Vector2(worldX, worldY);
 
+        Debug.Log($"Déplacement vers noeud {pathIndex} : {targetPosition}");
 
         Vector2 direction = (targetPosition - rb.position).normalized;
 
@@ -140,12 +162,14 @@ public class ennemy_mouvement : MonoBehaviour
 
         if (Vector2.Distance(rb.position, targetPosition) < 0.1f)
         {
+            Debug.Log("Noeud atteint → suivant");
             pathIndex++;
         }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
+        Debug.Log("Collision détectée → arrêt");
         rb.velocity = Vector2.zero;
         currentPath = null;
     }
