@@ -87,6 +87,46 @@ public bool EstLibre(int x, int y)
     float offsetX = 8f;
     float offsetY = 7f;
 
+public List<Node> TrouverVoisins(Node node)
+{
+    List<Node> voisins = new List<Node>();
+
+    int x = node.x;
+    int y = node.y;
+
+    if (x + 1 < largeur)
+        voisins.Add(grid[x + 1, y]);
+
+    if (x - 1 >= 0)
+        voisins.Add(grid[x - 1, y]);
+
+    if (y + 1 < hauteur)
+        voisins.Add(grid[x, y + 1]);
+
+    if (y - 1 >= 0)
+        voisins.Add(grid[x, y - 1]);
+
+    // Diagonales
+    if (x + 1 < largeur && y + 1 < hauteur)
+        voisins.Add(grid[x + 1, y + 1]);
+
+    if (x - 1 >= 0 && y + 1 < hauteur)
+        voisins.Add(grid[x - 1, y + 1]);
+
+    if (x + 1 < largeur && y - 1 >= 0)
+        voisins.Add(grid[x + 1, y - 1]);
+
+    if (x - 1 >= 0 && y - 1 >= 0)
+        voisins.Add(grid[x - 1, y - 1]);
+
+    return voisins;
+}
+
+public bool EstLibre(int x, int y)
+{
+    float offsetX = 8f;
+    float offsetY = 7f;
+
     Vector2 point_test_collision = new Vector2(x - offsetX, offsetY - y);
 
     float rayonTest = 0.2f;
