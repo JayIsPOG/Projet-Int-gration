@@ -157,7 +157,8 @@ public class ennemy_mouvement : MonoBehaviour
 
         Vector2 direction = (targetPosition - rb.position).normalized;
 
-        rb.velocity = direction * speed;
+        rb.MovePosition(rb.position + direction * speed * Time.fixedDeltaTime);
+
 
         if (Vector2.Distance(rb.position, targetPosition) < 0.1f)
         {

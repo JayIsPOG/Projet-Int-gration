@@ -2,144 +2,47 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-
 public class GridManager
 {
-    HashSet<Vector2Int> casesBloquees = new HashSet<Vector2Int>()
-    {
-    new Vector2Int(10, 10),
-    new Vector2Int(11, 10),
-    new Vector2Int(12, 10),
-
-    new Vector2Int(5, 5),
-    new Vector2Int(5, 6),
-    new Vector2Int(5, 7)
-    };
+    float rayonAgent = 0.4f; // ajuste selon la taille de ton cube
+    LayerMask wallLayer;
 
     int largeur = 37;
     int hauteur = 29;
 
     Node[,] grid;
+
     Tilemap tilemap;
+
+    float offsetX = 8f;
+    float offsetY = 7f;
 
     public GridManager(Tilemap tilemap)
 {
     this.tilemap = tilemap;
 
+    wallLayer = LayerMask.GetMask("Ground");
+
     grid = new Node[largeur, hauteur];
 
     for (int x = 0; x < largeur; x++)
     {
-        this.tilemap = tilemap;
-
-        wallLayer = LayerMask.GetMask("Ground");
-
-        grid = new Node[largeur, hauteur];
-
-        for (int x = 0; x < largeur; x++)
+        for (int y = 0; y < hauteur; y++)
         {
-            Vector3Int cell = new Vector3Int(x - 8, 7 - y, 0);
+            Vector3 worldPos = new Vector3(x - offsetX, offsetY - y, 0);
 
-            bool walkable = !tilemap.HasTile(cell);
+            bool walkable = Physics2D.OverlapCircle(worldPos, rayonAgent, wallLayer) == null;
 
-                grid[x, y] = new Node(x, y, walkable);
-            }
+            grid[x, y] = new Node(x, y, walkable);
         }
     }
-
-public List<Node> TrouverVoisins(Node node)
-{
-    List<Node> voisins = new List<Node>();
-
-    int x = node.x;
-    int y = node.y;
-
-    if (x + 1 < largeur)
-        voisins.Add(grid[x + 1, y]);
-
-    if (x - 1 >= 0)
-        voisins.Add(grid[x - 1, y]);
-
-    if (y + 1 < hauteur)
-        voisins.Add(grid[x, y + 1]);
-
-    if (y - 1 >= 0)
-        voisins.Add(grid[x, y - 1]);
-
-    // Diagonales
-    if (x + 1 < largeur && y + 1 < hauteur)
-        voisins.Add(grid[x + 1, y + 1]);
-
-    if (x - 1 >= 0 && y + 1 < hauteur)
-        voisins.Add(grid[x - 1, y + 1]);
-
-    if (x + 1 < largeur && y - 1 >= 0)
-        voisins.Add(grid[x + 1, y - 1]);
-
-    if (x - 1 >= 0 && y - 1 >= 0)
-        voisins.Add(grid[x - 1, y - 1]);
-
-    return voisins;
 }
 
-public bool EstLibre(int x, int y)
-{
-    float offsetX = 8f;
-    float offsetY = 7f;
 
-public List<Node> TrouverVoisins(Node node)
-{
-    List<Node> voisins = new List<Node>();
-
-    int x = node.x;
-    int y = node.y;
-
-    if (x + 1 < largeur)
-        voisins.Add(grid[x + 1, y]);
-
-    if (x - 1 >= 0)
-        voisins.Add(grid[x - 1, y]);
-
-    if (y + 1 < hauteur)
-        voisins.Add(grid[x, y + 1]);
-
-    if (y - 1 >= 0)
-        voisins.Add(grid[x, y - 1]);
-
-    // Diagonales
-    if (x + 1 < largeur && y + 1 < hauteur)
-        voisins.Add(grid[x + 1, y + 1]);
-
-    if (x - 1 >= 0 && y + 1 < hauteur)
-        voisins.Add(grid[x - 1, y + 1]);
-
-    if (x + 1 < largeur && y - 1 >= 0)
-        voisins.Add(grid[x + 1, y - 1]);
-
-    if (x - 1 >= 0 && y - 1 >= 0)
-        voisins.Add(grid[x - 1, y - 1]);
-
-    return voisins;
-}
-
-public bool EstLibre(int x, int y)
-{
-    float offsetX = 8f;
-    float offsetY = 7f;
-
-    Vector2 point_test_collision = new Vector2(x - offsetX, offsetY - y);
-
-    float rayonTest = 0.2f;
-
-    int objetLayer = LayerMask.GetMask("Default");
-
-    Collider2D hit = Physics2D.OverlapCircle(point_test_collision, rayonTest, objetLayer);
-
-    if (hit != null)
-        Debug.Log("Case bloquée : (" + x + ", " + y + ")");
-
-    return hit == null;
-}
+    public Node GetNode(int x, int y)
+    {
+        return grid[x, y];
+    }
 
     public void ResetNodes()
     {
@@ -153,9 +56,37 @@ public bool EstLibre(int x, int y)
         }
     }
 
-    public Node GetNode(int x, int y)
+    public List<Node> TrouverVoisins(Node node)
     {
-        return grid[x, y];
+        List<Node> voisins = new List<Node>();
+
+        int x = node.x;
+        int y = node.y;
+
+        bool droite = x + 1 < largeur && grid[x + 1, y].walkable;
+        bool gauche = x - 1 >= 0 && grid[x - 1, y].walkable;
+        bool haut = y + 1 < hauteur && grid[x, y + 1].walkable;
+        bool bas = y - 1 >= 0 && grid[x, y - 1].walkable;
+
+        if (droite) voisins.Add(grid[x + 1, y]);
+        if (gauche) voisins.Add(grid[x - 1, y]);
+        if (haut) voisins.Add(grid[x, y + 1]);
+        if (bas) voisins.Add(grid[x, y - 1]);
+
+        // diagonales autorisées seulement si pas de mur
+        if (droite && haut && grid[x + 1, y + 1].walkable)
+            voisins.Add(grid[x + 1, y + 1]);
+
+        if (gauche && haut && grid[x - 1, y + 1].walkable)
+            voisins.Add(grid[x - 1, y + 1]);
+
+        if (droite && bas && grid[x + 1, y - 1].walkable)
+            voisins.Add(grid[x + 1, y - 1]);
+
+        if (gauche && bas && grid[x - 1, y - 1].walkable)
+            voisins.Add(grid[x - 1, y - 1]);
+
+        return voisins;
     }
 
     public List<Node> FindPath(Node startNode, Node targetNode)
@@ -177,8 +108,8 @@ public bool EstLibre(int x, int y)
             for (int i = 1; i < openSet.Count; i++)
             {
                 if (openSet[i].fCost < currentNode.fCost ||
-                (openSet[i].fCost == currentNode.fCost &&
-                    openSet[i].hCost < currentNode.hCost))
+                    openSet[i].fCost == currentNode.fCost &&
+                    openSet[i].hCost < currentNode.hCost)
                 {
                     currentNode = openSet[i];
                 }
@@ -188,16 +119,14 @@ public bool EstLibre(int x, int y)
             closedSet.Add(currentNode);
 
             if (currentNode == targetNode)
-            {
                 return RetracePath(startNode, targetNode);
-            }
 
             foreach (Node neighbour in TrouverVoisins(currentNode))
             {
-                if (!neighbour.walkable || closedSet.Contains(neighbour))
+                if (closedSet.Contains(neighbour))
                     continue;
 
-                int newCost = currentNode.gCost + 1;
+                int newCost = currentNode.gCost + GetDistance(currentNode, neighbour);
 
                 if (newCost < neighbour.gCost || !openSet.Contains(neighbour))
                 {
@@ -214,15 +143,21 @@ public bool EstLibre(int x, int y)
         return null;
     }
 
-
     int GetDistance(Node a, Node b)
-        {
-            return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
-        }
+    {
+        int dstX = Mathf.Abs(a.x - b.x);
+        int dstY = Mathf.Abs(a.y - b.y);
+
+        if (dstX > dstY)
+            return 14 * dstY + 10 * (dstX - dstY);
+
+        return 14 * dstX + 10 * (dstY - dstX);
+    }
 
     List<Node> RetracePath(Node startNode, Node endNode)
     {
         List<Node> path = new List<Node>();
+
         Node current = endNode;
 
         while (current != startNode)
@@ -232,7 +167,7 @@ public bool EstLibre(int x, int y)
         }
 
         path.Reverse();
+
         return path;
     }
-
 }
