@@ -21,7 +21,10 @@ public class GridManager
 {
     this.tilemap = tilemap;
 
-    wallLayer = LayerMask.GetMask("Ground");
+    BoundsInt bounds = tilemap.cellBounds;
+
+    largeur = bounds.size.x;
+    hauteur = bounds.size.y;
 
     grid = new Node[largeur, hauteur];
 
@@ -29,11 +32,34 @@ public class GridManager
     {
         for (int y = 0; y < hauteur; y++)
         {
-            Vector3 worldPos = new Vector3(x - offsetX, offsetY - y, 0);
+            // Position cellule réelle dans le tilemap
+            Vector3Int cellPos = new Vector3Int(
+                x + bounds.xMin,
+                y + bounds.yMin,
+                0
+            );
 
-            bool walkable = Physics2D.OverlapCircle(worldPos, rayonAgent, wallLayer) == null;
+            // Centre de la cellule en position monde
+            Vector3 worldPos = tilemap.GetCellCenterWorld(cellPos);
+
+            // Walkable si aucune tile
+            bool walkable = !tilemap.HasTile(cellPos);
 
             grid[x, y] = new Node(x, y, walkable);
+
+            // Debug console
+            if (!walkable)
+            {
+                Debug.Log($"NON walkable : Cell {cellPos} World {worldPos}");
+
+                // Dessine carré rouge
+                float s = tilemap.cellSize.x * 0.5f;
+
+                Debug.DrawLine(worldPos + new Vector3(-s,-s), worldPos + new Vector3(s,-s), Color.red, 100f);
+                Debug.DrawLine(worldPos + new Vector3(s,-s), worldPos + new Vector3(s,s), Color.red, 100f);
+                Debug.DrawLine(worldPos + new Vector3(s,s), worldPos + new Vector3(-s,s), Color.red, 100f);
+                Debug.DrawLine(worldPos + new Vector3(-s,s), worldPos + new Vector3(-s,-s), Color.red, 100f);
+            }
         }
     }
 }
@@ -170,4 +196,27 @@ public class GridManager
 
         return path;
     }
+    public Node NodeFromWorld(Vector3 worldPos)
+{
+    Vector3Int cellPos = tilemap.WorldToCell(worldPos);
+
+    int x = cellPos.x - tilemap.cellBounds.xMin;
+    int y = cellPos.y - tilemap.cellBounds.yMin;
+
+    if (x < 0 || x >= largeur || y < 0 || y >= hauteur)
+        return null;
+
+    return grid[x, y];
+}
+
+public Vector3 WorldFromNode(Node node)
+{
+    Vector3Int cellPos = new Vector3Int(
+        node.x + tilemap.cellBounds.xMin,
+        node.y + tilemap.cellBounds.yMin,
+        0
+    );
+
+    return tilemap.GetCellCenterWorld(cellPos);
+}
 }

@@ -14,6 +14,8 @@ public class ennemy_mouvement : MonoBehaviour
     private int pathIndex = 0;
 
     private Vector3 anciennepos;
+    public float sideOffsetX = 1.5f;
+public float offsetY = -0.2f;
 
     void Awake()
     {
@@ -63,87 +65,90 @@ public class ennemy_mouvement : MonoBehaviour
         SuivreChemin();
     }
 
-    void ChoisirDestination()
+void ChoisirDestination()
+{
+    if (player == null)
+        return;
+
+    float stopDistance = 0.7f;
+
+    // POSITION OFFSET GAUCHE OU DROITE
+   Vector3 targetOffsetPosition;
+
+if (transform.position.x < player.position.x)
+{
+    targetOffsetPosition = player.position + new Vector3(-sideOffsetX, offsetY, 0);
+}
+else
+{
+    targetOffsetPosition = player.position + new Vector3(sideOffsetX, offsetY, 0);
+}
+
+    float distance = Vector2.Distance(transform.position, targetOffsetPosition);
+
+    if (distance <= stopDistance)
     {
-
-        if (player == null)
-        {
-            return;
-        }
-
-        float offsetX = 8f;
-        float offsetY = 7f;
-
-        int startX = Mathf.FloorToInt(transform.position.x + offsetX);
-        int startY = Mathf.FloorToInt(offsetY - transform.position.y);
-
-        int targetX = Mathf.FloorToInt(player.transform.position.x + offsetX);
-        int targetY = Mathf.FloorToInt(offsetY - player.transform.position.y);
-
-
-        if (startX < 0 || startX >= 37 || startY < 0 || startY >= 29)
-        {
-            return;
-        }
-
-        if (targetX < 0 || targetX >= 37 || targetY < 0 || targetY >= 29)
-        {
-            return;
-        }
-
-        Node start = gridManager.GetNode(startX, startY);
-        Node end = gridManager.GetNode(targetX, targetY);
-
-        if (!end.walkable)
-        {
-            return;
-        }
-
-        currentPath = gridManager.FindPath(start, end);
-
-        if (currentPath == null)
-        {
-        }
-        else
-        {
-        }
-
-        pathIndex = 0;
+        rb.velocity = Vector2.zero;
+        currentPath = null;
+        return;
     }
+
+    Node start = gridManager.NodeFromWorld(transform.position);
+    Node end = gridManager.NodeFromWorld(targetOffsetPosition);
+
+    if (start == null || end == null)
+        return;
+
+    if (!end.walkable)
+        return;
+
+    currentPath = gridManager.FindPath(start, end);
+
+    pathIndex = 0;
+}
 
     void SuivreChemin()
+{
+    if (currentPath == null)
+        return;
+
+    if (pathIndex >= currentPath.Count)
     {
-        if (currentPath == null)
-        {
-            return;
-        }
-
-        if (pathIndex >= currentPath.Count)
-        {
-            rb.velocity = Vector2.zero;
-            currentPath = null;
-            return;
-        }
-
-        Node targetNode = currentPath[pathIndex];
-
-        float worldX = targetNode.x - 8f;
-        float worldY = 7f - targetNode.y;
-
-        Vector2 targetPosition = new Vector2(worldX, worldY);
-
-
-        Vector2 direction = (targetPosition - rb.position).normalized;
-
-        rb.MovePosition(rb.position + direction * speed * Time.fixedDeltaTime);
-
-
-        if (Vector2.Distance(rb.position, targetPosition) < 0.1f)
-        {
-            pathIndex++;
-        }
+        rb.velocity = Vector2.zero;
+        currentPath = null;
+        return;
     }
 
+    Node targetNode = currentPath[pathIndex];
+
+    Vector2 targetPosition = gridManager.WorldFromNode(targetNode);
+
+    // CALCUL DIRECTION
+    float directionX = targetPosition.x - rb.position.x;
+
+    // FLIP ENEMY
+    if (directionX > 0.01f)
+    {
+        transform.localScale = new Vector3(1, 1, 1);
+    }
+    else if (directionX < -0.01f)
+    {
+        transform.localScale = new Vector3(-1, 1, 1);
+    }
+
+    Vector2 newPos = Vector2.MoveTowards(
+        rb.position,
+        targetPosition,
+        speed * Time.fixedDeltaTime
+    );
+
+    rb.MovePosition(newPos);
+
+    if (Vector2.Distance(rb.position, targetPosition) < 0.05f)
+    {
+        pathIndex++;
+    }
+}
     void OnCollisionEnter2D(Collision2D collision)
     {
         rb.velocity = Vector2.zero;
