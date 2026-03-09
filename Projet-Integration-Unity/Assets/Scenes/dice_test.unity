@@ -36103,7 +36103,8 @@ MonoBehaviour:
   cubeWidth: 16
   distanceFromCam: 1024
   K1: 889
-  deltaTime: 0.02
+  deltaTime: 0.06
+  speed_up: 0.8
 --- !u!212 &1621903795
 SpriteRenderer:
   m_ObjectHideFlags: 0

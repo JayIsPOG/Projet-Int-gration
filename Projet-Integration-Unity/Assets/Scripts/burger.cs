@@ -61,6 +61,8 @@ public class burger : MonoBehaviour
     public int distanceFromCam = 1024;
     public float K1 = 889;
     public float deltaTime = 0.02f;
+    public float speed_up = 0.7f;
+    private float current_deltaTime;
     const int steps = 12;
     float[] yBob = new float[steps];
     float[] xBob = new float[steps];
@@ -132,6 +134,7 @@ public class burger : MonoBehaviour
     public void Update()
     {
         if(is_rolling) return;
+        current_deltaTime = deltaTime;
         if(Input.GetKey ("up")) StartCoroutine(upRoll());
         else if(Input.GetKey ("left")) StartCoroutine(leftRoll());
         else if(Input.GetKey ("down")) StartCoroutine(downRoll());
@@ -148,7 +151,8 @@ public class burger : MonoBehaviour
             currentRotation.normalize();
             drawCube();
             transform.position += new Vector3(xBob[i], 0, 0);
-            yield return new WaitForSeconds(deltaTime);
+            current_deltaTime *= speed_up;
+            yield return new WaitForSeconds(current_deltaTime);
         }
         
         is_rolling = false;
@@ -163,7 +167,8 @@ public class burger : MonoBehaviour
             currentRotation.normalize();
             drawCube();
             transform.position += new Vector3(-xBob[i], 0, 0);
-            yield return new WaitForSeconds(deltaTime);
+            current_deltaTime *= speed_up;
+            yield return new WaitForSeconds(current_deltaTime);
         }
         
         is_rolling = false;
@@ -178,7 +183,8 @@ public class burger : MonoBehaviour
             currentRotation.normalize();
             drawCube();
             transform.position += new Vector3(0, xBob[i], 0);
-            yield return new WaitForSeconds(deltaTime);
+            current_deltaTime *= speed_up;
+            yield return new WaitForSeconds(current_deltaTime);
         }
         
         is_rolling = false;
@@ -193,7 +199,8 @@ public class burger : MonoBehaviour
             currentRotation.normalize();
             drawCube();
             transform.position += new Vector3(0, -xBob[i], 0);
-            yield return new WaitForSeconds(deltaTime);
+            current_deltaTime *= speed_up;
+            yield return new WaitForSeconds(current_deltaTime);
         }
         
         is_rolling = false;
