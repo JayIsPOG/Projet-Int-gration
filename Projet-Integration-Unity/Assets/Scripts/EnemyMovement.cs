@@ -15,14 +15,15 @@ public class EnemyMovement : MonoBehaviour
     public float attackCooldown = 1f;
 
     private float lastAttackTime = -999f;
+    PlayerHealth playerHealth;
 
     public enum EnemyState
     {
         Chasing,
         Attacking
     }
-    public EnemyState state;
 
+    public EnemyState state;
 
     Rigidbody2D rb;
     GridManager grid;
@@ -42,6 +43,7 @@ public class EnemyMovement : MonoBehaviour
         grid = new GridManager(tilemap);
 
         player = GameObject.FindWithTag("Player").transform;
+        playerHealth = player.GetComponent<PlayerHealth>();
 
         lastPlayerPos = player.position;
         state = EnemyState.Chasing;
@@ -52,49 +54,55 @@ public class EnemyMovement : MonoBehaviour
     void FixedUpdate()
     {
         switch (state)
-        {   
+        {
             case EnemyState.Chasing:
+
+                // Recalcule le path si le joueur bouge
+                if (Vector2.Distance(lastPlayerPos, player.position) > 0.5f)
+                {
+                    lastPlayerPos = player.position;
+                    CalculatePath();
+                }
+
                 MoveAlongPath();
                 break;
+
             case EnemyState.Attacking:
+
                 if (PlayerMoved())
                 {
                     Debug.Log("player moved");
+
+                    lastPlayerPos = player.position;
+
                     state = EnemyState.Chasing;
-                    animator.SetBool("IsChasing",true);
+                    animator.SetBool("IsChasing", true);
+
                     CalculatePath();
                     break;
                 }
-                    
+
                 rb.velocity = Vector2.zero;
                 Attack();
                 break;
         }
-
     }
 
-void Attack()
-{
-    // Regarde le player
-    float dir = player.position.x - transform.position.x;
-    Flip(dir);
-
-    if (Time.time - lastAttackTime >= attackCooldown)
+    void Attack()
     {
-        lastAttackTime = Time.time;
-        animator.SetTrigger("Attack");
+        float dir = player.position.x - transform.position.x;
+        Flip(dir);
+
+        if (Time.time - lastAttackTime >= attackCooldown && playerHealth.currentHealth > 0)
+        {
+            lastAttackTime = Time.time;
+            animator.SetTrigger("Attack");
+        }
     }
-}
 
     bool PlayerMoved()
     {
-        if (Vector2.Distance(lastPlayerPos, player.position) > 0.5f)
-        {
-            lastPlayerPos = player.position;
-            return true;
-        }
-
-        return false;
+        return Vector2.Distance(lastPlayerPos, player.position) > 0.5f;
     }
 
     void CalculatePath()
@@ -121,18 +129,23 @@ void Attack()
     Vector3 GetSidePosition()
     {
         float side = transform.position.x < player.position.x ? -sideOffsetX : sideOffsetX;
-
         return player.position + new Vector3(side, offsetY, 0);
     }
-
+    public void DealDamage()
+    {
+    if (playerHealth != null)
+        playerHealth.TakeDamage(10);
+    }
     void MoveAlongPath()
     {
         if (path == null || pathIndex >= path.Count)
         {
             rb.velocity = Vector2.zero;
             path = null;
+
             state = EnemyState.Attacking;
-            animator.SetBool("IsChasing",false);
+            animator.SetBool("IsChasing", false);
+
             return;
         }
 
@@ -159,5 +172,4 @@ void Attack()
         else if (dir < 0)
             transform.localScale = new Vector3(-1, 1, 1);
     }
-
 }
