@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Light : MonoBehaviour
 {
+    public GameObject signal;
+    private bool lightOn;
     public LineRenderer linePrefab;
     private LineRenderer line;
     public float distance;
@@ -15,8 +17,7 @@ public class Light : MonoBehaviour
     private GameObject hitNew, hitSaved;
     void Start()
     {
-        line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
-        line.GetComponent<LightLine>().waveLenght = waveLenght;
+            
     }
 
     // Update is called once per frame
@@ -57,19 +58,41 @@ public class Light : MonoBehaviour
             }catch{}
         }
 
-        Ray2D ray = new Ray2D(lightPoint.position, -transform.up);
-        RaycastHit2D hit;
-
-        line.SetPosition(0, ray.origin);
-
-        hit = Physics2D.Raycast(ray.origin, -transform.up, distance, layerMask);
-
-        if (hit.collider)
+        if(signal)
         {
-            line.SetPosition(1, hit.point);
-            hitNew = hit.collider.gameObject;
+            lightOn = signal.GetComponent<PressurePlate>().pressed;
+        }else
+            lightOn = true;
+
+        if(lightOn)
+        {
+            if(line == null)
+            {
+                line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                line.GetComponent<LightLine>().waveLenght = waveLenght;
+            }
+
+
+            Ray2D ray = new Ray2D(lightPoint.position, -transform.up);
+            RaycastHit2D hit;
+
+            line.SetPosition(0, ray.origin);
+
+            hit = Physics2D.Raycast(ray.origin, -transform.up, distance, layerMask);
+
+            if (hit.collider)
+            {
+                line.SetPosition(1, hit.point);
+                hitNew = hit.collider.gameObject;
+            }
+            else
+                line.SetPosition(1, ray.GetPoint(distance));
         }
         else
-            line.SetPosition(1, ray.GetPoint(distance));
+        {
+            if(line != null)
+                Destroy(line.gameObject);
+            hitNew = null;
+        }
     }
 }

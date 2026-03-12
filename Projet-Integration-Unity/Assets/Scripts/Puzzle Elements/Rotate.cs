@@ -7,7 +7,6 @@ public class Rotate : MonoBehaviour
     public GameObject rotateIcon;
     public GameObject objToRotate;
     public bool playerIn;
-
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.E) && playerIn)

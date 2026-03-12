@@ -8,6 +8,8 @@ public class LightReceiver : MonoBehaviour
     public float waveLenghtReceived;
     public float waveLenghtToOpen = 550;
     public bool open;
+    public Sprite spriteLit, spriteUnlit;
+    public bool lightPassesThrough;
 
     void Update()
     {
@@ -17,8 +19,16 @@ public class LightReceiver : MonoBehaviour
                 open = true;
             else
                 open = false;
+            if(lightPassesThrough)
+            {
+                
+            }
         }
         else
             open = false;
+        if (open)
+            GetComponent<SpriteRenderer>().sprite = spriteLit;
+        else
+            GetComponent<SpriteRenderer>().sprite = spriteUnlit;
     }
 }
