@@ -16,6 +16,7 @@ public class EnemyMovement : MonoBehaviour
 
     private float lastAttackTime = -999f;
     PlayerHealth playerHealth;
+    Player_attack playerAttack;
 
     public enum EnemyState
     {
@@ -44,6 +45,7 @@ public class EnemyMovement : MonoBehaviour
 
         player = GameObject.FindWithTag("Player").transform;
         playerHealth = player.GetComponent<PlayerHealth>();
+        playerAttack = player.GetComponent<Player_attack>();
 
         lastPlayerPos = player.position;
         state = EnemyState.Chasing;
@@ -133,8 +135,12 @@ public class EnemyMovement : MonoBehaviour
     }
     public void DealDamage()
     {
-    if (playerHealth != null)
-        playerHealth.TakeDamage(10);
+        if (playerHealth != null && !(playerAttack != null && playerAttack.IsBlocking))
+        {
+             playerHealth.TakeDamage(10);
+             Debug.Log("damage "+ playerHealth.currentHealth);
+        }
+       
     }
     void MoveAlongPath()
     {

@@ -11,6 +11,7 @@ public class EnemyAnimationRelay : MonoBehaviour
 
     public void DealDamage()
     {
+        Debug.Log("damageRealy");
         if (movement != null)
             movement.DealDamage();
     }
