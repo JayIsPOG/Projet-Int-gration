@@ -11,7 +11,18 @@ public class Player_attack : MonoBehaviour
     private bool leftReleased = true;
     private bool rightReleased = true;
     [SerializeField] private GameObject blockObject;
+    [SerializeField] private GameObject attackHitbox;
     public bool IsBlocking { get; private set; }
+
+    public void EnableAttackHitbox()
+    {
+        attackHitbox?.SetActive(true);
+    }
+
+    public void DisableAttackHitbox()
+    {
+        attackHitbox?.SetActive(false);
+    }
 
     void Start()
     {
