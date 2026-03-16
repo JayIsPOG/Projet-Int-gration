@@ -48,6 +48,7 @@ public class board : MonoBehaviour
     void Start()
     {
         brain = new Learner();
+        brain.LoadWeights("new_weights.bin");
         Pos = new BoardState();
         bot = new Bot(Pos, brain);
         moveGenerator = new interractiveMoves(Pos);
@@ -100,11 +101,13 @@ public class board : MonoBehaviour
     }
     void Update()
     {
-        bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7));
-        System.Threading.Thread.Sleep(1000);
-        bot.makeForDicePlayer(Random.Range(1, 7), Random.Range(1, 7));
-        System.Threading.Thread.Sleep(1000);
-        /*xUnit = ((float)Screen.width - 2 * xBorder) / 13;
+      /*System.Random rng = new System.Random();
+      bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7));
+      System.Threading.Thread.Sleep(1000);
+      bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7));
+      System.Threading.Thread.Sleep(1000);*/
+      Debug.Log(bot.evaluator.evaluatePosition(Pos));
+        xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
         chipUnit = xUnit * 0.8f;
 
@@ -147,9 +150,7 @@ public class board : MonoBehaviour
                 }
             }
             selected_chip = null;
-        }*/
-
-        
+        }        
     }
 
     void OnGUI()

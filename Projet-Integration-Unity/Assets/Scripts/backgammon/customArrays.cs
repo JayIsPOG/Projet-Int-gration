@@ -4,7 +4,7 @@ class simpleMoveArray { /// might add a move number variable to make the move fo
 	public int moveDepth;
 	public simpleMoveArray()
 	{
-		moves = new ushort[15*15];
+		moves = new ushort[2*15*15];
 		index = 0;
 		moveDepth = 0;
 	}

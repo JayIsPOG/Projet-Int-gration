@@ -1,60 +1,78 @@
 using UnityEngine;
-using Unity.Mathematics;
 using System.Numerics;
-public class learn : MonoBehaviour
+using System.Collections;
+using Unity.Burst;
+using Unity.Collections;
+unsafe public class learn : MonoBehaviour
 {
   Learner AI;
   Bot bot;
   BoardState Pos;
-  public double learnRate;
+  public float learnRate;
   public int games_played;
   public int plays_batch = 30;
+  System.Random rng = new System.Random();
+  System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
   void Start()
   {
+    Camera.main.enabled = false;
     learnRate = 3;
     games_played = 0;
     AI = new Learner();
-
 
     Pos = new BoardState();
     bot = new Bot(Pos, AI);
     
     AI.evaluatePosition(Pos); // init
-    double[][] temp = AI.curr_in_out;
+    float*[] temp = AI.curr_in_out;
     AI.curr_in_out = AI.prev_in_out;
     AI.prev_in_out = temp;
+    StartCoroutine(TrainingLoop());
+  }
+  IEnumerator TrainingLoop()
+  {
+    while(true){
+      for(int i = 0; i < plays_batch; i++){
+        play();
+      }
+      yield return null;
+      //Debug.Log((1000 * (double)games_played / (timer.ElapsedMilliseconds)).ToString());
+    }
+  }
+
+  unsafe void play()
+  {
+        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7));
+        AI.generateInputs(Pos);
+        if (Pos.hasPlayerWon())
+        {
+          AI.learnGameEnd(0, learnRate);
+          games_played++;
+          Pos.set();
+          AI.evaluatePosition(Pos); // init
+          float*[] temp = AI.curr_in_out;
+          AI.curr_in_out = AI.prev_in_out;
+          AI.prev_in_out = temp;
+        }
+        else AI.learnForRegular();
+
+        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7));
+        AI.generateInputs(Pos);
+        if (Pos.hasAIWon())
+        {
+          AI.learnGameEnd(1, learnRate);
+          games_played++;
+          Pos.set();
+          AI.evaluatePosition(Pos); // init
+          float*[] temp = AI.curr_in_out;
+          AI.curr_in_out = AI.prev_in_out;
+          AI.prev_in_out = temp;
+        }
+        else AI.learnForRegular();
   }
   void Update()
   {
-    for(int i = 0; i < plays_batch; i++){
-      bot.makeForDicePlayer(UnityEngine.Random.Range(1, 7), UnityEngine.Random.Range(1, 7));
-      AI.generateInputs(Pos);
-      if (Pos.hasPlayerWon())
-      {
-        AI.learnGameEnd(0, learnRate);
-        games_played++;
-        Pos.set();
-        AI.evaluatePosition(Pos); // init
-        double[][] temp = AI.curr_in_out;
-        AI.curr_in_out = AI.prev_in_out;
-        AI.prev_in_out = temp;
-      }
-      else AI.learnForRegular();
-
-      bot.makeForDiceAI(UnityEngine.Random.Range(1, 7), UnityEngine.Random.Range(1, 7));
-      AI.generateInputs(Pos);
-      if (Pos.hasAIWon())
-      {
-        AI.learnGameEnd(1, learnRate);
-        games_played++;
-        Pos.set();
-        AI.evaluatePosition(Pos); // init
-        double[][] temp = AI.curr_in_out;
-        AI.curr_in_out = AI.prev_in_out;
-        AI.prev_in_out = temp;
-      }
-      else AI.learnForRegular();
-    }
+    
   }
   void OnApplicationQuit()
   {
@@ -67,28 +85,16 @@ public class learn : MonoBehaviour
       {
           foreach (Layer layer in AI.layers)
           {
-              foreach (double w in layer.weights)
-                  writer.Write(w);
-              foreach (double b in layer.biases)
-                  writer.Write(b);
+              for(int i = 0; i < layer.nodes_out * layer.nodes_in; i++)
+                  writer.Write(layer.weights[i]);
+              for(int i = 0; i < layer.nodes_out; i++)
+                  writer.Write(layer.biases[i]);
           }
       }
       Debug.Log("Weights saved to: " + path);
   }
-
-  void LoadWeights(string filename)
+  void OnDestroy()
   {
-      string path = Application.persistentDataPath + "/" + filename;
-      if (!System.IO.File.Exists(path)) return;
-      using (System.IO.BinaryReader reader = new System.IO.BinaryReader(System.IO.File.Open(path, System.IO.FileMode.Open)))
-      {
-          foreach (Layer layer in AI.layers)
-          {
-              for (int i = 0; i < layer.weights.Length; i++)
-                  layer.weights[i] = reader.ReadDouble();
-              for (int i = 0; i < layer.biases.Length; i++)
-                  layer.biases[i] = reader.ReadDouble();
-          }
-      }
+      AI.Dispose();
   }
 }

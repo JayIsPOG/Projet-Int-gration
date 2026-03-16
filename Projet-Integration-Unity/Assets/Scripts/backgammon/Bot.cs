@@ -10,7 +10,7 @@ class Bot{
   doubleDiceGeneratorPlayer doublePlayerGen;
   simpleMoveArray simpleMoves;
   doubleMoveArray doubleMoves;
-  Learner evaluator;
+  public Learner evaluator;
   public Bot(BoardState pos, Learner l)
   {
     Pos = pos;
@@ -27,7 +27,7 @@ class Bot{
     Pos.playerTurn = false;
     int num = 0;
     uint bestMove = 0;
-    double bestScore = double.MinValue;
+    float bestScore = float.MinValue;
     if(dice1 == dice2)
     {
       doubleGen.setDice(dice1);
@@ -35,7 +35,7 @@ class Bot{
       num = doubleMoves.moveDepth - 1;
       for(int i = 0; i < doubleMoves.size(); i++)
       {
-        double score = evaluateMoveAI((uint)doubleMoves.moves[i], num);
+        float score = evaluateMoveAI((uint)doubleMoves.moves[i], num);
         if(score > bestScore)
         {
           bestScore = score;
@@ -51,7 +51,7 @@ class Bot{
       num = simpleMoves.moveDepth - 1;
       for(int i = 0; i < simpleMoves.size(); i++)
       {
-        double score = evaluateMoveAI((uint)simpleMoves.moves[i], num);
+        float score = evaluateMoveAI((uint)simpleMoves.moves[i], num);
         if(score > bestScore)
         {
           bestScore = score;
@@ -66,14 +66,41 @@ class Bot{
     }
   }
 
-  double evaluateMoveAI(uint moveSequence, int num)
+  public void makeForDiceAIRandom(int dice1, int dice2) // selects and plays the move with the highest score
+  {
+    Pos.playerTurn = false;
+    int num = 0;
+    uint bestMove = 0;
+    if(dice1 == dice2)
+    {
+      doubleGen.setDice(dice1);
+      doubleGen.generate();
+      num = doubleMoves.moveDepth - 1;
+      bestMove = doubleMoves.moves[Random.Range(0, doubleMoves.size())];
+    }
+    else
+    {
+      if(dice1 > dice2) simpleGen.setDices(dice1, dice2);
+      else simpleGen.setDices(dice2, dice1);
+      simpleGen.generate();
+      num = simpleMoves.moveDepth - 1;
+      bestMove = simpleMoves.moves[Random.Range(0, simpleMoves.size())];
+    }
+    for(; num >= 0; num--)
+    {
+      uint move = (bestMove >> (num * 8)) & 0xff;
+      makeMoveAI(move);
+    }
+  }
+
+  float evaluateMoveAI(uint moveSequence, int num)
   {
     if(num < 0) return evaluator.evaluatePosition(Pos);
     uint move = (moveSequence >> (num * 8)) & 0xff;
     int dice = (int)(move >> 5);
     int from = (int)(move & 0b11111);
     int to = from - dice;
-    double eval;
+    float eval;
     if(dice == 0) // bearoff move
     {
       uint bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
@@ -131,7 +158,7 @@ class Bot{
     int to = from - dice;
     uint bit_mod;
 
-    Debug.Log(dice.ToString() + " : " + from.ToString() + ", " + to.ToString());
+    //Debug.Log(dice.ToString() + " : " + from.ToString() + ", " + to.ToString());
 
     if(dice == 0) // bearoff move
     {
@@ -169,7 +196,7 @@ class Bot{
     Pos.playerTurn = true;
     int num = 0;
     uint bestMove = 0;
-    double bestScore = double.MaxValue;
+    float bestScore = float.MaxValue;
     if(dice1 == dice2)
     {
       doublePlayerGen.setDice(dice1);
@@ -177,7 +204,7 @@ class Bot{
       num = doubleMoves.moveDepth - 1;
       for(int i = 0; i < doubleMoves.size(); i++)
       {
-        double score = evaluateMovePlayer((uint)doubleMoves.moves[i], num);
+        float score = evaluateMovePlayer((uint)doubleMoves.moves[i], num);
         if(score < bestScore)
         {
           bestScore = score;
@@ -193,7 +220,7 @@ class Bot{
       num = simpleMoves.moveDepth - 1;
       for(int i = 0; i < simpleMoves.size(); i++)
       {
-        double score = evaluateMovePlayer((uint)simpleMoves.moves[i], num);
+        float score = evaluateMovePlayer((uint)simpleMoves.moves[i], num);
         if(score < bestScore)
         {
           bestScore = score;
@@ -207,14 +234,42 @@ class Bot{
       makeMovePlayer(move);
     }
   }
-  double evaluateMovePlayer(uint moveSequence, int num)
+
+  public void makeForDicePlayerRandom(int dice1, int dice2) // selects and plays the move with the lowest score
+  {
+    Pos.playerTurn = true;
+    int num = 0;
+    uint bestMove = 0;
+    float bestScore = float.MaxValue;
+    if(dice1 == dice2)
+    {
+      doublePlayerGen.setDice(dice1);
+      doublePlayerGen.generate();
+      num = doubleMoves.moveDepth - 1;
+      bestMove = doubleMoves.moves[Random.Range(0, doubleMoves.size())];
+    }
+    else
+    {
+      if(dice1 > dice2) simplePlayerGen.setDices(dice1, dice2);
+      else simplePlayerGen.setDices(dice2, dice1);
+      simplePlayerGen.generate();
+      num = simpleMoves.moveDepth - 1;
+      bestMove = simpleMoves.moves[Random.Range(0, simpleMoves.size())];
+    }
+    for(; num >= 0; num--)
+    {
+      uint move = (bestMove >> (num * 8)) & 0xff;
+      makeMovePlayer(move);
+    }
+  }
+  float evaluateMovePlayer(uint moveSequence, int num)
   {
     if(num < 0) return evaluator.evaluatePosition(Pos);
     uint move = (moveSequence >> (num * 8)) & 0xff;
     int dice = (int)(move >> 5);
     int from = (int)(move & 0b11111);
     int to = from + dice;
-    double eval;
+    float eval;
     if(dice == 0) // bearoff move
     {
       uint bit_mod = (uint)(((Pos.chips[from] == 1) ? 1 : 0) << from);

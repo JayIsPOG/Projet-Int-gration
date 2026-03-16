@@ -155,7 +155,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   learnRate: 0
   games_played: 0
-  plays_batch: 12
+  plays_batch: 500
 --- !u!212 &635319498
 SpriteRenderer:
   m_ObjectHideFlags: 0
