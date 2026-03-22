@@ -12,7 +12,7 @@ public class EnemyMovement : MonoBehaviour
     public float offsetY = -0.2f;
     public float stopDistance = 0.7f;
 
-    public float attackCooldown = 1f;
+    public float attackCooldown = 1.5f;
 
     private float lastAttackTime = -999f;
     PlayerHealth playerHealth;

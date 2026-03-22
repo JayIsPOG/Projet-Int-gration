@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4549433575781299141}
   - component: {fileID: 4549433575781299142}
   - component: {fileID: 4549433575781299143}
+  - component: {fileID: 1938346858}
   m_Layer: 6
   m_Name: Run_0
   m_TagString: Untagged
@@ -106,6 +107,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1938346858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4549433575781299136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed23331ad220b5a4f8edde4963cfb55c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4549433575886812681
 GameObject:
   m_ObjectHideFlags: 0
@@ -117,8 +130,8 @@ GameObject:
   - component: {fileID: 4549433575886812685}
   - component: {fileID: 4549433575886812686}
   - component: {fileID: 4549433575886812687}
-  - component: {fileID: 4549433575886812680}
-  - component: {fileID: -6086063216125954586}
+  - component: {fileID: 4465947925264663134}
+  - component: {fileID: 617553558}
   m_Layer: 6
   m_Name: Warrior
   m_TagString: Untagged
@@ -189,7 +202,24 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &4549433575886812680
+--- !u!114 &4465947925264663134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4549433575886812681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e80d36792080ab4b8bcf2eb9e54d7a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 50
+  currentHealth: 0
+  barWidth: 1
+  barHeight: 0.12
+  barOffsetY: 2
+--- !u!114 &617553558
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -203,27 +233,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 3
   player: {fileID: 0}
-  tilemap: {fileID: 0}
   sideOffsetX: 1.5
   offsetY: -0.2
---- !u!95 &-6086063216125954586
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4549433575886812681}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  stopDistance: 0.7
+  attackCooldown: 1.5
+  state: 0
