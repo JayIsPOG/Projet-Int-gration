@@ -282,8 +282,9 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     }
     public float evaluatePosition(BoardState board)
     {
-      generateInputs(board);
-      return makeOutputs();
+      /*generateInputs(board);
+      return makeOutputs();*/
+      return 0.5f;
     }
     public void LoadWeights(string filename)
   {

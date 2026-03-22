@@ -3,8 +3,8 @@ class simpleDiceGeneratorPlayer{
 
   public static readonly uint[] bearoff_mask = { 0, 0b01000000000000000000000000, 0b01100000000000000000000000, 0b01110000000000000000000000, 0b01111000000000000000000000, 0b01111100000000000000000000, 0b01111110000000000000000000 };
   public simpleMoveArray moveList;
-  int dice1;
-  int dice2;
+  public int dice1;
+  public int dice2;
   BoardState Pos;
   public simpleDiceGeneratorPlayer(byte i, byte j, simpleMoveArray arr, BoardState pos)
   {
@@ -169,13 +169,13 @@ class simpleDiceGeneratorPlayer{
   }
 }
 
-class unorderedDoubleDiceGenerator
+class unorderedDoubleDiceGeneratorPlayer
 {
   public static readonly uint[] bearoff_mask = { 0, 0b01000000000000000000000000, 0b01100000000000000000000000, 0b01110000000000000000000000, 0b01111000000000000000000000, 0b01111100000000000000000000, 0b01111110000000000000000000 };
   public doubleMoveArray moveList;
-  int dice;
+  public int dice;
   BoardState Pos;
-  public unorderedDoubleDiceGenerator(int i, doubleMoveArray arr, BoardState pos)
+  public unorderedDoubleDiceGeneratorPlayer(int i, doubleMoveArray arr, BoardState pos)
   {
     dice = i;
     moveList = arr;
@@ -328,7 +328,7 @@ class doubleDiceGeneratorPlayer
 {
   public static readonly uint[] bearoff_mask = { 0, 0b01000000000000000000000000, 0b01100000000000000000000000, 0b01110000000000000000000000, 0b01111000000000000000000000, 0b01111100000000000000000000, 0b01111110000000000000000000 };
   public doubleMoveArray moveList;
-  int dice;
+  public int dice;
   BoardState Pos;
   public doubleDiceGeneratorPlayer(int i, doubleMoveArray arr, BoardState pos)
   {

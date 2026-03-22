@@ -21,7 +21,7 @@ unsafe public class learn : MonoBehaviour
     AI = new Learner();
 
     Pos = new BoardState();
-    bot = new Bot(Pos, AI);
+    bot = new Bot(Pos, AI, 0);
     
     AI.evaluatePosition(Pos); // init
     float*[] temp = AI.curr_in_out;
@@ -76,7 +76,7 @@ unsafe public class learn : MonoBehaviour
   }
   void OnApplicationQuit()
   {
-      SaveWeights("new_weights.bin");
+      SaveWeights("burger.bin");
   }
   void SaveWeights(string filename)
   {

@@ -32,4 +32,9 @@ public class BoardState
 	{
 		return ai_present == 0;
 	}
+
+	public bool canPlayerBearOff()
+	{
+		return (player_present & 0b01111110000000000000000000) == player_present;
+	}
 }

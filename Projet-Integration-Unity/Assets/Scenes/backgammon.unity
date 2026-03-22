@@ -163,6 +163,7 @@ MonoBehaviour:
   rev_black_pike: {fileID: 2800000, guid: 1fe353ec38df4f44a840c7fa447d0847, type: 3}
   rev_white_pike: {fileID: 2800000, guid: 50f4c9e18ea4ba54fb1d964f3068ca00, type: 3}
   xBorder: 50
+  depth: 1
 --- !u!114 &214159060
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -4,8 +4,8 @@ class simpleDiceGeneratorAI{
 
   public static readonly uint[] bearoff_mask = { 0, 0b10, 0b110, 0b1110, 0b11110, 0b111110, 0b1111110 };
   public simpleMoveArray moveList;
-  int dice1;
-  int dice2;
+  public int dice1;
+  public int dice2;
   BoardState Pos;
   public simpleDiceGeneratorAI(int i, int j, simpleMoveArray arr, BoardState pos)
   {
@@ -175,7 +175,7 @@ class doubleDiceGeneratorAI
 {
   public static readonly uint[] bearoff_mask = { 0, 0b10, 0b110, 0b1110, 0b11110, 0b111110, 0b1111110 };
   public doubleMoveArray moveList;
-  int dice;
+  public int dice;
   BoardState Pos;
   public doubleDiceGeneratorAI(byte i, doubleMoveArray arr, BoardState pos)
   {
