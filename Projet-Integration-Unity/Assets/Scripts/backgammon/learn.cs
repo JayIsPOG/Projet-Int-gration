@@ -42,7 +42,7 @@ unsafe public class learn : MonoBehaviour
 
   unsafe void play()
   {
-        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7));
+        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
         AI.generateInputs(Pos);
         if (Pos.hasPlayerWon())
         {
@@ -56,7 +56,7 @@ unsafe public class learn : MonoBehaviour
         }
         else AI.learnForRegular();
 
-        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7));
+        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), 0);
         AI.generateInputs(Pos);
         if (Pos.hasAIWon())
         {

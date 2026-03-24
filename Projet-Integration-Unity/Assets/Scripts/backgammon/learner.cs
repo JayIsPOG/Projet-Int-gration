@@ -239,9 +239,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     }
 
     public float makeOutputs() {
-      //timer.Start();
       for (int i = 0; i < num_layers; i++) layers[i].calcOutputs(curr_in_out[i], curr_in_out[i + 1]);
-      //timer.Stop();
       return curr_in_out[num_layers][0];
     }
 
@@ -282,9 +280,8 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     }
     public float evaluatePosition(BoardState board)
     {
-      /*generateInputs(board);
-      return makeOutputs();*/
-      return 0.5f;
+      generateInputs(board);
+      return makeOutputs();
     }
     public void LoadWeights(string filename)
   {

@@ -1,8 +1,10 @@
 using System.Collections;
 using UnityEngine;
 using Unity.Burst.Intrinsics;
+using System.Diagnostics;
+using System;
 class Bot{
-
+  TranspositionTable TT;
   BoardState Pos;
   public simpleDiceGeneratorAI[] simpleGenPool;
   public doubleDiceGeneratorAI[] doubleGenPool;
@@ -11,19 +13,19 @@ class Bot{
   public simpleMoveArray[] simpleMovesPool;
   public doubleMoveArray[] doubleMovesPool;
   public Learner evaluator;
-  int Depth;
-  public Bot(BoardState pos, Learner l, int D)
+  public Bot(BoardState pos, Learner l, int max_depth)
   {
-    Depth = D + 1;
+    TT = new TranspositionTable(33554467); // 33554467 est un nombre prime relativement gros (les nombre primes sont meilleurs car on utilise modulo, cela r/)
+    max_depth++;
     Pos = pos;
     evaluator = l;
-    simpleMovesPool = new simpleMoveArray[Depth];
-    doubleMovesPool = new doubleMoveArray[Depth];
-    doubleGenPool = new doubleDiceGeneratorAI[Depth];
-    simpleGenPool = new simpleDiceGeneratorAI[Depth];
-    doublePlayerGenPool = new unorderedDoubleDiceGeneratorPlayer[Depth];
-    simplePlayerGenPool = new simpleDiceGeneratorPlayer[Depth];
-    for(int i = 0; i < Depth; i++){
+    simpleMovesPool = new simpleMoveArray[max_depth];
+    doubleMovesPool = new doubleMoveArray[max_depth];
+    doubleGenPool = new doubleDiceGeneratorAI[max_depth];
+    simpleGenPool = new simpleDiceGeneratorAI[max_depth];
+    doublePlayerGenPool = new unorderedDoubleDiceGeneratorPlayer[max_depth];
+    simplePlayerGenPool = new simpleDiceGeneratorPlayer[max_depth];
+    for(int i = 0; i < max_depth; i++){
       simpleMovesPool[i] = new simpleMoveArray();
       doubleMovesPool[i] = new doubleMoveArray();
       doubleGenPool[i] = new doubleDiceGeneratorAI(0, doubleMovesPool[i], pos);
@@ -31,148 +33,219 @@ class Bot{
       doublePlayerGenPool[i] = new unorderedDoubleDiceGeneratorPlayer(0, doubleMovesPool[i], pos);
       simplePlayerGenPool[i] = new simpleDiceGeneratorPlayer(0, 0, simpleMovesPool[i], pos);
     }
-    Depth = D;
   }
   //Minimax must exit if a player has won
   public float minimaxAi(int depth, float alpha, float beta)
   {
-    if(depth < 0) return evaluator.evaluatePosition(Pos);
     if(Pos.hasPlayerWon()) return 0.0f;
+
+    ulong key = TT.key(Pos);
+    int index = TT.getIndex(key);
+    evalInfo entry = TT.table[index]; // change later to iterate instead of creating a new key from scratch
+    if (entry.key == key) {
+      if (entry.depth >= depth) {
+          if (entry.upper_bound == entry.lower_bound) return entry.upper_bound;
+
+          if(entry.lower_bound >= beta) return entry.lower_bound;
+
+          if(entry.upper_bound <= alpha) return entry.upper_bound;
+          
+          alpha = Math.Max(alpha, entry.lower_bound);
+          beta = Math.Min(beta, entry.upper_bound);
+      }
+    }
+    if(depth < 0) {
+      float eval = evaluator.evaluatePosition(Pos);
+      TT.table[index] = new evalInfo((sbyte)depth, eval, eval, key);
+      return eval;
+    }
     simpleMoveArray _simpleMoves = simpleMovesPool[depth];
     doubleMoveArray _doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorAI simpleGenerator = simpleGenPool[depth];
     doubleDiceGeneratorAI doubleGenerator = doubleGenPool[depth];
-    float totalScore = 0;
-    float max = float.MinValue;
-    
-    float A = 36 * (alpha - 1) + 1;
-    float B = 36 * (beta - 0) + 0;
-    float AX, BX;
 
-    for(simpleGenerator.dice1 = 2; simpleGenerator.dice1 <= 6; simpleGenerator.dice1++)
-      for(simpleGenerator.dice2 = 1; simpleGenerator.dice2 < simpleGenerator.dice1; simpleGenerator.dice2++)
+    float max, childMin, childMax;
+    float upper_bound = 1;
+    float lower_bound = 0;
+
+
+    for(int d1 = 2; d1 <= 6; d1++)
+      for(int d2 = 1; d2 < d1; d2++)
         {
-          AX = Mathf.Max(A, 0);
-          BX = Mathf.Min(B, 1);
-
-          Debug.Log("gen");
-          simpleGenerator.generate();
-          Debug.Log(_simpleMoves.size());
-          for(int i = 0; i < _simpleMoves.size(); i++){
-            max = Mathf.Max(max, evaluateMoveAI(_simpleMoves.moves[i], _simpleMoves.moveDepth - 1, depth - 1, AX, BX));
-            AX = Mathf.Max(AX, max);
-            //if (AX >= BX) break;
-          }
-          if(_simpleMoves.size() == 0) max = minimaxPlayer(depth - 1, AX, BX);
-
-          //if(max <= A) return alpha;
-          //if(max >= B) return beta;
-
-          totalScore += 2 * max; // car il y a 2 / 36 chances d'avoir une configuration de dé avec deux faces différentes
-
-          A += (1 - max) * 2;
-          B += (0 - max) * 2;
           max = float.MinValue;
+
+          simpleGenerator.setDices(d1, d2);
+
+          childMin = Mathf.Max(18 * (alpha - upper_bound) + 1, 0);
+          childMax = Mathf.Min(18 * (beta - lower_bound), 1);
+
+          simpleGenerator.generate();
+          for(int i = 0; i < _simpleMoves.size(); i++){
+            max = Mathf.Max(max, evaluateMoveAI(_simpleMoves.moves[i], _simpleMoves.moveDepth - 1, depth - 1, childMin, childMax));
+            childMin = Mathf.Max(childMin, max);
+            if(childMin >= childMax) break; // reg alpha beta pruning
+          }
+          if(_simpleMoves.size() == 0) max = minimaxPlayer(depth - 1, childMin, childMax);
+
+          // car il y a 2 / 36 chances d'avoir une configuration de dé avec deux faces différentes
+          upper_bound -= (1 - max) * (2.0f / 36.0f);
+          lower_bound += max * (2.0f / 36.0f);
+
+          if(upper_bound <= alpha) {
+            TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+            return upper_bound;
+          }
+
+          if(lower_bound >= beta)
+          {
+            TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+            return lower_bound;
+          }
         }
-    for(doubleGenerator.dice = 1; doubleGenerator.dice <= 6; doubleGenerator.dice++)
+    for(int d = 1; d <= 6; d++)
     {
-      AX = Mathf.Max(A, 0);
-      BX = Mathf.Min(B, 1);
-
-          Debug.Log("gen");
-      doubleGenerator.generate();
-      Debug.Log(_doubleMoves.size());
-      for(int i = 0; i < _doubleMoves.size(); i++){
-        max = Mathf.Max(max, evaluateMoveAI(_doubleMoves.moves[i], _doubleMoves.moveDepth - 1, depth - 1, AX, BX));
-        AX = Mathf.Max(AX, max);
-        //if (AX >= BX) break;
-      }
-      if(_doubleMoves.size() == 0) max = minimaxPlayer(depth - 1, AX, BX);
-
-      //if(max <= A) return alpha;
-      //if(max >= B) return beta;
-
-      totalScore += max; // car il y a 1 / 36 chances d'avoir une configuration deux dés de faces identiques
-
-      A += 1 - max;
-      B += 0 - max;
       max = float.MinValue;
+          
+      doubleGenerator.setDice(d);
+
+      childMin = Mathf.Max(36 * (alpha - upper_bound) + 1, 0);
+      childMax = Mathf.Min(36 * (beta - lower_bound), 1);
+
+      doubleGenerator.generate();
+      for(int i = 0; i < _doubleMoves.size(); i++){
+        max = Mathf.Max(max, evaluateMoveAI(_doubleMoves.moves[i], _doubleMoves.moveDepth - 1, depth - 1, childMin, childMax));
+        childMin = Mathf.Max(childMin, max);
+        if (childMin >= childMax) break;
+      }
+      if(_doubleMoves.size() == 0) max = minimaxPlayer(depth - 1, childMin, childMax);
+
+       // car il y a 1 / 36 chances dee identiques;
+      upper_bound -= (1 - max) * (1.0f / 36.0f);
+      lower_bound += max * (1.0f / 36.0f);
+
+      if(upper_bound <= alpha) {
+        TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+        return upper_bound;
+      }
+
+      if(lower_bound >= beta)
+      {
+        TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+        return lower_bound;
+      }
     }
-    return totalScore / 36;
+    TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+    return upper_bound; // car upper_bound == lower_bound a la fin
   }
   public float minimaxPlayer(int depth, float alpha, float beta)
   {
-    if(depth < 0) return evaluator.evaluatePosition(Pos);
     if(Pos.hasAIWon()) return 1.0f;
+
+    ulong key = TT.key(Pos);
+    int index = TT.getIndex(key);
+    evalInfo entry = TT.table[index]; // change later to iterate instead of creating a new key from scratch
+    if (entry.key == key) {
+      if (entry.depth >= depth) {
+          if (entry.upper_bound == entry.lower_bound) return entry.upper_bound;
+
+          if(entry.lower_bound >= beta) return entry.lower_bound;
+
+          if(entry.upper_bound <= alpha) return entry.upper_bound;
+          
+          alpha = Math.Max(alpha, entry.lower_bound);
+          beta = Math.Min(beta, entry.upper_bound);
+      }
+    }
+    if(depth < 0) {
+      float eval = evaluator.evaluatePosition(Pos);
+      TT.table[index] = new evalInfo((sbyte)depth, eval, eval, key);
+      return eval;
+    }
+
     simpleMoveArray _simpleMoves = simpleMovesPool[depth];
     doubleMoveArray _doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorPlayer simpleGenerator = simplePlayerGenPool[depth];
     unorderedDoubleDiceGeneratorPlayer doubleGenerator = doublePlayerGenPool[depth];
-    float totalScore = 0;
-    float min = float.MaxValue;
     
-    float A = 36 * (alpha - 1) + 1;
-    float B = 36 * (beta - 0) + 0;
-    float AX, BX;
+    float min, childMin, childMax;
+    float upper_bound = 1;
+    float lower_bound = 0;
 
-    for(simpleGenerator.dice1 = 2; simpleGenerator.dice1 <= 6; simpleGenerator.dice1++)
-      for(simpleGenerator.dice2 = 1; simpleGenerator.dice2 < simpleGenerator.dice1; simpleGenerator.dice2++)
+    for(int d1 = 2; d1 <= 6; d1++)
+      for(int d2 = 1; d2 < d1; d2++)
         {
-          AX = Mathf.Max(A, 0);
-          BX = Mathf.Min(B, 1);
-
-          Debug.Log("gen");
-          simpleGenerator.generate();
-          Debug.Log(_simpleMoves.size());
-          for(int i = 0; i < _simpleMoves.size(); i++){
-            min = Mathf.Min(min, evaluateMovePlayer(_simpleMoves.moves[i], _simpleMoves.moveDepth - 1, depth - 1, AX, BX));
-            BX = Mathf.Min(BX, min);
-            //if (AX >= BX) break;
-          }
-          if(_simpleMoves.size() == 0) min = minimaxAi(depth - 1, AX, BX);
-
-          //if(min <= A) return alpha;
-          //if(min >= B) return beta;
-
-          totalScore += 2 * min; // car il y a 2 / 36 chances d'avoir une configuration de dé avec deux faces différentes
-
-          A += (1 - min) * 2;
-          B += (0 - min) * 2;
           min = float.MaxValue;
+
+          simpleGenerator.setDices(d1, d2);
+
+          childMin = Mathf.Max(18 * (alpha - upper_bound) + 1, 0);
+          childMax = Mathf.Min(18 * (beta - lower_bound), 1);
+
+          simpleGenerator.generate();
+          for(int i = 0; i < _simpleMoves.size(); i++) {
+            min = Mathf.Min(min, evaluateMovePlayer(_simpleMoves.moves[i], _simpleMoves.moveDepth - 1, depth - 1, childMin, childMax));
+            childMax = Mathf.Min(childMax, min);
+            if (childMin >= childMax) break;
+          }
+          if(_simpleMoves.size() == 0) min = minimaxAi(depth - 1, childMin, childMax);
+
+          // car il y a 2 / 36 chances d'avoir une configuration de dé avec deux faces différentes
+          upper_bound -= (1 - min) * (2.0f / 36.0f);
+          lower_bound += min * (2.0f / 36.0f);
+
+          if(upper_bound <= alpha) {
+            TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+            return upper_bound;
+          }
+
+          if(lower_bound >= beta)
+          {
+            TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+            return lower_bound;
+          }
         }
-    for(doubleGenerator.dice = 1; doubleGenerator.dice <= 6; doubleGenerator.dice++)
+    for(int d = 1; d <= 6; d++)
     {
-      AX = Mathf.Max(A, 0);
-      BX = Mathf.Min(B, 1);
-
-          Debug.Log("gen");
-      doubleGenerator.generate();
-      Debug.Log(_doubleMoves.size());
-      for(int i = 0; i < _doubleMoves.size(); i++){
-        min = Mathf.Min(min, evaluateMovePlayer(_doubleMoves.moves[i], _doubleMoves.moveDepth - 1, depth - 1, AX, BX));
-        BX = Mathf.Min(BX, min);
-        //if (AX >= BX) break;
-      }
-      if(_doubleMoves.size() == 0) min = minimaxAi(depth - 1, AX, BX);
-
-      //if(min <= A) return alpha;
-      //if(min >= B) return beta;
-
-      totalScore += min; // car il y a 1 / 36 chances d'avoir une configuration deux dés de faces identiques
-
-      A += 1 - min;
-      B += 0 - min;
       min = float.MaxValue;
+
+      doubleGenerator.setDice(d);
+
+      childMin = Mathf.Max(36 * (alpha - upper_bound) + 1, 0);
+      childMax = Mathf.Min(36 * (beta - lower_bound), 1);
+
+      doubleGenerator.generate();
+      for(int i = 0; i < _doubleMoves.size(); i++){
+        min = Mathf.Min(min, evaluateMovePlayer(_doubleMoves.moves[i], _doubleMoves.moveDepth - 1, depth - 1, childMin, childMax));
+        childMax = Mathf.Min(childMax, min);
+        if (childMin >= childMax) break;
+      }
+      if(_doubleMoves.size() == 0) min = minimaxAi(depth - 1, childMin, childMax);
+
+      // car il y a 1 / 36 chances dee identiques;
+      upper_bound -= (1 - min) * (1.0f / 36.0f);
+      lower_bound += min * (1.0f / 36.0f);
+      
+      if(upper_bound <= alpha) {
+        TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+        return upper_bound;
+      }
+
+      if(lower_bound >= beta)
+      {
+        TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+        return lower_bound;
+      }
     }
-    return totalScore / 36;
+    TT.table[index] = new evalInfo((sbyte)depth, lower_bound, upper_bound, key);
+    return upper_bound;
   }
 
-  public void makeForDiceAI(int dice1, int dice2) // selects and plays the move with the highest score
+  public void makeForDiceAI(int dice1, int dice2, int depth) // selects and plays the move with the highest score
   {
-    simpleMoveArray simpleMoves = simpleMovesPool[Depth];
-    doubleMoveArray doubleMoves = doubleMovesPool[Depth];
-    simpleDiceGeneratorAI simpleGen = simpleGenPool[Depth];
-    doubleDiceGeneratorAI doubleGen = doubleGenPool[Depth];
+    simpleMoveArray simpleMoves = simpleMovesPool[depth];
+    doubleMoveArray doubleMoves = doubleMovesPool[depth];
+    simpleDiceGeneratorAI simpleGen = simpleGenPool[depth];
+    doubleDiceGeneratorAI doubleGen = doubleGenPool[depth];
     Pos.playerTurn = false;
     int num = 0;
     uint bestMove = 0;
@@ -180,15 +253,13 @@ class Bot{
     if(dice1 == dice2)
     {
       doubleGen.setDice(dice1);
-          Debug.Log("gen");
       doubleGen.generate();
       num = doubleMoves.moveDepth - 1;
       for(int i = 0; i < doubleMoves.size(); i++)
       {
-        float score = evaluateMoveAI((uint)doubleMoves.moves[i], num, Depth - 1, bestScore, 1.0f);
+        float score = evaluateMoveAI((uint)doubleMoves.moves[i], num, depth - 1, bestScore, 1.0f);
         if(score >= bestScore)
         {
-          if(score < 0 || score > 1) Debug.Log(score);
           bestScore = score;
           bestMove = doubleMoves.moves[i];
         }
@@ -202,10 +273,9 @@ class Bot{
       num = simpleMoves.moveDepth - 1;
       for(int i = 0; i < simpleMoves.size(); i++)
       {
-        float score = evaluateMoveAI((uint)simpleMoves.moves[i], num, Depth - 1, bestScore, 1.0f);
+        float score = evaluateMoveAI((uint)simpleMoves.moves[i], num, depth - 1, bestScore, 1.0f);
         if(score >= bestScore)
         {
-          if(score < 0 || score > 1) Debug.Log(score);
           bestScore = score;
           bestMove = simpleMoves.moves[i];
         }
@@ -220,10 +290,10 @@ class Bot{
 
   public void makeForDiceAIRandom(int dice1, int dice2)
   {
-    simpleMoveArray simpleMoves = simpleMovesPool[Depth];
-    doubleMoveArray doubleMoves = doubleMovesPool[Depth];
-    simpleDiceGeneratorAI simpleGen = simpleGenPool[Depth];
-    doubleDiceGeneratorAI doubleGen = doubleGenPool[Depth];
+    simpleMoveArray simpleMoves = simpleMovesPool[0];
+    doubleMoveArray doubleMoves = doubleMovesPool[0];
+    simpleDiceGeneratorAI simpleGen = simpleGenPool[0];
+    doubleDiceGeneratorAI doubleGen = doubleGenPool[0];
     Pos.playerTurn = false;
     int num = 0;
     uint bestMove = 0;
@@ -232,7 +302,7 @@ class Bot{
       doubleGen.setDice(dice1);
       doubleGen.generate();
       num = doubleMoves.moveDepth - 1;
-      bestMove = doubleMoves.moves[Random.Range(0, doubleMoves.size())];
+      bestMove = doubleMoves.moves[UnityEngine.Random.Range(0, doubleMoves.size())];
     }
     else
     {
@@ -240,7 +310,7 @@ class Bot{
       else simpleGen.setDices(dice2, dice1);
       simpleGen.generate();
       num = simpleMoves.moveDepth - 1;
-      bestMove = simpleMoves.moves[Random.Range(0, simpleMoves.size())];
+      bestMove = simpleMoves.moves[UnityEngine.Random.Range(0, simpleMoves.size())];
     }
     for(; num >= 0; num--)
     {
@@ -345,12 +415,12 @@ class Bot{
   }
 
 
-  public void makeForDicePlayer(int dice1, int dice2) // selects and plays the move with the lowest score
+  public void makeForDicePlayer(int dice1, int dice2, int depth) // selects and plays the move with the lowest score
   {
-    simpleMoveArray simpleMoves = simpleMovesPool[Depth];
-    doubleMoveArray doubleMoves = doubleMovesPool[Depth];
-    simpleDiceGeneratorPlayer simplePlayerGen = simplePlayerGenPool[Depth];
-    unorderedDoubleDiceGeneratorPlayer doublePlayerGen = doublePlayerGenPool[Depth];
+    simpleMoveArray simpleMoves = simpleMovesPool[depth];
+    doubleMoveArray doubleMoves = doubleMovesPool[depth];
+    simpleDiceGeneratorPlayer simplePlayerGen = simplePlayerGenPool[depth];
+    unorderedDoubleDiceGeneratorPlayer doublePlayerGen = doublePlayerGenPool[depth];
     Pos.playerTurn = true;
     int num = 0;
     uint bestMove = 0;
@@ -362,7 +432,7 @@ class Bot{
       num = doubleMoves.moveDepth - 1;
       for(int i = 0; i < doubleMoves.size(); i++)
       {
-        float score = evaluateMovePlayer((uint)doubleMoves.moves[i], num, Depth - 1, 0.0f, bestScore);
+        float score = evaluateMovePlayer((uint)doubleMoves.moves[i], num, depth - 1, 0.0f, bestScore);
         if(score <= bestScore)
         {
           bestScore = score;
@@ -378,7 +448,7 @@ class Bot{
       num = simpleMoves.moveDepth - 1;
       for(int i = 0; i < simpleMoves.size(); i++)
       {
-        float score = evaluateMovePlayer((uint)simpleMoves.moves[i], num, Depth - 1, 0.0f, bestScore);
+        float score = evaluateMovePlayer((uint)simpleMoves.moves[i], num, depth - 1, 0.0f, bestScore);
         if(score <= bestScore)
         {
           bestScore = score;
@@ -395,10 +465,10 @@ class Bot{
 
   public void makeForDicePlayerRandom(int dice1, int dice2) // selects and plays the move with the lowest score
   {
-    simpleMoveArray simpleMoves = simpleMovesPool[Depth];
-    doubleMoveArray doubleMoves = doubleMovesPool[Depth];
-    simpleDiceGeneratorPlayer simplePlayerGen = simplePlayerGenPool[Depth];
-    unorderedDoubleDiceGeneratorPlayer doublePlayerGen = doublePlayerGenPool[Depth];
+    simpleMoveArray simpleMoves = simpleMovesPool[0];
+    doubleMoveArray doubleMoves = doubleMovesPool[0];
+    simpleDiceGeneratorPlayer simplePlayerGen = simplePlayerGenPool[0];
+    unorderedDoubleDiceGeneratorPlayer doublePlayerGen = doublePlayerGenPool[0];
     Pos.playerTurn = true;
     int num = 0;
     uint bestMove = 0;
@@ -408,7 +478,7 @@ class Bot{
       doublePlayerGen.setDice(dice1);
       doublePlayerGen.generate();
       num = doubleMoves.moveDepth - 1;
-      bestMove = doubleMoves.moves[Random.Range(0, doubleMoves.size())];
+      bestMove = doubleMoves.moves[UnityEngine.Random.Range(0, doubleMoves.size())];
     }
     else
     {
@@ -416,7 +486,7 @@ class Bot{
       else simplePlayerGen.setDices(dice2, dice1);
       simplePlayerGen.generate();
       num = simpleMoves.moveDepth - 1;
-      bestMove = simpleMoves.moves[Random.Range(0, simpleMoves.size())];
+      bestMove = simpleMoves.moves[UnityEngine.Random.Range(0, simpleMoves.size())];
     }
     for(; num >= 0; num--)
     {
@@ -431,9 +501,6 @@ class Bot{
     int dice = (int)(move >> 5);
     int from = (int)(move & 0b11111);
     int to = from + dice;
-    if(to >= 26 || to < 0) {
-      Debug.Log("To : " + to.ToString() + "\nFrom : " + from.ToString() + "\nDice : " + dice.ToString() + "\nNum : " + num.ToString());
-    }
     float eval;
     if(dice == 0) // bearoff move
     {

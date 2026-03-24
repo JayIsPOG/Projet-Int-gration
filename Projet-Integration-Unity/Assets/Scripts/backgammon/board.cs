@@ -27,7 +27,9 @@ public class board : MonoBehaviour
     private interractiveMoves moveGenerator;
 
     public int depth = 1;
-    bool waitForBot;
+    public int max_depth = 4;
+    public int game_count = 0;
+    public int wins = 0;
 
     private List<int> dices;
     Bot bot;
@@ -44,7 +46,7 @@ public class board : MonoBehaviour
         }
         moveGenerator.generate(dices[0], dices[1]);
         if(moveGenerator.moveTodo <= 0){ // player must skip his turn
-            bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7));
+            bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
             rollDices();
         }
     }
@@ -54,7 +56,7 @@ public class board : MonoBehaviour
         brain = new Learner();
         brain.LoadWeights("new_weights.bin");
         Pos = new BoardState();
-        bot = new Bot(Pos, brain, depth);
+        bot = new Bot(Pos, brain, max_depth);
         moveGenerator = new interractiveMoves(Pos);
         xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
@@ -105,11 +107,20 @@ public class board : MonoBehaviour
     }
     void Update()
     {
-          Debug.Log("gen");
       System.Random rng = new System.Random();
-      if(Pos.playerTurn) bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7));
-      bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7));
-      Pos.playerTurn = !Pos.playerTurn;
+      bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
+      if(Pos.hasPlayerWon())
+        {
+            Pos.set();
+            game_count++;
+        }
+      bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), depth);
+      if(Pos.hasAIWon()) 
+        {
+            Pos.set();
+            game_count++;
+            wins++;
+        }
       
       //Debug.Log(bot.evaluator.evaluatePosition(Pos));
         /*xUnit = ((float)Screen.width - 2 * xBorder) / 13;
