@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Collections;
 using Unity.Burst;
 using Unity.Collections;
-/*unsafe public class learn : MonoBehaviour
+unsafe public class learn : MonoBehaviour
 {
   Learner AI;
   Bot bot;
@@ -97,4 +97,4 @@ using Unity.Collections;
   {
       AI.Dispose();
   }
-}*/
+}

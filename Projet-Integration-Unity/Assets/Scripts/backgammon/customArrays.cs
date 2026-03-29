@@ -9,7 +9,7 @@ abstract public class customArray
 		return index;
 	}
 }
-public class simpleMoveArray : customArray {
+class simpleMoveArray : customArray{
 	public ushort[] moves;
 
 	public simpleMoveArray()
@@ -30,7 +30,7 @@ public class simpleMoveArray : customArray {
 		index++;
 	}
 };
-public class doubleMoveArray : customArray {
+class doubleMoveArray : customArray{
 	public uint[] moves;
 	public doubleMoveArray()
 	{

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Resources;
 using Unity.Burst.Intrinsics;
 
-/*public class evalInfo
+public class evalInfo
 {
 	public sbyte ldepth;
 	public sbyte udepth;
@@ -119,4 +119,4 @@ public class TranspositionTable
   {
     return (int)(key(pos) % size);
   }
-};*/
+};

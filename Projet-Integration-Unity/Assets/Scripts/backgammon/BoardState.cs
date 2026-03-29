@@ -1,41 +1,10 @@
 
-public class sideInfo
-{
-	public byte[] chips;
-	public uint present;
-	public sideInfo() // maybe add a bearoff counter idk
-	{
-		chips = new byte[25]; // 0 is the bar
-		present = 0;
-	}
-	public sideInfo(byte[] c)
-	{
-		chips = new byte[25];
-		present = 0;
-		for(int i = 0; i < 25; i++)
-		{
-			byte count = c[i];
-			chips[i] = count;
-			if(count >= 1) present |= 1 << i;
-		}
-	}
-  public bool hasWon()
-	{
-		return present == 0; // all bearOff
-	}
-	public bool canBearOff()
-	{
-		return (present & 0b1111110000000000000000000) == present; // all at the 6 end slots
-	}
-	public bool hasOnBar()
-	{
-		return (present & 1) != 0;
-	}
-}
 public class BoardState
 {
-	public sideInfo player;
-	public sideInfo opponent;
+    // chaque slot de chips montrent les casens en sens antihoraire, les deux dernieres sont pour les chips out pour les joueurs
+	public sbyte[] chips; // first is the player bar, last is opponent bar
+	public uint player_present;
+	public uint ai_present;
 	public bool playerTurn;
 	// Start is called before the first frame update
 	public BoardState()
@@ -44,17 +13,24 @@ public class BoardState
 	}
 	public void set()
 	{
-		byte[] placement = new byte[25]{0, 0, 0, 0, 0, 0, 5, 0, 3, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0};
-		player = new sideInfo(placement);
-		opponent = new sideInfo(placement);
-		playerTurn = false;
+		playerTurn = true;
+    chips = new sbyte[26]{0, -2, 0, 0, 0, 0, 5, 0, 3, 0, 0, 0,-5, 5, 0, 0, 0,-3, 0,-5, 0, 0, 0, 0, 2, 0 }; // first is the player bar, last is opponent bar
+		player_present = 0;
+		ai_present = 0;
+		for (int j = 0; j < 26; j++) ai_present |= (uint)(((chips[j] <= -1) ? 1 : 0) << j);
+		for (int j = 0; j < 26; j++) player_present |= (uint)(((chips[j] >= 1) ? 1 : 0) << j);
+	}
+  public bool hasPlayerWon()
+	{
+		return player_present == 0;
+	}
+	public bool hasAIWon()
+	{
+		return ai_present == 0;
 	}
 
-	public void nextTurn()
+	public bool canPlayerBearOff()
 	{
-		sideInfo temp = player;
-		player = opponent;
-		opponent = temp;
-		playerTurn = !playerTurn;
+		return (player_present & 0b01111110000000000000000000) == player_present;
 	}
 }

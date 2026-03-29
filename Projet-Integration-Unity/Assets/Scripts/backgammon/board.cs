@@ -16,7 +16,7 @@ public class board : MonoBehaviour
     public Texture2D rev_black_pike;
     public Texture2D rev_white_pike;
 
-    //Learner brain;
+    Learner brain;
     private float xUnit;
     private float yUnit;
     public float xBorder = 50;
@@ -32,7 +32,7 @@ public class board : MonoBehaviour
     public int wins = 0;
 
     private List<int> dices;
-    //Bot bot;
+    Bot bot;
     private int selectedDiceIndex;
     void rollDices()
     {
@@ -46,17 +46,17 @@ public class board : MonoBehaviour
         }
         moveGenerator.generate(dices[0], dices[1]);
         if(moveGenerator.moveTodo <= 0){ // player must skip his turn
-            //bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
+            bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
             rollDices();
         }
     }
     void Start()
     {
-        Debug.Log("gen");
-        //brain = new Learner();
-        //brain.LoadWeights("new_weights.bin");
+          Debug.Log("gen");
+        brain = new Learner();
+        brain.LoadWeights("new_weights.bin");
         Pos = new BoardState();
-        //bot = new Bot(Pos, brain, max_depth);
+        bot = new Bot(Pos, brain, max_depth);
         moveGenerator = new interractiveMoves(Pos);
         xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
@@ -107,7 +107,7 @@ public class board : MonoBehaviour
     }
     void Update()
     {
-      /*System.Random rng = new System.Random();
+      System.Random rng = new System.Random();
       bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
       if(Pos.hasPlayerWon())
         {
@@ -120,10 +120,10 @@ public class board : MonoBehaviour
             Pos.set();
             game_count++;
             wins++;
-        }*/
+        }
       
       //Debug.Log(bot.evaluator.evaluatePosition(Pos));
-        xUnit = ((float)Screen.width - 2 * xBorder) / 13;
+        /*xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
         chipUnit = xUnit * 0.8f;
 
@@ -154,7 +154,7 @@ public class board : MonoBehaviour
                 if(index != 255 && selectedDiceIndex != 255 && pick_from + dices[selectedDiceIndex] == index && moveGenerator.isMoveValid((uint)((uint)pick_from | (uint)(dices[selectedDiceIndex] << 5))))
                 {
                     if(moveGenerator.placeChip(pick_from, dices[selectedDiceIndex])) {
-                        //bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
+                        bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
                         rollDices();
                     }
                     else dices.RemoveAt(selectedDiceIndex);
@@ -167,7 +167,7 @@ public class board : MonoBehaviour
                 }
             }
             selected_chip = null;
-        }
+        }     */   
     }
 
     void OnGUI()

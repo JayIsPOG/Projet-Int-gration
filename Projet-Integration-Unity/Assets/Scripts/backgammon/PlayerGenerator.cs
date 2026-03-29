@@ -1,5 +1,5 @@
 using Unity.Burst.Intrinsics;
-/*class simpleDiceGeneratorPlayer : generatorPlayer {
+class simpleDiceGeneratorPlayer : generatorPlayer {
 
   public simpleMoveArray moveList;
   public int dice1;
@@ -476,4 +476,4 @@ class doubleDiceGeneratorPlayer : generatorPlayer
       }
     }
   }
-}*/
+}
