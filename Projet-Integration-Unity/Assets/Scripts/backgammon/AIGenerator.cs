@@ -1,6 +1,6 @@
 
 using Unity.Burst.Intrinsics;
-class simpleDiceGeneratorAI : generatorAI {
+/*class simpleDiceGeneratorAI : generatorAI {
   public simpleMoveArray moveList;
   public int dice1;
   public int dice2;
@@ -323,4 +323,4 @@ class doubleDiceGeneratorAI : generatorAI
       }
     }
   }
-}
+}*/

@@ -175,7 +175,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
       for(int i = 0; i < num_layers; i++) layers[i].Dispose();
     }
 
-    public void generateInputs(BoardState board)
+    /*public void generateInputs(BoardState board)
     {
       float* inputs = curr_in_out[0];
       float player_borneoff = 15;
@@ -236,7 +236,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
       inputs[24*8+3] = 0.5f * (float)(-board.chips[25]);
       inputs[24*8+4] = player_borneoff;
       inputs[24*8+5] = ai_borneoff;
-    }
+    }*/
 
     public float makeOutputs() {
       for (int i = 0; i < num_layers; i++) layers[i].calcOutputs(curr_in_out[i], curr_in_out[i + 1]);
@@ -280,7 +280,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     }
     public float evaluatePosition(BoardState board)
     {
-      generateInputs(board);
+      //generateInputs(board);
       return makeOutputs();
     }
     public void LoadWeights(string filename)

@@ -3,7 +3,7 @@ using UnityEngine;
 using Unity.Burst.Intrinsics;
 using System.Diagnostics;
 using System;
-class Bot{
+/*class Bot{
   TranspositionTable TT;
   BoardState Pos;
   public simpleDiceGeneratorAI[] simpleGenPool;
@@ -591,4 +591,4 @@ class Bot{
       Pos.player_present ^= bit_mod;
     }
   }
-}
+}*/
