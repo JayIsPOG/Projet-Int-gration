@@ -4,6 +4,12 @@ class simpleDiceGeneratorAI : generatorAI {
   public simpleMoveArray moveList;
   public int dice1;
   public int dice2;
+  CustomQuaternion q1;
+  CustomQuaternion q2;
+  CustomQuaternion q3;
+  CustomQuaternion q4;
+  CustomQuaternion q5;
+  CustomQuaternion q6;
   
   public simpleDiceGeneratorAI(int i, int j, simpleMoveArray arr, BoardState pos)
   {
@@ -32,10 +38,10 @@ class simpleDiceGeneratorAI : generatorAI {
     genForSimple();
 
     if (moveList.index == 0) { // no moves were possible using 2 dices, check if can use the biggest one (single move)
-      genSingleSimpleMove(dice2, 0, 0);
+      genSingleSimpleMove(dice2, 0);
 
       if (moveList.index == 0) { // no moves were possible using the biggest dice, try using the smallest only
-        genSingleSimpleMove(dice1, 0, 0);
+        genSingleSimpleMove(dice1, 0);
 
         if (moveList.index == 0) moveList.moveDepth = 0; // no moves are possible...
         else moveList.moveDepth = 1;
@@ -45,11 +51,11 @@ class simpleDiceGeneratorAI : generatorAI {
     else moveList.moveDepth = 2;
   }
 
-  void genSingleSimpleMove(int dice, ushort move_desc, sbyte score) { // can remove dice, will always be dice2
+  void genSingleSimpleMove(int dice, ushort move_desc) { // can remove dice, will always be dice2
     move_desc <<= 8;
     if (Pos.chips[25] != 0) {
       int to = 25 - dice;
-      if (Pos.chips[to] <= 1) moveList.push_back((ushort)(move_desc | 25 | (dice << 5)), (sbyte)(score + scoreBar(to)));
+      if (Pos.chips[to] <= 1) moveList.push_back((ushort)(move_desc | 25 | (dice << 5)));
     }
     else {
       uint moves = (uint)((Pos.ai_present >> dice) & ~1);
@@ -60,14 +66,14 @@ class simpleDiceGeneratorAI : generatorAI {
         uint bear_off_moves = (Pos.ai_present & bearoff_mask[dice]);
         for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
           from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-          moveList.push_back((ushort)(move_desc | from), (sbyte)(score + scoreBearOff(from)));
+          moveList.push_back((ushort)(move_desc | from));
         }
       }
 
       for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
         to = (int)X86.Bmi1.tzcnt_u32(moves);
         from = to + dice;
-        if (Pos.chips[to] <= 1) moveList.push_back((ushort)(move_desc | from | (dice << 5)), (sbyte)(score + scoreMove(from, to)));
+        if (Pos.chips[to] <= 1) moveList.push_back((ushort)(move_desc | from | (dice << 5)));
       }
     }
   }
@@ -88,7 +94,7 @@ class simpleDiceGeneratorAI : generatorAI {
         Pos.ai_present ^= bit_mod;
         Pos.player_present ^= bit_to;
 
-        genSingleSimpleMove(dice2, (ushort)(25 | (dice1 << 5)), scoreBar(to));
+        genSingleSimpleMove(dice2, (ushort)(25 | (dice1 << 5)));
 
         Pos.chips[to] = 1;
         Pos.chips[25]--;
@@ -103,7 +109,7 @@ class simpleDiceGeneratorAI : generatorAI {
         Pos.chips[to]--;
         Pos.ai_present ^= bit_mod;
 
-        genSingleSimpleMove(dice2, (ushort)(25 | (dice1 << 5)), scoreBar(to));
+        genSingleSimpleMove(dice2, (ushort)(25 | (dice1 << 5)));
 
         Pos.chips[to]++;
         Pos.chips[25]--;
@@ -126,7 +132,7 @@ class simpleDiceGeneratorAI : generatorAI {
           Pos.chips[from]++;
           Pos.ai_present ^= bit_mod;
 
-          genSingleSimpleMove(dice2, (ushort)(from), scoreBearOff(from));
+          genSingleSimpleMove(dice2, (ushort)(from));
 
           Pos.chips[from]--;
           Pos.ai_present ^= bit_mod;
@@ -147,7 +153,7 @@ class simpleDiceGeneratorAI : generatorAI {
           Pos.ai_present ^= bit_mod;
           Pos.player_present ^= bit_to;
 
-          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)), scoreMove(from, to));
+          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)));
 
           Pos.chips[to] = 1;
           Pos.chips[from]--;
@@ -162,7 +168,7 @@ class simpleDiceGeneratorAI : generatorAI {
           Pos.chips[to]--;
           Pos.ai_present ^= bit_mod;
 
-          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)), scoreMove(from, to));
+          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)));
 
           Pos.chips[to]++;
           Pos.chips[from]--;
@@ -187,7 +193,7 @@ class doubleDiceGeneratorAI : generatorAI
     moveList.index = 0;
     int n;
     for (n = 3; n >= 0 && moveList.index == 0; n--) 
-      genForDouble(n, 0, Pos.ai_present, 0);
+      genForDouble(n, 0, Pos.ai_present);
       
     if(moveList.index == 0) moveList.moveDepth = 0;
     else moveList.moveDepth = n + 2;
@@ -196,7 +202,7 @@ class doubleDiceGeneratorAI : generatorAI
   {
     dice = i;
   }
-  void genForDouble(int dice_index, uint move_desc, uint self_present, sbyte score) {
+  void genForDouble(int dice_index, uint move_desc, uint self_present) {
     move_desc <<= 8;
     if (dice_index > 0) {
       if (Pos.chips[25] != 0) {
@@ -214,7 +220,7 @@ class doubleDiceGeneratorAI : generatorAI
           self_present ^= bit_mod;
           Pos.player_present ^= bit_to;
 
-          genForDouble(dice_index - 1, (uint)(move_desc | 25 | (dice << 5)), self_present, (sbyte)(score + scoreBar(to)));
+          genForDouble(dice_index - 1, (uint)(move_desc | 25 | (dice << 5)), self_present);
 
           Pos.chips[to] = 1;
           Pos.chips[25]--;
@@ -228,7 +234,7 @@ class doubleDiceGeneratorAI : generatorAI
           Pos.chips[to]--;
           self_present ^= bit_mod;
 
-          genForDouble(dice_index - 1, (uint)(move_desc | 25 | (dice << 5)), self_present, (sbyte)(score + scoreBar(to)));
+          genForDouble(dice_index - 1, (uint)(move_desc | 25 | (dice << 5)), self_present);
 
           Pos.chips[to]++;
           Pos.chips[25]--;
@@ -250,7 +256,7 @@ class doubleDiceGeneratorAI : generatorAI
             Pos.chips[from]++;
             self_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from), self_present, (sbyte)(score + scoreBearOff(from)));
+            genForDouble(dice_index - 1, (uint)(move_desc | from), self_present);
 
             Pos.chips[from]--;
             self_present &= ~(1u << from); // Do not consider in the future, already considered (since dices are the same, order doesnt matter)
@@ -271,7 +277,7 @@ class doubleDiceGeneratorAI : generatorAI
             self_present ^= bit_mod;
             Pos.player_present ^= bit_to;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from | (dice << 5)), self_present, (sbyte)(score + scoreMove(from, to)));
+            genForDouble(dice_index - 1, (uint)(move_desc | from | (dice << 5)), self_present);
 
             Pos.chips[to] = 1;
             Pos.chips[from]--;
@@ -287,7 +293,7 @@ class doubleDiceGeneratorAI : generatorAI
             Pos.chips[to]--;
             self_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from | (dice << 5)), self_present, (sbyte)(score + scoreMove(from, to)));
+            genForDouble(dice_index - 1, (uint)(move_desc | from | (dice << 5)), self_present);
 
             Pos.chips[to]++;
             Pos.chips[from]--;
@@ -300,7 +306,7 @@ class doubleDiceGeneratorAI : generatorAI
     else {
       if (Pos.chips[25] != 0) {
         int to = 25 - dice;
-        if (Pos.chips[to] <= 1) moveList.push_back((uint)(move_desc | 25 | (dice << 5)), (sbyte)(score + scoreBar(to)));
+        if (Pos.chips[to] <= 1) moveList.push_back((uint)(move_desc | 25 | (dice << 5)));
       }
       else {
         uint moves = (uint)((self_present >> dice) & ~1u);
@@ -311,14 +317,14 @@ class doubleDiceGeneratorAI : generatorAI
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
             from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-            moveList.push_back((uint)(move_desc | from), (sbyte)(score + scoreBearOff(from)));
+            moveList.push_back((uint)(move_desc | from));
           }
         }
 
         for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
           to = (int)X86.Bmi1.tzcnt_u32(moves);
           from = (to + dice);
-          if (Pos.chips[to] <= 1) moveList.push_back((uint)(move_desc | from | (dice << 5)), (sbyte)(score + scoreMove(from, to)));
+          if (Pos.chips[to] <= 1) moveList.push_back((uint)(move_desc | from | (dice << 5)));
         }
       }
     }

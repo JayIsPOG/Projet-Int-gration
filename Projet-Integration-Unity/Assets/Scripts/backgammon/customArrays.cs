@@ -19,15 +19,8 @@ class simpleMoveArray : customArray{
 		index = 0;
 		moveDepth = 0;
 	}
-	public void push_back(ushort move, short score) {
-		int i = index;
-		for(; i > 0 && moveScores[i - 1] < score; i--) {
-			moveScores[i] = moveScores[i - 1];
-			moves[i] = moves[i - 1];
-		}
-		moveScores[i] = score;
-		moves[i] = move;
-		index++;
+	public void push_back(ushort move) {
+		moves[index++] = move;
 	}
 };
 class doubleMoveArray : customArray{
@@ -39,14 +32,7 @@ class doubleMoveArray : customArray{
 		index = 0;
 		moveDepth = 0;
 	}
-	public void push_back(uint move, short score) {
-		int i = index;
-		for(; i > 0 && moveScores[i - 1] < score; i--) {
-			moveScores[i] = moveScores[i - 1];
-			moves[i] = moves[i - 1];
-		}
-		moveScores[i] = score;
-		moves[i] = move;
-		index++;
+	public void push_back(uint move) {
+		moves[index++] = move;
 	}
 };

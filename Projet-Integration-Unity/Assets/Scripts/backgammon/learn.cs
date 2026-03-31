@@ -12,21 +12,17 @@ unsafe public class learn : MonoBehaviour
   public int games_played;
   public int plays_batch = 30;
   System.Random rng = new System.Random();
-  System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
   void Start()
   {
     Camera.main.enabled = false;
-    learnRate = 3;
     games_played = 0;
     AI = new Learner();
 
     Pos = new BoardState();
+    Pos.playerTurn = true;
     bot = new Bot(Pos, AI, 0);
     
     AI.evaluatePosition(Pos); // init
-    float*[] temp = AI.curr_in_out;
-    AI.curr_in_out = AI.prev_in_out;
-    AI.prev_in_out = temp;
     StartCoroutine(TrainingLoop());
   }
   IEnumerator TrainingLoop()
@@ -36,39 +32,43 @@ unsafe public class learn : MonoBehaviour
         play();
       }
       yield return null;
-      //Debug.Log((1000 * (double)games_played / (timer.ElapsedMilliseconds)).ToString());
     }
   }
-
   unsafe void play()
   {
-        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
-        AI.generateInputs(Pos);
-        if (Pos.hasPlayerWon())
-        {
-          AI.learnGameEnd(0, learnRate);
-          games_played++;
-          Pos.set();
-          AI.evaluatePosition(Pos); // init
-          float*[] temp = AI.curr_in_out;
-          AI.curr_in_out = AI.prev_in_out;
-          AI.prev_in_out = temp;
-        }
-        else AI.learnForRegular();
+    AI.Swap();
+    bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
+    Pos.playerTurn = false;
+    if (Pos.hasPlayerWon())
+    {
+      AI.learnFor(0, learnRate);
+      games_played++;
+      Pos.set();
+      Debug.Log((AI.previousOutput())*(AI.previousOutput()));
+      AI.evaluatePosition(Pos); // init
+      return;
+    }
+    else {
+      AI.evaluatePosition(Pos);
+      AI.learnFor(AI.currentOutput(), learnRate);
+    }
 
-        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), 0);
-        AI.generateInputs(Pos);
-        if (Pos.hasAIWon())
-        {
-          AI.learnGameEnd(1, learnRate);
-          games_played++;
-          Pos.set();
-          AI.evaluatePosition(Pos); // init
-          float*[] temp = AI.curr_in_out;
-          AI.curr_in_out = AI.prev_in_out;
-          AI.prev_in_out = temp;
-        }
-        else AI.learnForRegular();
+    AI.Swap();
+    bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), 0);
+    Pos.playerTurn = true;
+    if (Pos.hasAIWon())
+    {
+      AI.learnFor(1, learnRate);
+      games_played++;
+      Pos.set();
+      Debug.Log((1-AI.previousOutput())*(1-AI.previousOutput()));
+      AI.evaluatePosition(Pos); // init
+      return;
+    }
+    else {
+      AI.evaluatePosition(Pos);
+      AI.learnFor(AI.currentOutput(), learnRate);
+    }
   }
   void Update()
   {

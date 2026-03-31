@@ -45,6 +45,7 @@ class interractiveMoves
   {
     move = (moveSequence << 8) | move;
     int shift = (moveTodo - 1) * 8;
+    
     if (AreDiceDoubles)
     {
       for(int i = 0; i < doubleMoves.size(); i++)

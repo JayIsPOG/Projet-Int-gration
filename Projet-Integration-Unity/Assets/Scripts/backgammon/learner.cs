@@ -146,12 +146,10 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     //public System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
     public int num_layers;
     public Layer[] layers;
-    public int data_num;
     public float*[] curr_in_out;
     public float*[] prev_in_out;
     public Learner() {
-        int[] layerSizes = {198, 30, 1};
-        data_num = 0;
+        int[] layerSizes = {198, 50, 1};
         num_layers = layerSizes.Length - 1;
         layers = new Layer[num_layers];
         curr_in_out = new float*[layerSizes.Length];
@@ -187,7 +185,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
           player_borneoff -= quantity;
           inputs[i*8] = 1.0f;
           if(quantity >= 2.0f) {
-            inputs[i*4+1] = 1.0f;
+            inputs[i*8+1] = 1.0f;
             if(quantity >= 3.0f) {
               inputs[i*8+2] = 1.0f;
               inputs[i*8+3] = 0.5f * (quantity - 3);
@@ -224,6 +222,10 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
           }
         }
         else {
+          inputs[i*8] = 0.0f;
+          inputs[i*8+1] = 0.0f;
+          inputs[i*8+2] = 0.0f;
+          inputs[i*8+3] = 0.0f;
           inputs[i*8+4] = 0.0f;
           inputs[i*8+5] = 0.0f;
           inputs[i*8+6] = 0.0f;
@@ -233,20 +235,21 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
       inputs[24*8] = board.playerTurn ? 1f : 0f;
       inputs[24*8+1] = board.playerTurn ? 0f : 1f;
       inputs[24*8+2] = 0.5f * (float)(board.chips[0]);
+      player_borneoff -= board.chips[0];
       inputs[24*8+3] = 0.5f * (float)(-board.chips[25]);
+      ai_borneoff += board.chips[25]; 
       inputs[24*8+4] = player_borneoff;
       inputs[24*8+5] = ai_borneoff;
     }
 
     public float makeOutputs() {
       for (int i = 0; i < num_layers; i++) layers[i].calcOutputs(curr_in_out[i], curr_in_out[i + 1]);
-      return curr_in_out[num_layers][0];
+      return currentOutput();
     }
 
     void UpdateAllGradients(float expectedOutput) { // the previous output evaluation must be as close to the current one as possible
-      data_num++;
       Layer outLayer = layers[num_layers - 1];
-      outLayer.calculateOutputNodeValues(expectedOutput, prev_in_out[num_layers][0]);
+      outLayer.calculateOutputNodeValues(expectedOutput, previousOutput());
       outLayer.updateGradients(prev_in_out[num_layers - 1]);
 
       for (int h = num_layers - 2; h >= 0; h--) {
@@ -255,28 +258,28 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
         hiddenLayer.updateGradients(prev_in_out[h]);
       }
     }
-
-    public void learnForRegular()
+    public void Swap()
     {
-      UpdateAllGradients(makeOutputs());
       float*[] temp = curr_in_out;
       curr_in_out = prev_in_out;
       prev_in_out = temp;
     }
-    public void learnGameEnd(float result, float learnRate)
+    public void learnFor(float expectedOutput, float learnRate)
     {
-      makeOutputs();
-      UpdateAllGradients(result);
-      float*[] temp = curr_in_out;
-      curr_in_out = prev_in_out;
-      prev_in_out = temp;
+      UpdateAllGradients(expectedOutput);
 
-      float scaledRate = learnRate / data_num; // the AI learns when the game end
-      data_num = 0;
       for (int i = 0; i < num_layers; i++) {
-        layers[i].applyGradient(scaledRate);
+        layers[i].applyGradient(learnRate);
         layers[i].clearGradients();
       }
+    }
+    public float currentOutput()
+    {
+      return curr_in_out[num_layers][0];
+    }
+    public float previousOutput()
+    {
+      return prev_in_out[num_layers][0];
     }
     public float evaluatePosition(BoardState board)
     {

@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
-class CustomQuaternion {
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
+public class CustomQuaternion {
     public float x, y, z, w;
     public CustomQuaternion(float X = 0, float Y = 0, float Z = 0, float W = 1) { 
         x = X; 
@@ -50,49 +52,37 @@ class CustomQuaternion {
 
 };
 
-public class burger : MonoBehaviour
+public class burger
 {
-    static Color32 white = new Color32(255, 255, 255, 255);
-    static Color32 black = new Color32(0, 0, 0, 255);
     static Color32 transparent = new Color32(0, 0, 0, 0);
     float faceWidth;
     float faceHeight;
-    public float cubeWidth = 16;
-    public int distanceFromCam = 1024;
-    public float K1 = 889;
-    public float deltaTime = 0.02f;
-    public float speed_up = 0.7f;
-    private float current_deltaTime;
-    const int steps = 12;
-    float[] yBob = new float[steps];
-    float[] xBob = new float[steps];
+    static readonly float deltaTime = 0.02f;
+    static readonly float cubeWidth = 32;
+    static readonly int distanceFromCam = 1500;
+    static readonly float K1 = 889;
     float[] zBuffer;
-    float zoff;
-    static Vector3 xAxis = new Vector3(1, 0, 0);
-    static Vector3 yAxis = new Vector3(0, 1, 0);
-    static Vector3 zAxis = new Vector3(0, 0, 1);
-    CustomQuaternion currentRotation = new CustomQuaternion(0, 0, 0, 1);
-    CustomQuaternion downRotation = new CustomQuaternion(xAxis, -(Mathf.PI / 2) / steps);
-    CustomQuaternion leftRotation = new CustomQuaternion(yAxis, (Mathf.PI / 2) / steps);
-    CustomQuaternion upRotation = new CustomQuaternion(xAxis, (Mathf.PI / 2) / steps);
-    CustomQuaternion rightRotation = new CustomQuaternion(yAxis, -(Mathf.PI / 2) / steps);
-    private SpriteRenderer spriteRenderer;
-    private Texture2D texture;
-
-
-    private Sprite sprite;
+    static CustomQuaternion[] face_orientations = new CustomQuaternion[6]{
+        new CustomQuaternion(0.70710678118f, 0, 0, 0.70710678118f),
+        new CustomQuaternion(0.70710678118f, 0, 0.70710678118f, 0),
+        new CustomQuaternion(0.70710678118f, 0, 0, -0.70710678118f),
+        new CustomQuaternion(0.70710678118f, 0.70710678118f, 0, 0),
+        new CustomQuaternion(0.70710678118f, 0, -0.70710678118f, 0),
+        new CustomQuaternion(0, 0, 0, 1)
+    };
+    public Texture2D texture;
+    public CustomQuaternion currentRotation = new CustomQuaternion(0, 0, 0, 1);
     Color32[] face1, face2, face3, face4, face5, face6;
-
     Color32[] pixels;
-    bool is_rolling;
-    public void Start()
+    public bool is_rolling;
+    public Texture2D dices;
+    public burger(Texture2D dice_text)
     {
         is_rolling = false;
-
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        Color32[] faces = spriteRenderer.sprite.texture.GetPixels32();
-        faceWidth = spriteRenderer.sprite.texture.width;
-        faceHeight = spriteRenderer.sprite.texture.height / 6;
+        dices = dice_text;
+        faceWidth = dices.width;
+        faceHeight = dices.height / 6;
+        Color32[] faces = dices.GetPixels32();
 
         int size = (int)(faceWidth * faceHeight);
 
@@ -113,100 +103,35 @@ public class burger : MonoBehaviour
         texture = new Texture2D(32, 32); // make dimensions adaptable
         texture.filterMode = FilterMode.Point;
         pixels = texture.GetPixels32();
-
-        sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), transform.position, spriteRenderer.sprite.pixelsPerUnit);
-        spriteRenderer.sprite = sprite;
         
         zBuffer = new float[texture.width * texture.height];
-
-        for (int i = 0; i < steps; i++) {
-            float angle = Mathf.PI / 4 + (Mathf.PI * i) / (steps * 2);
-            xBob[steps - i - 1] = (Mathf.Cos(angle) + Mathf.Cos(Mathf.PI / 4)) / Mathf.Sqrt(2); // pretty fucking dumb
-            yBob[steps - i - 1] = (Mathf.Sin(angle) + Mathf.Sin(Mathf.PI / 4)) * (cubeWidth / Mathf.Sqrt(2));
-        }
-        
-        for (int i = steps - 1; i > 0; i--)
-        {
-            xBob[i] -= xBob[i - 1];
-        }
+    }
+    public void setOrientation(int face)
+    {
+        face--;
+        currentRotation.x = face_orientations[face].x;
+        currentRotation.y = face_orientations[face].y;
+        currentRotation.z = face_orientations[face].z;
+        currentRotation.w = face_orientations[face].w;
     }
 
-    public void Update()
+    public void rotate(CustomQuaternion q)
     {
-        if(is_rolling) return;
-        current_deltaTime = deltaTime;
-        if(Input.GetKey ("up")) StartCoroutine(upRoll());
-        else if(Input.GetKey ("left")) StartCoroutine(leftRoll());
-        else if(Input.GetKey ("down")) StartCoroutine(downRoll());
-        else if(Input.GetKey ("right")) StartCoroutine(rightRoll());
+        currentRotation = q.multiply(currentRotation);
+        currentRotation.normalize();
+        drawCube();
     }
-
-    IEnumerator rightRoll()
-    {
+    public IEnumerator playAnimation(List<CustomQuaternion> frames){
         is_rolling = true;
-
-        for (int i = 0; i < steps; i++) {
-            zoff = distanceFromCam - yBob[i];
-            currentRotation = rightRotation.multiply(currentRotation);
-            currentRotation.normalize();
-            drawCube();
-            transform.position += new Vector3(xBob[i], 0, 0);
-            current_deltaTime *= speed_up;
-            yield return new WaitForSeconds(current_deltaTime);
+        foreach(CustomQuaternion q in frames){
+            rotate(q);
+            yield return new WaitForSeconds(deltaTime);
         }
-        
         is_rolling = false;
     }
-    IEnumerator leftRoll()
-    {
-        is_rolling = true;
-
-        for (int i = 0; i < steps; i++) {
-            zoff = distanceFromCam - yBob[i];
-            currentRotation = leftRotation.multiply(currentRotation);
-            currentRotation.normalize();
-            drawCube();
-            transform.position += new Vector3(-xBob[i], 0, 0);
-            current_deltaTime *= speed_up;
-            yield return new WaitForSeconds(current_deltaTime);
-        }
-        
-        is_rolling = false;
-    }
-    IEnumerator upRoll()
-    {
-        is_rolling = true;
-
-        for (int i = 0; i < steps; i++) {
-            zoff = distanceFromCam - yBob[i];
-            currentRotation = upRotation.multiply(currentRotation);
-            currentRotation.normalize();
-            drawCube();
-            transform.position += new Vector3(0, xBob[i], 0);
-            current_deltaTime *= speed_up;
-            yield return new WaitForSeconds(current_deltaTime);
-        }
-        
-        is_rolling = false;
-    }
-    IEnumerator downRoll()
-    {
-        is_rolling = true;
-
-        for (int i = 0; i < steps; i++) {
-            zoff = distanceFromCam - yBob[i];
-            currentRotation = downRotation.multiply(currentRotation);
-            currentRotation.normalize();
-            drawCube();
-            transform.position += new Vector3(0, -xBob[i], 0);
-            current_deltaTime *= speed_up;
-            yield return new WaitForSeconds(current_deltaTime);
-        }
-        
-        is_rolling = false;
-    }
+    
     private float m00, m01, m02, m10, m11, m12, m20, m21, m22;
-    void drawCube() {
+    public void drawCube() {
         for(int i = 0; i < texture.height * texture.width; i++) {
             pixels[i] = transparent;
             zBuffer[i] = 0;
@@ -234,7 +159,6 @@ public class burger : MonoBehaviour
                 calculateForSurface(cubeY, -cubeWidth / 2, cubeX, face6[index]);
             }
         }
-
         texture.SetPixels32(pixels);
         texture.Apply();
     }
@@ -242,7 +166,7 @@ public class burger : MonoBehaviour
     
         float x = m00*cubeX + m01*cubeY + m02*cubeZ;
         float y = m10*cubeX + m11*cubeY + m12*cubeZ;
-        float z = m20*cubeX + m21*cubeY + m22*cubeZ + zoff;
+        float z = m20*cubeX + m21*cubeY + m22*cubeZ + distanceFromCam;
 
         float ooz = 1 / z;
         int xp = (int)(texture.width / 2 + K1 * ooz * x);
@@ -255,5 +179,24 @@ public class burger : MonoBehaviour
                 pixels[idx] = color;
             }
         }
-}
+    }
+    public List<CustomQuaternion> LoadAnimation(string filename)
+    {
+        List<CustomQuaternion> animation = new List<CustomQuaternion>();
+        string path = Application.persistentDataPath + "/" + filename;
+        if (!System.IO.File.Exists(path)) return animation;
+        using (System.IO.BinaryReader reader = new System.IO.BinaryReader(System.IO.File.Open(path, System.IO.FileMode.Open)))
+        {
+            int size = reader.ReadInt32();
+            for(int i = 0; i < size; i++)
+            {
+            float x = reader.ReadSingle();
+            float y = reader.ReadSingle();
+            float z = reader.ReadSingle();
+            float w = reader.ReadSingle();
+            animation.Add(new CustomQuaternion(x, y, z, w));
+            }
+        }
+        return animation;
+    }
 }

@@ -38,6 +38,7 @@ class Bot{
   //Minimax must exit if a player has won
   public float minimaxAi(int depth, float alpha, float beta)
   {
+    return evaluator.evaluatePosition(Pos);
     if(Pos.hasPlayerWon()) return 0.0f;
 
     ulong key = TT.key(Pos);
@@ -64,6 +65,7 @@ class Bot{
       entry.storeAll((sbyte)depth, eval);
       return eval;
     }
+    
     simpleMoveArray _simpleMoves = simpleMovesPool[depth];
     doubleMoveArray _doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorAI simpleGenerator = simpleGenPool[depth];
@@ -142,6 +144,7 @@ class Bot{
   }
   public float minimaxPlayer(int depth, float alpha, float beta)
   {
+    return evaluator.evaluatePosition(Pos);
     if(Pos.hasAIWon()) return 1.0f;
 
     ulong key = TT.key(Pos);

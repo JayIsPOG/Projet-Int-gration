@@ -32,29 +32,42 @@ public class board : MonoBehaviour
     public int wins = 0;
 
     private List<int> dices;
+    List<CustomQuaternion> dice_roll;
     Bot bot;
     private int selectedDiceIndex;
+    public burger[] dice_animations;
     void rollDices()
     {
+        Pos.playerTurn = true;
         dices.Clear();
         dices.Add(Random.Range(1, 7));
+        dice_animations[0].setOrientation(dices[0]);
         dices.Add(Random.Range(1, 7));
+        dice_animations[1].setOrientation(dices[1]);
         if(dices[0] == dices[1])
         {
             dices.Add(dices[0]);
+            dice_animations[2].setOrientation(dices[2]);
             dices.Add(dices[0]);
+            dice_animations[3].setOrientation(dices[3]);
         }
         moveGenerator.generate(dices[0], dices[1]);
         if(moveGenerator.moveTodo <= 0){ // player must skip his turn
             bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
             rollDices();
         }
+        else {
+            for(int i = 0; i < dices.Count; i++)
+                StartCoroutine(dice_animations[i].playAnimation(dice_roll));
+        }
     }
     void Start()
     {
-          Debug.Log("gen");
+        dice_animations = new burger[4];
+        for(int i = 0; i < 4; i++) dice_animations[i] = new burger(dice_texture);
+        dice_roll = dice_animations[0].LoadAnimation("burgerAnimation.bin");
         brain = new Learner();
-        brain.LoadWeights("new_weights.bin");
+        brain.LoadWeights("burger.bin");
         Pos = new BoardState();
         bot = new Bot(Pos, brain, max_depth);
         moveGenerator = new interractiveMoves(Pos);
@@ -77,7 +90,13 @@ public class board : MonoBehaviour
         selectedDiceIndex= 255;
     }
 
-    // Update is called once per frame
+    void removeDiceAt(int index)
+    {
+        dices.RemoveAt(index);
+        burger temp = dice_animations[index];
+        for(int i = index + 1; i < 4; i++) dice_animations[i - 1] = dice_animations[i];
+        dice_animations[3] = temp;
+    }
 
     int getMouseIndex()
     {
@@ -107,23 +126,23 @@ public class board : MonoBehaviour
     }
     void Update()
     {
-      System.Random rng = new System.Random();
-      bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
-      if(Pos.hasPlayerWon())
+        /*System.Random rng = new System.Random();
+        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
+        if(Pos.hasPlayerWon())
         {
             Pos.set();
             game_count++;
         }
-      bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), depth);
-      if(Pos.hasAIWon()) 
+        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), depth);
+        if(Pos.hasAIWon()) 
         {
             Pos.set();
             game_count++;
             wins++;
-        }
+        }*/
       
-      //Debug.Log(bot.evaluator.evaluatePosition(Pos));
-        /*xUnit = ((float)Screen.width - 2 * xBorder) / 13;
+        Debug.Log(bot.evaluator.evaluatePosition(Pos));
+        xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
         chipUnit = xUnit * 0.8f;
 
@@ -157,7 +176,7 @@ public class board : MonoBehaviour
                         bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
                         rollDices();
                     }
-                    else dices.RemoveAt(selectedDiceIndex);
+                    else removeDiceAt(selectedDiceIndex);
                     selectedDiceIndex= 255;
                 }
                 else
@@ -167,12 +186,12 @@ public class board : MonoBehaviour
                 }
             }
             selected_chip = null;
-        }     */   
+        }
     }
 
     void OnGUI()
     {
-        for(float i = 0; i < 6; i+=2)
+        for(float i = 0; i < 6; i += 2)
         {
             float x = i * xUnit + xBorder;
             GUI.DrawTexture(new Rect(x, 0, xUnit, yUnit), rev_black_pike);
@@ -217,7 +236,7 @@ public class board : MonoBehaviour
         }
 
         for(int i = 0; i < dices.Count; i++)
-            GUI.DrawTexture(new Rect(0, i * chipUnit, chipUnit, chipUnit), dice_faces[dices[i] - 1]);
+            GUI.DrawTexture(new Rect(0, i * chipUnit, chipUnit, chipUnit), dice_animations[i].texture);
 
         if(Pos.chips[25] < 0)
         {
