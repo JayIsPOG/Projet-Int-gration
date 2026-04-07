@@ -57,7 +57,7 @@ class interractiveMoves
     return false;
   }
 
-  public bool placeChip(int from, int dice)
+  public bool placeChip(int from, int dice) // will have to include bearoff moves
   {
     int to = from + dice;
     if(Pos.chips[to] < 0)

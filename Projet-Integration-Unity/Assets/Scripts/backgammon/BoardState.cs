@@ -6,6 +6,8 @@ public class BoardState
 	public uint player_present;
 	public uint ai_present;
 	public bool playerTurn;
+	public byte player_bearoff;
+	public byte ai_bearoff;
 	// Start is called before the first frame update
 	public BoardState()
 	{
@@ -13,6 +15,8 @@ public class BoardState
 	}
 	public void set()
 	{
+		player_bearoff = 0;
+		ai_bearoff = 0;
 		playerTurn = true;
     chips = new sbyte[26]{0, -2, 0, 0, 0, 0, 5, 0, 3, 0, 0, 0,-5, 5, 0, 0, 0,-3, 0,-5, 0, 0, 0, 0, 2, 0 }; // first is the player bar, last is opponent bar
 		player_present = 0;

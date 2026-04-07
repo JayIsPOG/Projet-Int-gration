@@ -38,6 +38,7 @@ class Bot{
   //Minimax must exit if a player has won
   public float minimaxAi(int depth, float alpha, float beta)
   {
+    Pos.playerTurn = false;
     return evaluator.evaluatePosition(Pos);
     if(Pos.hasPlayerWon()) return 0.0f;
 
@@ -61,11 +62,12 @@ class Bot{
     else entry.reset(key);
 
     if(depth < 0) {
+      Pos.playerTurn = false;
       float eval = evaluator.evaluatePosition(Pos);
       entry.storeAll((sbyte)depth, eval);
       return eval;
     }
-    
+
     simpleMoveArray _simpleMoves = simpleMovesPool[depth];
     doubleMoveArray _doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorAI simpleGenerator = simpleGenPool[depth];
@@ -144,6 +146,7 @@ class Bot{
   }
   public float minimaxPlayer(int depth, float alpha, float beta)
   {
+    Pos.playerTurn = true;
     return evaluator.evaluatePosition(Pos);
     if(Pos.hasAIWon()) return 1.0f;
 
@@ -167,6 +170,7 @@ class Bot{
     else entry.reset(key);
 
     if(depth < 0) {
+      Pos.playerTurn = true;
       float eval = evaluator.evaluatePosition(Pos);
       entry.storeAll((sbyte)depth, eval);
       return eval;
@@ -256,7 +260,6 @@ class Bot{
     doubleMoveArray doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorAI simpleGen = simpleGenPool[depth];
     doubleDiceGeneratorAI doubleGen = doubleGenPool[depth];
-    Pos.playerTurn = false;
     int num = 0;
     uint bestMove = 0;
     float bestScore = float.MinValue;
@@ -304,7 +307,6 @@ class Bot{
     doubleMoveArray doubleMoves = doubleMovesPool[0];
     simpleDiceGeneratorAI simpleGen = simpleGenPool[0];
     doubleDiceGeneratorAI doubleGen = doubleGenPool[0];
-    Pos.playerTurn = false;
     int num = 0;
     uint bestMove = 0;
     if(dice1 == dice2)
@@ -341,6 +343,7 @@ class Bot{
     {
       uint bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
 
+      Pos.ai_bearoff++;
       Pos.chips[from]++;
       Pos.ai_present ^= bit_mod;
 
@@ -348,6 +351,7 @@ class Bot{
 
       Pos.chips[from]--;
       Pos.ai_present ^= bit_mod;
+      Pos.ai_bearoff--;
 
     }
     else if(Pos.chips[to] == 1)
@@ -398,6 +402,7 @@ class Bot{
     {
       bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
 
+      Pos.ai_bearoff++;
       Pos.chips[from]++;
       Pos.ai_present ^= bit_mod;
 
@@ -431,7 +436,6 @@ class Bot{
     doubleMoveArray doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorPlayer simplePlayerGen = simplePlayerGenPool[depth];
     unorderedDoubleDiceGeneratorPlayer doublePlayerGen = doublePlayerGenPool[depth];
-    Pos.playerTurn = true;
     int num = 0;
     uint bestMove = 0;
     float bestScore = float.MaxValue;
@@ -479,7 +483,6 @@ class Bot{
     doubleMoveArray doubleMoves = doubleMovesPool[0];
     simpleDiceGeneratorPlayer simplePlayerGen = simplePlayerGenPool[0];
     unorderedDoubleDiceGeneratorPlayer doublePlayerGen = doublePlayerGenPool[0];
-    Pos.playerTurn = true;
     int num = 0;
     uint bestMove = 0;
     float bestScore = 1.0f;
@@ -516,11 +519,13 @@ class Bot{
     {
       uint bit_mod = (uint)(((Pos.chips[from] == 1) ? 1 : 0) << from);
 
+      Pos.player_bearoff++;
       Pos.chips[from]--;
       Pos.player_present ^= bit_mod;
 
       eval = evaluateMovePlayer(moveSequence, num - 1, depth, alpha, beta);
 
+      Pos.player_bearoff--;
       Pos.chips[from]++;
       Pos.player_present ^= bit_mod;
     }
@@ -570,6 +575,7 @@ class Bot{
     {
       uint bit_mod = (uint)(((Pos.chips[from] == 1) ? 1 : 0) << from);
 
+      Pos.player_bearoff++;
       Pos.chips[from]--;
       Pos.player_present ^= bit_mod;
     }

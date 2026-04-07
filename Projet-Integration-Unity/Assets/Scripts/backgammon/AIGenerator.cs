@@ -4,12 +4,6 @@ class simpleDiceGeneratorAI : generatorAI {
   public simpleMoveArray moveList;
   public int dice1;
   public int dice2;
-  CustomQuaternion q1;
-  CustomQuaternion q2;
-  CustomQuaternion q3;
-  CustomQuaternion q4;
-  CustomQuaternion q5;
-  CustomQuaternion q6;
   
   public simpleDiceGeneratorAI(int i, int j, simpleMoveArray arr, BoardState pos)
   {
