@@ -74,11 +74,11 @@ unsafe public class learn : MonoBehaviour
   }
   void OnApplicationQuit()
   {
-      SaveWeights("burger.bin");
+      //SaveWeights("burger.bin");
   }
   void SaveWeights(string filename)
   {
-      string path = Application.persistentDataPath + "/" + filename;
+      string path = Application.dataPath + "/" + filename;
       using (System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.Open(path, System.IO.FileMode.Create)))
       {
           foreach (Layer layer in AI.layers)
