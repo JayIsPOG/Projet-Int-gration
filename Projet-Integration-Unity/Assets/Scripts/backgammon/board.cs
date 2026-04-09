@@ -32,7 +32,6 @@ public class board : MonoBehaviour
     public int wins = 0;
 
     private List<int> dices;
-    List<CustomQuaternion> dice_roll;
     Bot bot;
     private int selectedDiceIndex;
     public burger[] dice_animations;
@@ -58,14 +57,13 @@ public class board : MonoBehaviour
         }
         else {
             for(int i = 0; i < dices.Count; i++)
-                StartCoroutine(dice_animations[i].playAnimation(dice_roll));
+                StartCoroutine(dice_animations[i].playAnimation());
         }
     }
     void Start()
     {
         dice_animations = new burger[4];
         for(int i = 0; i < 4; i++) dice_animations[i] = new burger(dice_texture);
-        dice_roll = dice_animations[0].LoadAnimation("burgerAnimation.bin");
         brain = new Learner();
         brain.LoadWeights("burger.bin");
         Pos = new BoardState();
@@ -127,18 +125,18 @@ public class board : MonoBehaviour
     void Update()
     {
         /*System.Random rng = new System.Random();
-        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
+        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), depth);
         if(Pos.hasPlayerWon())
         {
             Pos.set();
             game_count++;
+            wins++;
         }
-        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), depth);
+        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), 0);
         if(Pos.hasAIWon()) 
         {
             Pos.set();
             game_count++;
-            wins++;
         }*/
       
         Debug.Log(bot.evaluator.evaluatePosition(Pos));

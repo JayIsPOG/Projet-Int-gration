@@ -38,8 +38,6 @@ class Bot{
   //Minimax must exit if a player has won
   public float minimaxAi(int depth, float alpha, float beta)
   {
-    Pos.playerTurn = false;
-    return evaluator.evaluatePosition(Pos);
     if(Pos.hasPlayerWon()) return 0.0f;
 
     ulong key = TT.key(Pos);
@@ -146,8 +144,6 @@ class Bot{
   }
   public float minimaxPlayer(int depth, float alpha, float beta)
   {
-    Pos.playerTurn = true;
-    return evaluator.evaluatePosition(Pos);
     if(Pos.hasAIWon()) return 1.0f;
 
     ulong key = TT.key(Pos);
