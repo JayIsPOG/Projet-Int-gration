@@ -10,25 +10,45 @@ public class LevelDoor : MonoBehaviour
     public GameObject icon;
     public Sprite spriteOpen, spriteClose;
     public string lvlName;
+    public AudioSource audioSource;
+    public AudioClip openClip, closeClip;
+    private bool saving;
     void Start()
     {
-        
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(signal.GetComponent<LightReceiver>().open)
+        if(signal.GetComponent<DoorSignal>().open)
         {
-            open = true;
-            GetComponent<SpriteRenderer>().sprite = spriteOpen;
+            if (!open)
+            {
+                open = true;
+                GetComponent<SpriteRenderer>().sprite = spriteOpen;
+                audioSource.clip = openClip;
+                audioSource.Play();
+            }
+            
         }else{
-            open = false;
-            GetComponent<SpriteRenderer>().sprite = spriteClose;
+            if (open)
+            {
+                open = false;
+                GetComponent<SpriteRenderer>().sprite = spriteClose;
+                audioSource.clip = closeClip;
+                audioSource.Play();
+            }
         }
 
-        if(Input.GetKey(KeyCode.E) && open == true && player == true)
-            SceneManager.LoadScene(lvlName);
+        if(Input.GetKey(KeyCode.E) && open == true && player == true){
+            if(!saving)
+            {
+                saving = true;
+                FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].puzzlesCompleted ++;
+                FindObjectsByType<SceneManagerPuzzle>(FindObjectsSortMode.None)[0].CloseScene(lvlName);
+            }
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other) {

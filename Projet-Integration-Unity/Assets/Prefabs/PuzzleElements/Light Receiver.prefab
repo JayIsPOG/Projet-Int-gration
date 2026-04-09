@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: -176
   m_Sprite: {fileID: 21300130, guid: 29c9cded5e558164aaf8c9bf08aa1510, type: 3}
-  m_Color: {r: 0.69803923, g: 0.6901961, b: 0.654902, a: 1}
+  m_Color: {r: 0.5372549, g: 0.5176471, b: 0.4627451, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -235,7 +235,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: cb320ed1298f6284fac7a10b08d1ac93, type: 3}
-  m_Color: {r: 0.6981132, g: 0.6895514, b: 0.6553044, a: 1}
+  m_Color: {r: 0.5372549, g: 0.5176471, b: 0.4627451, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -263,6 +263,7 @@ MonoBehaviour:
   open: 0
   spriteLit: {fileID: 21300000, guid: cb320ed1298f6284fac7a10b08d1ac93, type: 3}
   spriteUnlit: {fileID: 21300000, guid: cb320ed1298f6284fac7a10b08d1ac93, type: 3}
+  lightPassesThrough: 0
 --- !u!114 &4882024935831364118
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,9 +10,11 @@ public class Pushable : MonoBehaviour
     public LayerMask wallLayer;
     public bool xLocked,yLocked;
 
+    public AudioSource audioSource;
+
     void Start()
     {
-        
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -48,6 +50,7 @@ public class Pushable : MonoBehaviour
     }
 
     void Drag(Vector3 direction){
+        audioSource.Play();
         if(Physics2D.Raycast(transform.position + direction * 1.5f, (Vector2)direction, 0.5f, wallLayer) == false){
             transform.position += direction;
         }

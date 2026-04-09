@@ -28,7 +28,7 @@ public class LightEmitter : MonoBehaviour
     {
         return transform.position + GetRotatedVector(incomingAngle) * 0.01f;
     }
-    protected virtual void Update()
+    public virtual void Update()
     {
         if(line) {
             line.GetComponent<LightLine>().nDensity = nDensity;
@@ -52,6 +52,7 @@ public class LightEmitter : MonoBehaviour
 
             if(hitNew != hitSaved)
             {
+                //Debug.Log(hitSaved is LightEmitter); //this returns false, but it should be true right ?
                 try{
                     Destroy(hitSaved.GetComponent<Mirror>().line.gameObject);
                     //hitSaved.GetComponent<Mirror>().lightSource = null;
@@ -60,7 +61,11 @@ public class LightEmitter : MonoBehaviour
                     Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
                 }catch{}
                 try{
-                hitSaved.GetComponent<LightReceiver>().hitByLight = false;
+                    hitSaved.GetComponent<LightReceiver>().hitByLight = false;
+                }catch{}
+                try{
+                    hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = false;
+                    Destroy(hitSaved.GetComponent<LightReceiverCrystal>().line.gameObject);
                 }catch{}
                 hitSaved = hitNew;
                 StartCoroutine(LightUp());
@@ -74,7 +79,11 @@ public class LightEmitter : MonoBehaviour
                 Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
             }catch{}
             try{
-            hitSaved.GetComponent<LightReceiver>().hitByLight = false;
+                hitSaved.GetComponent<LightReceiver>().hitByLight = false;
+            }catch{}
+            try{
+                hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = false;
+                Destroy(hitSaved.GetComponent<LightReceiverCrystal>().line.gameObject);
             }catch{}
             hitNew = null;
             hitSaved = hitNew;
@@ -102,8 +111,19 @@ public class LightEmitter : MonoBehaviour
             hitSaved.GetComponent<Lens>().lightSource = transform;
         }catch{}
         try{
-        hitSaved.GetComponent<LightReceiver>().hitByLight = true;
-        hitSaved.GetComponent<LightReceiver>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
+            hitSaved.GetComponent<LightReceiver>().hitByLight = true;
+            hitSaved.GetComponent<LightReceiver>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
+        }catch{}
+        try{
+            if(hitSaved.GetComponent<LightReceiverCrystal>().line == null)
+            {
+                hitSaved.GetComponent<LightReceiverCrystal>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                hitSaved.GetComponent<LightReceiverCrystal>().nDensity = nDensity;
+                hitSaved.GetComponent<LightReceiverCrystal>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
+                hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = true;
+                hitSaved.GetComponent<LightReceiverCrystal>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
+            }
+            hitSaved.GetComponent<LightReceiverCrystal>().lightSource = transform;
         }catch{}
         try{
             if(hitSaved.transform.name == "light Collisions turret" && line.GetComponent<LightLine>().waveLenghtInDensity == 700)

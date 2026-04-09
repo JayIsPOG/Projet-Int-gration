@@ -12,6 +12,11 @@ public class Rotate : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.E) && playerIn)
         {
             objToRotate.transform.localScale = new Vector3(-objToRotate.transform.localScale.x, 1f, 1f);
+            if(objToRotate.GetComponent<SpriteSorting>().offset == 130)
+                objToRotate.GetComponent<SpriteSorting>().offset = 127;
+            
+            else if(objToRotate.GetComponent<SpriteSorting>().offset == 127)
+                objToRotate.GetComponent<SpriteSorting>().offset = 130;
         }
     }
     void OnTriggerEnter2D(Collider2D other) {
