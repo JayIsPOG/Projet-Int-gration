@@ -63,7 +63,11 @@ public class Turret : MonoBehaviour
         player.gameObject.GetComponent<PlayerMovement>().movementSpeed = 0;
         yield return new WaitForSeconds(0.1f);
         player.gameObject.GetComponent<PlayerMovement>().enabled = false;
-        player.gameObject.GetComponent<SpriteRenderer>().color = player.gameObject.GetComponent<SpriteRenderer>().color - new Color(0,0,0,255);
+        player.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().color = player.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().color - new Color(0,0,0,255); //body
+        player.GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().color = player.GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().color - new Color(0,0,0,255); //head
+        player.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().color = player.GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().color - new Color(0,0,0,255); //head
+        player.GetChild(0).GetChild(1).gameObject.GetComponent<SpriteRenderer>().color = player.GetChild(0).GetChild(1).gameObject.GetComponent<SpriteRenderer>().color - new Color(0,0,0,255); //leg1
+        player.GetChild(0).GetChild(2).gameObject.GetComponent<SpriteRenderer>().color = player.GetChild(0).GetChild(2).gameObject.GetComponent<SpriteRenderer>().color - new Color(0,0,0,255); //leg2
         GameObject effect = Instantiate(effectKill, player.position, Quaternion.identity);
         Destroy(effect, 5f);
         yield return new WaitForSeconds(3f);

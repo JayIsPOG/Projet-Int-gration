@@ -18,6 +18,7 @@ public class MainMenuController : MonoBehaviour
     private int currentPosition;
     private bool moving, puzzle = false, backgammon = false, fight = false, title = true, loading = false;
     private string lvlName = "Puzzle 1";
+    public string puzzleLvl,fightLvl,backgammonLvl, aboutScene;
 
     void Start()
     {
@@ -58,6 +59,7 @@ public class MainMenuController : MonoBehaviour
                 menu.SetActive(false);
         }
 
+
         if(puzzle)
         {
             if (moving)
@@ -68,7 +70,7 @@ public class MainMenuController : MonoBehaviour
             {
                 if (player.transform.localPosition == puzzlePath[^1])
                 {
-                    lvlName = "Puzzle 1";
+                    lvlName = puzzleLvl;
                     loading = true;
                 }else
                     currentPosition++;
@@ -85,7 +87,7 @@ public class MainMenuController : MonoBehaviour
             {
                 if (player.transform.localPosition == backgammonPath[^1])
                 {
-                    lvlName = "Puzzle 1";
+                    lvlName = backgammonLvl;
                     loading = true;
                 }else
                     currentPosition++;
@@ -102,7 +104,7 @@ public class MainMenuController : MonoBehaviour
             {
                 if (player.transform.localPosition == fightPath[^1])
                 {
-                    lvlName = "Puzzle 1";
+                    lvlName = fightLvl;
                     loading = true;
                 }else
                     currentPosition++;
@@ -149,6 +151,8 @@ public class MainMenuController : MonoBehaviour
     public void About()
     {
         GetComponent<AudioSource>().Play();
+        lvlName = aboutScene;
+        loading = true;
     }
 
     public void Puzzle()
