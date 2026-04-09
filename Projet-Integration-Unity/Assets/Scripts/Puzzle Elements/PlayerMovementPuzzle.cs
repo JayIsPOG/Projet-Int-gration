@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovementPuzzle : MonoBehaviour
 {
     public float movementSpeed = 10f;
     public int facingDirection = 1;

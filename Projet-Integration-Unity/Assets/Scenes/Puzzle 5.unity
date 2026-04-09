@@ -51968,6 +51968,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: knight
       objectReference: {fileID: 0}
+    - target: {fileID: 4641168346201923190, guid: baf816376de19a848a1424341e8e6e87, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: baf816376de19a848a1424341e8e6e87, type: 3}
 --- !u!4 &1136318846 stripped
