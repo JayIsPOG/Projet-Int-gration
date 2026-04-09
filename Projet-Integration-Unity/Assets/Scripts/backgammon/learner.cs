@@ -294,7 +294,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     }
     public void LoadWeights(string filename)
   {
-      string path = Application.persistentDataPath + "/" + filename;
+      string path = Application.dataPath + "/" + filename;
       if (!System.IO.File.Exists(path)) return;
       using (System.IO.BinaryReader reader = new System.IO.BinaryReader(System.IO.File.Open(path, System.IO.FileMode.Open)))
       {
