@@ -84,4 +84,13 @@ class interractiveMoves
     moveSequence |= (uint)(from | (dice << 5));
     return moveTodo <= 0;
   }
+  public bool makeBearoffMove(int from)
+  {
+    Pos.player_bearoff++;
+    
+    moveTodo--;
+    moveSequence <<= 8;
+    moveSequence |= (uint)(from);
+    return moveTodo <= 0;
+  }
 }

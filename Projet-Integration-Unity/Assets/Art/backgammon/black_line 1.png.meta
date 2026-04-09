@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 1331d6861d48f4a46994c0742fd1f841
+guid: 6755eccc4e75904429c7a24cf7a1372e
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -33,7 +33,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -47,7 +47,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 50
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -105,7 +105,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: white_line_0
+      name: black_line_0
       rect:
         serializedVersion: 2
         x: 0
@@ -119,14 +119,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2461247a51162a341b939872ab60327d
-      internalID: 28868912
+      spriteID: cf00f57ff523b9747829d119bebe90c5
+      internalID: 876369243
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: white_line_1
+      name: black_line_1
       rect:
         serializedVersion: 2
         x: 0
@@ -140,14 +140,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: dcdeed72229467d46a688065eba3e483
-      internalID: 1980980075
+      spriteID: a0fc7b1e1e861ee4992ff20b8eb7693f
+      internalID: 347859054
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: white_line_2
+      name: black_line_2
       rect:
         serializedVersion: 2
         x: 0
@@ -161,8 +161,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9aa4cc44cd58f0a47994c736e3b4ace6
-      internalID: -216546684
+      spriteID: 1857d4c93e3818d4c90006523f1c9edd
+      internalID: -1735254799
       vertices: []
       indices: 
       edges: []
@@ -178,9 +178,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      white_line_0: 28868912
-      white_line_1: 1980980075
-      white_line_2: -216546684
+      black_line_0: 876369243
+      black_line_1: 347859054
+      black_line_2: -1735254799
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

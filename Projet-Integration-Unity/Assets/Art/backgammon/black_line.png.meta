@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 50f4c9e18ea4ba54fb1d964f3068ca00
+guid: 8281e81fe5fa26746b5b5d02ae49b0e7
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -33,7 +33,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -47,7 +47,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 50
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -105,7 +105,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: white_line_flip_0
+      name: black_line_0
       rect:
         serializedVersion: 2
         x: 0
@@ -119,14 +119,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4fcd6e2b355af774592562600d5bf114
-      internalID: -433087594
+      spriteID: cf00f57ff523b9747829d119bebe90c5
+      internalID: 876369243
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: white_line_flip_1
+      name: black_line_1
       rect:
         serializedVersion: 2
         x: 0
@@ -140,14 +140,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 39cef0630f50d3548bb60759ff4962ea
-      internalID: 219787384
+      spriteID: a0fc7b1e1e861ee4992ff20b8eb7693f
+      internalID: 347859054
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: white_line_flip_2
+      name: black_line_2
       rect:
         serializedVersion: 2
         x: 0
@@ -161,8 +161,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0e50ab9f89ef8b448b9f8cab2ac0029c
-      internalID: -1432693758
+      spriteID: 1857d4c93e3818d4c90006523f1c9edd
+      internalID: -1735254799
       vertices: []
       indices: 
       edges: []
@@ -178,9 +178,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      white_line_flip_0: -433087594
-      white_line_flip_1: 219787384
-      white_line_flip_2: -1432693758
+      black_line_0: 876369243
+      black_line_1: 347859054
+      black_line_2: -1735254799
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

@@ -19,9 +19,9 @@ public class board : MonoBehaviour
     Learner brain;
     private float xUnit;
     private float yUnit;
-    public float xBorder = 50;
+    public float xBorder = 128;
     private float chipUnit;
-    private Texture2D selected_chip = null;
+    bool hasSelected = false;
     private int pick_from;
     private BoardState Pos;
     private interractiveMoves moveGenerator;
@@ -35,8 +35,16 @@ public class board : MonoBehaviour
     Bot bot;
     private int selectedDiceIndex;
     public burger[] dice_animations;
-    void rollDices()
+
+    void playBot()
     {
+        if(Pos.hasPlayerWon()) Application.Quit();
+        bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
+        playPlayer();
+    }
+    void playPlayer()
+    {
+        if(Pos.hasAIWon()) Application.Quit(); // fix
         Pos.playerTurn = true;
         dices.Clear();
         dices.Add(Random.Range(1, 7));
@@ -52,8 +60,7 @@ public class board : MonoBehaviour
         }
         moveGenerator.generate(dices[0], dices[1]);
         if(moveGenerator.moveTodo <= 0){ // player must skip his turn
-            bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
-            rollDices();
+            playBot();
         }
         else {
             for(int i = 0; i < dices.Count; i++)
@@ -71,7 +78,7 @@ public class board : MonoBehaviour
         moveGenerator = new interractiveMoves(Pos);
         xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
-        chipUnit = xUnit * 0.8f;
+        chipUnit = xUnit * 0.78125f;
 
         int faceHeight = dice_texture.height / 6;
         int faceWidth = dice_texture.width;
@@ -84,7 +91,7 @@ public class board : MonoBehaviour
             dice_faces[5 - i].Apply();
         }
         dices = new List<int>();
-        rollDices();
+        playPlayer();
         selectedDiceIndex= 255;
     }
 
@@ -118,8 +125,8 @@ public class board : MonoBehaviour
     }
     int getDiceIndex()
     {
-        int index = (int)((Screen.height - Input.mousePosition.y) / chipUnit);
-        if(Input.mousePosition.x <= chipUnit && index < dices.Count) return index;
+        int index = (int)((Screen.height - Input.mousePosition.y) / xUnit);
+        if(Input.mousePosition.x <= xUnit && index < dices.Count) return index;
         else return 255;
     }
     void Update()
@@ -142,21 +149,30 @@ public class board : MonoBehaviour
         Debug.Log(bot.evaluator.evaluatePosition(Pos));
         xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
-        chipUnit = xUnit * 0.8f;
+        chipUnit = xUnit * 0.78125f;
 
         if (Input.GetMouseButton(0))
         {
-            if(selected_chip == null)
+            if(!hasSelected)
             {
-                int index = getMouseIndex();
-                if(index != 255) {
-                    if(Pos.chips[index] > 0)
+                pick_from = getMouseIndex();
+                if(pick_from != 255) {
+                    if(Pos.chips[pick_from] > 0)
                     {
-                        Pos.chips[index]--;
-                        Pos.player_present ^= (Pos.chips[index] == 0 ? 1u : 0u) << index;
-                        pick_from = index;
-                        selected_chip = white_chip_texture;
-                        //if(!(Pos.canPlayerBearOff() && index + dices[selectedDiceIndex] >= 25)) todo
+                        Pos.chips[pick_from]--;
+                        Pos.player_present ^= (Pos.chips[pick_from] == 0 ? 1u : 0u) << pick_from;
+                        if(Pos.canPlayerBearOff() && selectedDiceIndex != 255 && pick_from + dices[selectedDiceIndex] >= 25 && moveGenerator.isMoveValid((uint)pick_from))
+                        {
+                            if(moveGenerator.makeBearoffMove(pick_from)) {
+                                playBot();
+                            }
+                            else {
+                                removeDiceAt(selectedDiceIndex);
+                                if(Pos.hasPlayerWon()) Application.Quit();
+                            }
+                            selectedDiceIndex = 255;
+                        }
+                        else hasSelected = true;
                     }
                 }
                 int dice_index = getDiceIndex();
@@ -165,16 +181,18 @@ public class board : MonoBehaviour
         }
         else
         {
-            if(selected_chip != null)
+            if(hasSelected)
             {
                 int index = getMouseIndex();
                 if(index != 255 && selectedDiceIndex != 255 && pick_from + dices[selectedDiceIndex] == index && moveGenerator.isMoveValid((uint)((uint)pick_from | (uint)(dices[selectedDiceIndex] << 5))))
                 {
                     if(moveGenerator.placeChip(pick_from, dices[selectedDiceIndex])) {
-                        bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
-                        rollDices();
+                        playBot();
                     }
-                    else removeDiceAt(selectedDiceIndex);
+                    else {
+                        removeDiceAt(selectedDiceIndex);
+                        if(Pos.hasPlayerWon()) Application.Quit();
+                    }
                     selectedDiceIndex= 255;
                 }
                 else
@@ -183,7 +201,7 @@ public class board : MonoBehaviour
                     Pos.chips[pick_from]++;
                 }
             }
-            selected_chip = null;
+            hasSelected = false;
         }
     }
 
@@ -234,7 +252,7 @@ public class board : MonoBehaviour
         }
 
         for(int i = 0; i < dices.Count; i++)
-            GUI.DrawTexture(new Rect(0, i * chipUnit, chipUnit, chipUnit), dice_animations[i].texture);
+            GUI.DrawTexture(new Rect(0, i * xUnit, xUnit, xUnit), dice_animations[i].texture);
 
         if(Pos.chips[25] < 0)
         {
@@ -248,6 +266,6 @@ public class board : MonoBehaviour
             GUI.Label(new Rect(6 * xUnit + xBorder + xUnit / 4, 0, chipUnit, chipUnit), Pos.chips[0].ToString());
         }
 
-        if(selected_chip != null) GUI.DrawTexture(new Rect(Input.mousePosition.x - chipUnit / 2, Screen.height - Input.mousePosition.y - chipUnit / 2, chipUnit, chipUnit), selected_chip);
+        if(hasSelected) GUI.DrawTexture(new Rect(Input.mousePosition.x - chipUnit / 2, Screen.height - Input.mousePosition.y - chipUnit / 2, chipUnit, chipUnit), white_chip_texture);
     }
 }

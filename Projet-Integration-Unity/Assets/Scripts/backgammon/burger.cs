@@ -12,7 +12,8 @@ public class burger
     static readonly float cubeWidth = 36;
     static readonly int distanceFromCam = 1500;
     static readonly float zoom = 889;
-    float faceWidth, faceHeight;
+    public static readonly int texture_size = 32;
+    public int faceWidth, faceHeight;
     float m00, m01, m02, m10, m11, m12, m20, m21, m22;
     float A, B, C;
     float[] zBuffer;
@@ -40,7 +41,7 @@ public class burger
         faceHeight = dices.height / 6;
         Color32[] faces = dices.GetPixels32();
 
-        int size = (int)(faceWidth * faceHeight);
+        int size = faceWidth * faceHeight;
 
         face1 = new Color32[size];
         face2 = new Color32[size];
@@ -56,7 +57,7 @@ public class burger
         System.Array.Copy(faces, size * 4, face5, 0, size);
         System.Array.Copy(faces, size * 5, face6, 0, size);
 
-        texture = new Texture2D(32, 32); // make dimensions adaptable
+        texture = new Texture2D(texture_size, texture_size); // make dimensions adaptable
         texture.filterMode = FilterMode.Point;
         pixels = texture.GetPixels32();
         
@@ -106,7 +107,7 @@ public class burger
         {
             for (float cubeY = -cubeWidth / 2; cubeY < cubeWidth / 2; cubeY += 1) 
             {
-                int index = (int)((cubeY + cubeWidth / 2) * (faceHeight / cubeWidth)) * (int)faceWidth + (int)((cubeX + cubeWidth / 2) * (faceWidth / cubeWidth));// maybe just increment, idk
+                int index = (int)((cubeY + cubeWidth / 2) * ((float)faceHeight / cubeWidth)) * faceWidth + (int)((cubeX + cubeWidth / 2) * ((float)faceWidth / cubeWidth));// maybe just increment, idk
                 calculateForSurface(cubeX, cubeY, -cubeWidth / 2, face1[index]);
                 calculateForSurface(cubeX, cubeY, cubeWidth / 2, face3[index]);
                 calculateForSurface(cubeWidth / 2, cubeY, cubeX, face2[index]);
