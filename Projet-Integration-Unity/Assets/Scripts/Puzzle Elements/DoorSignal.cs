@@ -21,6 +21,11 @@ public class DoorSignal : MonoBehaviour
                 if (!obj.GetComponent<LightReceiver>().open)
                     shouldOpen = false;
             }
+            if(obj.GetComponent<LightReceiver>())
+            {
+                if (!obj.GetComponent<LightReceiver>().open)
+                    shouldOpen = false;
+            }
             open = shouldOpen;
         }
     }
