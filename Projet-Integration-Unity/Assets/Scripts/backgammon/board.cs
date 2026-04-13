@@ -35,7 +35,35 @@ public class board : MonoBehaviour
     Bot bot;
     private int selectedDiceIndex;
     public burger[] dice_animations;
+    public AudioClip simple_move_sound;
+    public AudioClip eat_move_sound;
+    void Start()
+    {
+        dice_animations = new burger[4];
+        for(int i = 0; i < 4; i++) dice_animations[i] = new burger(dice_texture);
+        brain = new Learner();
+        brain.LoadWeights("burger.bin");
+        Pos = new BoardState();
+        bot = new Bot(Pos, brain, max_depth);
+        moveGenerator = new interractiveMoves(Pos, simple_move_sound, eat_move_sound);
+        xUnit = ((float)Screen.width - 2 * xBorder) / 13;
+        yUnit = 3 * xUnit;
+        chipUnit = xUnit * 0.78125f;
 
+        int faceHeight = dice_texture.height / 6;
+        int faceWidth = dice_texture.width;
+
+        for(int i = 0; i < 6; i++)
+        {
+            Color[] pixels = dice_texture.GetPixels(0, i * faceHeight, faceWidth, faceHeight);
+            dice_faces[5 - i] = new Texture2D(faceWidth, faceHeight);
+            dice_faces[5 - i].SetPixels(pixels);
+            dice_faces[5 - i].Apply();
+        }
+        dices = new List<int>();
+        playPlayer();
+        selectedDiceIndex= 255;
+    }
     void playBot()
     {
         if(Pos.hasPlayerWon()) Application.Quit();
@@ -66,33 +94,6 @@ public class board : MonoBehaviour
             for(int i = 0; i < dices.Count; i++)
                 StartCoroutine(dice_animations[i].playAnimation());
         }
-    }
-    void Start()
-    {
-        dice_animations = new burger[4];
-        for(int i = 0; i < 4; i++) dice_animations[i] = new burger(dice_texture);
-        brain = new Learner();
-        brain.LoadWeights("burger.bin");
-        Pos = new BoardState();
-        bot = new Bot(Pos, brain, max_depth);
-        moveGenerator = new interractiveMoves(Pos);
-        xUnit = ((float)Screen.width - 2 * xBorder) / 13;
-        yUnit = 3 * xUnit;
-        chipUnit = xUnit * 0.78125f;
-
-        int faceHeight = dice_texture.height / 6;
-        int faceWidth = dice_texture.width;
-
-        for(int i = 0; i < 6; i++)
-        {
-            Color[] pixels = dice_texture.GetPixels(0, i * faceHeight, faceWidth, faceHeight);
-            dice_faces[5 - i] = new Texture2D(faceWidth, faceHeight);
-            dice_faces[5 - i].SetPixels(pixels);
-            dice_faces[5 - i].Apply();
-        }
-        dices = new List<int>();
-        playPlayer();
-        selectedDiceIndex= 255;
     }
 
     void removeDiceAt(int index)
@@ -217,7 +218,7 @@ public class board : MonoBehaviour
             GUI.DrawTexture(new Rect(x, Screen.height - yUnit, xUnit, yUnit), black_pike);
         }
         
-        GUI.DrawTexture(new Rect(6 * xUnit + xBorder + xUnit / 4, 0, xUnit / 2, Screen.height), Texture2D.grayTexture);
+        GUI.DrawTexture(new Rect(6 * xUnit + xBorder + xUnit * 0.25f, 0, xUnit * 0.5f, Screen.height), Texture2D.grayTexture);
         
         for(float i = 7; i < 13; i+=2)
         {
@@ -232,40 +233,46 @@ public class board : MonoBehaviour
         for(int i = 1; i < 7; i++)
         {
             float x = (13 - i) * xUnit + (xUnit - chipUnit) / 2 + xBorder;
-            for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x, j * chipUnit / 2, chipUnit, chipUnit), white_chip_texture);
-            for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit / 2, chipUnit, chipUnit), black_chip_texture);
+            for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x,  j * chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
+            for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit * 0.5f, chipUnit, chipUnit), black_chip_texture);
             
             x = (i - 1) * xUnit + (xUnit - chipUnit) / 2 + xBorder;
-            for(int j = 0; j < Pos.chips[i + 12]; j++) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit - j * chipUnit / 2, chipUnit, chipUnit), white_chip_texture);
-            for(int j = 0; j > Pos.chips[i + 12]; j--) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit + j * chipUnit / 2, chipUnit, chipUnit), black_chip_texture);
+            for(int j = 0; j < Pos.chips[i + 12]; j++) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit - j * chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
+            for(int j = 0; j > Pos.chips[i + 12]; j--) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit + j * chipUnit * 0.5f, chipUnit, chipUnit), black_chip_texture);
         }
         
         for(int i = 7; i < 13; i++)
         {
             float x = (12 - i) * xUnit + (xUnit - chipUnit) / 2 + xBorder;
-            for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x, j * chipUnit / 2, chipUnit, chipUnit), white_chip_texture);
-            for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit / 2, chipUnit, chipUnit), black_chip_texture);
+            for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x,  j * chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
+            for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit * 0.5f, chipUnit, chipUnit), black_chip_texture);
             
             x = i * xUnit + (xUnit - chipUnit) / 2 + xBorder;
-            for(int j = 0; j < Pos.chips[i + 12]; j++) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit - j * chipUnit / 2, chipUnit, chipUnit), white_chip_texture);
-            for(int j = 0; j > Pos.chips[i + 12]; j--) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit + j * chipUnit / 2, chipUnit, chipUnit), black_chip_texture);
+            for(int j = 0; j < Pos.chips[i + 12]; j++) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit - j * chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
+            for(int j = 0; j > Pos.chips[i + 12]; j--) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit + j * chipUnit * 0.5f, chipUnit, chipUnit), black_chip_texture);
         }
 
         for(int i = 0; i < dices.Count; i++)
             GUI.DrawTexture(new Rect(0, i * xUnit, xUnit, xUnit), dice_animations[i].texture);
 
+        GUIStyle font = new GUIStyle(GUI.skin.label);
+        font.fontSize = 40;
+        font.alignment = TextAnchor.MiddleCenter;
+
         if(Pos.chips[25] < 0)
         {
-            GUI.DrawTexture(new Rect(6 * xUnit + xBorder + xUnit / 4, Screen.height - chipUnit, chipUnit, chipUnit), black_chip_texture);
-            GUI.Label(new Rect(6 * xUnit + xBorder + xUnit / 4, Screen.height - chipUnit, chipUnit, chipUnit), (-Pos.chips[25]).ToString());
+            font.normal.textColor = Color.white;
+            GUI.DrawTexture(new Rect(xUnit * 13.0f / 2 + xBorder - chipUnit * 0.5f, Screen.height - chipUnit, chipUnit, chipUnit), black_chip_texture);
+            GUI.Label(new Rect(xUnit * 13.0f / 2 + xBorder - chipUnit * 0.5f, Screen.height - chipUnit, chipUnit, chipUnit), (-Pos.chips[25]).ToString(), font);
         }
         
         if(Pos.chips[0] > 0)
         {
-            GUI.DrawTexture(new Rect(6 * xUnit + xBorder + xUnit / 4, 0, chipUnit, chipUnit), white_chip_texture);
-            GUI.Label(new Rect(6 * xUnit + xBorder + xUnit / 4, 0, chipUnit, chipUnit), Pos.chips[0].ToString());
+            font.normal.textColor = Color.black;
+            GUI.DrawTexture(new Rect(xUnit * 13.0f / 2 + xBorder - chipUnit * 0.5f, 0, chipUnit, chipUnit), white_chip_texture);
+            GUI.Label(new Rect(xUnit * 13.0f / 2 + xBorder - chipUnit * 0.5f, 0, chipUnit, chipUnit), Pos.chips[0].ToString(), font);
         }
 
-        if(hasSelected) GUI.DrawTexture(new Rect(Input.mousePosition.x - chipUnit / 2, Screen.height - Input.mousePosition.y - chipUnit / 2, chipUnit, chipUnit), white_chip_texture);
+        if(hasSelected) GUI.DrawTexture(new Rect(Input.mousePosition.x - chipUnit * 0.5f, Screen.height - Input.mousePosition.y - chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
     }
 }

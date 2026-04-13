@@ -9,9 +9,13 @@ class interractiveMoves
   simpleDiceGeneratorPlayer singleGenerator;
   doubleDiceGeneratorPlayer doubleGenerator;
   BoardState Pos;
+
   uint moveSequence;
+  
+  public AudioClip simple_move_sound;
+  public AudioClip eat_move_sound;
   public int moveTodo;
-  public interractiveMoves(BoardState pos)
+  public interractiveMoves(BoardState pos, AudioClip s, AudioClip e)
   {
     Pos = pos;
     moveTodo = 0;
@@ -19,8 +23,9 @@ class interractiveMoves
     doubleMoves = new doubleMoveArray();
     doubleGenerator = new doubleDiceGeneratorPlayer(0, doubleMoves, pos);
     singleGenerator = new simpleDiceGeneratorPlayer(0, 0, simpleMoves, pos);
+    eat_move_sound = e;
+    simple_move_sound = s;
   }
-
   public void generate(int dice1, int dice2)
   {
     moveSequence = 0;
@@ -62,6 +67,7 @@ class interractiveMoves
     int to = from + dice;
     if(Pos.chips[to] < 0)
     { 
+      AudioSource.PlayClipAtPoint(eat_move_sound, Camera.main.transform.position);
       uint bit_to = 1u << to;
       uint bit_mod = bit_to;
       bit_to |= ((Pos.chips[25] == 0) ? 1u : 0u) << 25;
@@ -73,6 +79,7 @@ class interractiveMoves
     }
     else
     {
+      AudioSource.PlayClipAtPoint(simple_move_sound, Camera.main.transform.position);
       uint bit_mod = (uint)(((Pos.chips[to] == 0) ? 1 : 0) << to);
 
       Pos.chips[to]++;
@@ -86,6 +93,7 @@ class interractiveMoves
   }
   public bool makeBearoffMove(int from)
   {
+    AudioSource.PlayClipAtPoint(simple_move_sound, Camera.main.transform.position);
     Pos.player_bearoff++;
     
     moveTodo--;

@@ -84,7 +84,7 @@ class Bot{
           simpleGenerator.setDices(d1, d2);
 
           childMin = Mathf.Max(18 * (alpha - upper_bound) + 1, 0);
-          childMax = Mathf.Min(18 * (beta - lower_bound)     , 1);
+          childMax = Mathf.Min(18 * (beta - lower_bound), 1);
 
           simpleGenerator.generate();
           for(int i = 0; i < _simpleMoves.size(); i++){

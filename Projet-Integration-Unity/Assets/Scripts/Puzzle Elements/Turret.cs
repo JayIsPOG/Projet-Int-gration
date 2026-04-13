@@ -29,7 +29,7 @@ public class Turret : MonoBehaviour
     }
     void Update()
     {
-        Direction = player.position - transform.position + new Vector3(0,1,0);
+        Direction = player.position - transform.position - new Vector3(0,1,0);
         RaycastHit2D rayInfo = Physics2D.Raycast(transform.position + new Vector3(0,1,0), Direction, range, layerMaskPlayer);
         
         if (rayInfo)

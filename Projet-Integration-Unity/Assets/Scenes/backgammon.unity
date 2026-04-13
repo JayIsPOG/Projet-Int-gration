@@ -228,7 +228,9 @@ MonoBehaviour:
   rev_black_pike: {fileID: 2800000, guid: 1b882218b8b740b4696f68c7f62f4220, type: 3}
   rev_white_pike: {fileID: 2800000, guid: 278252e1c479a084aa3c460bec506ac3, type: 3}
   xBorder: 128
-  depth: 1
+  depth: 2
   max_depth: 4
   game_count: 0
   wins: 0
+  simple_move_sound: {fileID: 8300000, guid: ddfc079408c34d647adb630004e55b38, type: 3}
+  eat_move_sound: {fileID: 8300000, guid: eed4d94923d3e454b9f75ac8f1feace3, type: 3}
