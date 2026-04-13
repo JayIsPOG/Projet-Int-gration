@@ -24,7 +24,7 @@ public class Turret : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, range);
 
         if(player != null)
-            Gizmos.DrawLine(transform.position, player.position);
+            Gizmos.DrawLine(transform.position + new Vector3(0,1,0), player.position);
         
     }
     void Update()
