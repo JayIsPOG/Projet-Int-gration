@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 /*
 there is an offset of one to the rendering and picking chips(cuz lowest board index = 1, bar = 0)
 */
@@ -66,13 +67,13 @@ public class board : MonoBehaviour
     }
     void playBot()
     {
-        if(Pos.hasPlayerWon()) Application.Quit();
+        if(Pos.hasPlayerWon()) FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
         bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
         playPlayer();
     }
     void playPlayer()
     {
-        if(Pos.hasAIWon()) Application.Quit(); // fix
+        if(Pos.hasAIWon()) SceneManager.LoadScene("Main_Menu"); // fix
         Pos.playerTurn = true;
         dices.Clear();
         dices.Add(Random.Range(1, 7));
@@ -169,7 +170,7 @@ public class board : MonoBehaviour
                             }
                             else {
                                 removeDiceAt(selectedDiceIndex);
-                                if(Pos.hasPlayerWon()) Application.Quit();
+                                if(Pos.hasPlayerWon()) FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
                             }
                             selectedDiceIndex = 255;
                         }
@@ -192,7 +193,7 @@ public class board : MonoBehaviour
                     }
                     else {
                         removeDiceAt(selectedDiceIndex);
-                        if(Pos.hasPlayerWon()) Application.Quit();
+                        if(Pos.hasPlayerWon()) FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
                     }
                     selectedDiceIndex= 255;
                 }
