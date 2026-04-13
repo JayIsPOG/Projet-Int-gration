@@ -13,6 +13,6 @@ public class Mirror : LightEmitter
     }
     public override Vector3 GetRayStartPos(float incomingAngle)
     {
-        return transform.position + GetRotatedVector(incomingAngle) * 0.01f;
+        return transform.position + GetRotatedVector(incomingAngle) * 0.05f;
     }
 }
