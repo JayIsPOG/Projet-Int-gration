@@ -67,7 +67,11 @@ public class board : MonoBehaviour
     }
     void playBot()
     {
-        if(Pos.hasPlayerWon()) FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
+        if(Pos.hasPlayerWon()){
+            FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
+            FindObjectOfType<DataPersistanceManager>().SaveGame();
+        }
+        
         bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
         playPlayer();
     }
@@ -170,7 +174,10 @@ public class board : MonoBehaviour
                             }
                             else {
                                 removeDiceAt(selectedDiceIndex);
-                                if(Pos.hasPlayerWon()) FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
+                                if(Pos.hasPlayerWon()){
+                                    FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
+                                    FindObjectOfType<DataPersistanceManager>().SaveGame();
+                                }
                             }
                             selectedDiceIndex = 255;
                         }
@@ -193,7 +200,10 @@ public class board : MonoBehaviour
                     }
                     else {
                         removeDiceAt(selectedDiceIndex);
-                        if(Pos.hasPlayerWon()) FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
+                        if(Pos.hasPlayerWon()){
+                            FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
+                            FindObjectOfType<DataPersistanceManager>().SaveGame();
+                        }
                     }
                     selectedDiceIndex= 255;
                 }

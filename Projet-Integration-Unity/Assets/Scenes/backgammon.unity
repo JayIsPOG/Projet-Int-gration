@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 1647343602}
   - component: {fileID: 1647343601}
   - component: {fileID: 1647343604}
+  - component: {fileID: 1647343605}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -234,3 +235,21 @@ MonoBehaviour:
   wins: 0
   simple_move_sound: {fileID: 8300000, guid: ddfc079408c34d647adb630004e55b38, type: 3}
   eat_move_sound: {fileID: 8300000, guid: eed4d94923d3e454b9f75ac8f1feace3, type: 3}
+--- !u!114 &1647343605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1647343600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4a362d8f2a8c974a9f11d007b55941a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  puzzlesCompleted: 0
+  fightsCompleted: 0
+  backgammonCompleted: 0
+  puzzlesKey: 0
+  fightsKey: 0
+  backgammonKey: 0
