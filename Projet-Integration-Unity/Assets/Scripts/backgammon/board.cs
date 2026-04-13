@@ -70,6 +70,8 @@ public class board : MonoBehaviour
         if(Pos.hasPlayerWon()){
             FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
             FindObjectOfType<DataPersistanceManager>().SaveGame();
+            SceneManager.LoadScene("Main_Menu");
+            return;
         }
         
         bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
@@ -77,7 +79,10 @@ public class board : MonoBehaviour
     }
     void playPlayer()
     {
-        if(Pos.hasAIWon()) SceneManager.LoadScene("Main_Menu"); // fix
+        if(Pos.hasAIWon()) {
+            SceneManager.LoadScene("Main_Menu");
+            return;
+        }
         Pos.playerTurn = true;
         dices.Clear();
         dices.Add(Random.Range(1, 7));
@@ -177,6 +182,8 @@ public class board : MonoBehaviour
                                 if(Pos.hasPlayerWon()){
                                     FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
                                     FindObjectOfType<DataPersistanceManager>().SaveGame();
+                                    SceneManager.LoadScene("Main_Menu");
+                                    return;
                                 }
                             }
                             selectedDiceIndex = 255;
@@ -203,9 +210,11 @@ public class board : MonoBehaviour
                         if(Pos.hasPlayerWon()){
                             FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
                             FindObjectOfType<DataPersistanceManager>().SaveGame();
+                            SceneManager.LoadScene("Main_Menu");
+                            return;
                         }
                     }
-                    selectedDiceIndex= 255;
+                    selectedDiceIndex = 255;
                 }
                 else
                 {
