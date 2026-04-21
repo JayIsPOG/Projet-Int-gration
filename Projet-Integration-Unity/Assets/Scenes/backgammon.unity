@@ -222,12 +222,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dice_texture: {fileID: 2800000, guid: 56167406354f4424cad5435cceee2385, type: 3}
+  dice_texture_opponent: {fileID: 2800000, guid: 903fc3d7bdb15234d81cb183c9252ddd, type: 3}
   black_chip_texture: {fileID: 2800000, guid: f93a3a8fd2275354cbcb5eb9c6fc5f42, type: 3}
   white_chip_texture: {fileID: 2800000, guid: 98ad64a435dbf6044b4df92339e0aaf4, type: 3}
   black_pike: {fileID: 2800000, guid: 8281e81fe5fa26746b5b5d02ae49b0e7, type: 3}
   white_pike: {fileID: 2800000, guid: 6755eccc4e75904429c7a24cf7a1372e, type: 3}
   rev_black_pike: {fileID: 2800000, guid: 1b882218b8b740b4696f68c7f62f4220, type: 3}
   rev_white_pike: {fileID: 2800000, guid: 278252e1c479a084aa3c460bec506ac3, type: 3}
+  stackRatio: 0.38
   xBorder: 128
   depth: 2
   max_depth: 4
@@ -235,6 +237,8 @@ MonoBehaviour:
   wins: 0
   simple_move_sound: {fileID: 8300000, guid: ddfc079408c34d647adb630004e55b38, type: 3}
   eat_move_sound: {fileID: 8300000, guid: eed4d94923d3e454b9f75ac8f1feace3, type: 3}
+  slide_lenght: 5
+  deltaTimeSlide: 0.01
 --- !u!114 &1647343605
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -34,15 +34,13 @@ class Bot{
       simplePlayerGenPool[i] = new simpleDiceGeneratorPlayer(0, 0, simpleMovesPool[i], pos);
     }
   }
-
-  //Minimax must exit if a player has won
   public float minimaxAi(int depth, float alpha, float beta)
   {
     if(Pos.hasPlayerWon()) return 0.0f;
 
     ulong key = TT.key(Pos);
     int index = TT.getIndex(key);
-    evalInfo entry = TT.table[index]; // change later to iterate instead of creating a new key from scratch
+    evalInfo entry = TT.table[index];
     if (entry.key == key) {
       if (entry.upper_bound == entry.lower_bound && entry.udepth == entry.ldepth && entry.udepth >= depth) 
         return entry.upper_bound;
@@ -88,7 +86,7 @@ class Bot{
 
           simpleGenerator.generate();
           for(int i = 0; i < _simpleMoves.size(); i++){
-            max = Mathf.Max(max, evaluateMoveAI(_simpleMoves.moves[i], _simpleMoves.moveDepth - 1, depth - 1, childMin, childMax));
+            max = Mathf.Max(max, evaluateMoveAI(_simpleMoves.moves[i], depth - 1, childMin, childMax));
             childMin = Mathf.Max(childMin, max);
             if(childMin >= childMax) break; // reg alpha beta pruning
           }
@@ -119,7 +117,7 @@ class Bot{
 
       doubleGenerator.generate();
       for(int i = 0; i < _doubleMoves.size(); i++){
-        max = Mathf.Max(max, evaluateMoveAI(_doubleMoves.moves[i], _doubleMoves.moveDepth - 1, depth - 1, childMin, childMax));
+        max = Mathf.Max(max, evaluateMoveAI(_doubleMoves.moves[i], depth - 1, childMin, childMax));
         childMin = Mathf.Max(childMin, max);
         if (childMin >= childMax) break;
       }
@@ -148,7 +146,7 @@ class Bot{
 
     ulong key = TT.key(Pos);
     int index = TT.getIndex(key);
-    evalInfo entry = TT.table[index]; // change later to iterate instead of creating a new key from scratch
+    evalInfo entry = TT.table[index];
     if (entry.key == key) {
       if (entry.upper_bound == entry.lower_bound && entry.udepth == entry.ldepth && entry.udepth >= depth) 
         return entry.upper_bound;
@@ -193,7 +191,7 @@ class Bot{
 
           simpleGenerator.generate();
           for(int i = 0; i < _simpleMoves.size(); i++) {
-            min = Mathf.Min(min, evaluateMovePlayer(_simpleMoves.moves[i], _simpleMoves.moveDepth - 1, depth - 1, childMin, childMax));
+            min = Mathf.Min(min, evaluateMovePlayer(_simpleMoves.moves[i], depth - 1, childMin, childMax));
             childMax = Mathf.Min(childMax, min);
             if (childMin >= childMax) break;
           }
@@ -225,7 +223,7 @@ class Bot{
 
       doubleGenerator.generate();
       for(int i = 0; i < _doubleMoves.size(); i++){
-        min = Mathf.Min(min, evaluateMovePlayer(_doubleMoves.moves[i], _doubleMoves.moveDepth - 1, depth - 1, childMin, childMax));
+        min = Mathf.Min(min, evaluateMovePlayer(_doubleMoves.moves[i], depth - 1, childMin, childMax));
         childMax = Mathf.Min(childMax, min);
         if (childMin >= childMax) break;
       }
@@ -250,23 +248,21 @@ class Bot{
     return upper_bound;
   }
 
-  public void makeForDiceAI(int dice1, int dice2, int depth) // selects and plays the move with the highest score
+  public uint bestMoveAI(int dice1, int dice2, int depth) // selects and plays the move with the highest score
   {
     simpleMoveArray simpleMoves = simpleMovesPool[depth];
     doubleMoveArray doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorAI simpleGen = simpleGenPool[depth];
     doubleDiceGeneratorAI doubleGen = doubleGenPool[depth];
-    int num = 0;
     uint bestMove = 0;
     float bestScore = float.MinValue;
     if(dice1 == dice2)
     {
       doubleGen.setDice(dice1);
       doubleGen.generate();
-      num = doubleMoves.moveDepth - 1;
       for(int i = 0; i < doubleMoves.size(); i++)
       {
-        float score = evaluateMoveAI((uint)doubleMoves.moves[i], num, depth - 1, Mathf.Max(bestScore, 0), 1.0f);
+        float score = evaluateMoveAI((uint)doubleMoves.moves[i], depth - 1, Mathf.Max(bestScore, 0), 1.0f);
         if(score >= bestScore)
         {
           bestScore = score;
@@ -279,10 +275,9 @@ class Bot{
       if(dice1 > dice2) simpleGen.setDices(dice1, dice2);
       else simpleGen.setDices(dice2, dice1);
       simpleGen.generate();
-      num = simpleMoves.moveDepth - 1;
       for(int i = 0; i < simpleMoves.size(); i++)
       {
-        float score = evaluateMoveAI((uint)simpleMoves.moves[i], num, depth - 1, Mathf.Max(bestScore, 0), 1.0f);
+        float score = evaluateMoveAI((uint)simpleMoves.moves[i], depth - 1, Mathf.Max(bestScore, 0), 1.0f);
         if(score >= bestScore)
         {
           bestScore = score;
@@ -290,47 +285,14 @@ class Bot{
         }
       }
     }
-    for(; num >= 0; num--)
-    {
-      uint move = (bestMove >> (num * 8)) & 0xff;
-      makeMoveAI(move);
-    }
+    return bestMove;
   }
 
-  public void makeForDiceAIRandom(int dice1, int dice2)
+  float evaluateMoveAI(uint moveSequence, int depth, float alpha, float beta)
   {
-    simpleMoveArray simpleMoves = simpleMovesPool[0];
-    doubleMoveArray doubleMoves = doubleMovesPool[0];
-    simpleDiceGeneratorAI simpleGen = simpleGenPool[0];
-    doubleDiceGeneratorAI doubleGen = doubleGenPool[0];
-    int num = 0;
-    uint bestMove = 0;
-    if(dice1 == dice2)
-    {
-      doubleGen.setDice(dice1);
-      doubleGen.generate();
-      num = doubleMoves.moveDepth - 1;
-      bestMove = doubleMoves.moves[UnityEngine.Random.Range(0, doubleMoves.size())];
-    }
-    else
-    {
-      if(dice1 > dice2) simpleGen.setDices(dice1, dice2);
-      else simpleGen.setDices(dice2, dice1);
-      simpleGen.generate();
-      num = simpleMoves.moveDepth - 1;
-      bestMove = simpleMoves.moves[UnityEngine.Random.Range(0, simpleMoves.size())];
-    }
-    for(; num >= 0; num--)
-    {
-      uint move = (bestMove >> (num * 8)) & 0xff;
-      makeMoveAI(move);
-    }
-  }
-
-  float evaluateMoveAI(uint moveSequence, int num, int depth, float alpha, float beta)
-  {
-    if(num < 0) return minimaxPlayer(depth, alpha, beta);
-    uint move = (moveSequence >> (num * 8)) & 0xff;
+    if(moveSequence == 0) return minimaxPlayer(depth, alpha, beta);
+    uint move = moveSequence & 0xff;
+    moveSequence >>= 8;
     int dice = (int)(move >> 5);
     int from = (int)(move & 0b11111);
     int to = from - dice;
@@ -343,7 +305,7 @@ class Bot{
       Pos.chips[from]++;
       Pos.ai_present ^= bit_mod;
 
-      eval = evaluateMoveAI(moveSequence, num - 1, depth, alpha, beta);
+      eval = evaluateMoveAI(moveSequence, depth, alpha, beta);
 
       Pos.chips[from]--;
       Pos.ai_present ^= bit_mod;
@@ -362,7 +324,7 @@ class Bot{
       Pos.ai_present ^= bit_mod;
       Pos.player_present ^= bit_to;
 
-      eval = evaluateMoveAI(moveSequence, num - 1, depth, alpha, beta);
+      eval = evaluateMoveAI(moveSequence, depth, alpha, beta);
 
       Pos.chips[to] = 1;
       Pos.chips[from]--;
@@ -378,7 +340,7 @@ class Bot{
       Pos.chips[to]--;
       Pos.ai_present ^= bit_mod;
 
-      eval = evaluateMoveAI(moveSequence, num - 1, depth, alpha, beta);
+      eval = evaluateMoveAI(moveSequence, depth, alpha, beta);
 
       Pos.chips[to]++;
       Pos.chips[from]--;
@@ -387,62 +349,21 @@ class Bot{
     return eval;
   }
 
-  void makeMoveAI(uint move) // can be reused, not pasted
-  {
-    int dice = (int)(move >> 5);
-    int from = (int)(move & 0b11111);
-    int to = from - dice;
-    uint bit_mod;
-
-    if(dice == 0) // bearoff move
-    {
-      bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
-
-      Pos.ai_bearoff++;
-      Pos.chips[from]++;
-      Pos.ai_present ^= bit_mod;
-
-    }
-    else if(Pos.chips[to] == 1)
-    {
-      uint bit_to = 1u << to;
-      bit_mod = (uint)(bit_to | (((Pos.chips[from] == -1) ? 1 : 0) << from));
-      bit_to |= (Pos.chips[0] == 0) ? 1u : 0u;
-
-      Pos.chips[to] = -1;
-      Pos.chips[from]++;
-      Pos.chips[0]++;
-      Pos.ai_present ^= bit_mod;
-      Pos.player_present ^= bit_to;
-    }
-    else
-    {
-      bit_mod = (uint)((((Pos.chips[to] == 0) ? 1 : 0) << to) | (((Pos.chips[from] == -1) ? 1 : 0) << from));
-
-      Pos.chips[from]++;
-      Pos.chips[to]--;
-      Pos.ai_present ^= bit_mod;
-    }
-  }
-
-
-  public void makeForDicePlayer(int dice1, int dice2, int depth) // selects and plays the move with the lowest score
+  public uint bestMovePlayer(int dice1, int dice2, int depth)
   {
     simpleMoveArray simpleMoves = simpleMovesPool[depth];
     doubleMoveArray doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorPlayer simplePlayerGen = simplePlayerGenPool[depth];
     unorderedDoubleDiceGeneratorPlayer doublePlayerGen = doublePlayerGenPool[depth];
-    int num = 0;
     uint bestMove = 0;
     float bestScore = float.MaxValue;
     if(dice1 == dice2)
     {
       doublePlayerGen.setDice(dice1);
       doublePlayerGen.generate();
-      num = doubleMoves.moveDepth - 1;
       for(int i = 0; i < doubleMoves.size(); i++)
       {
-        float score = evaluateMovePlayer((uint)doubleMoves.moves[i], num, depth - 1, 0.0f,  Mathf.Max(bestScore, 1));
+        float score = evaluateMovePlayer((uint)doubleMoves.moves[i], depth - 1, 0.0f,  Mathf.Max(bestScore, 1));
         if(score <= bestScore)
         {
           bestScore = score;
@@ -455,10 +376,9 @@ class Bot{
       if(dice1 > dice2) simplePlayerGen.setDices(dice1, dice2);
       else simplePlayerGen.setDices(dice2, dice1);
       simplePlayerGen.generate();
-      num = simpleMoves.moveDepth - 1;
       for(int i = 0; i < simpleMoves.size(); i++)
       {
-        float score = evaluateMovePlayer((uint)simpleMoves.moves[i], num, depth - 1, 0.0f, Mathf.Max(bestScore, 1));
+        float score = evaluateMovePlayer((uint)simpleMoves.moves[i], depth - 1, 0.0f, Mathf.Max(bestScore, 1));
         if(score <= bestScore)
         {
           bestScore = score;
@@ -466,47 +386,13 @@ class Bot{
         }
       }
     }
-    for(; num >= 0; num--)
-    {
-      uint move = (bestMove >> (num * 8)) & 0xff;
-      makeMovePlayer(move);
-    }
+    return bestMove;
   }
-
-  public void makeForDicePlayerRandom(int dice1, int dice2) // selects and plays the move with the lowest score
+  float evaluateMovePlayer(uint moveSequence, int depth, float alpha, float beta)
   {
-    simpleMoveArray simpleMoves = simpleMovesPool[0];
-    doubleMoveArray doubleMoves = doubleMovesPool[0];
-    simpleDiceGeneratorPlayer simplePlayerGen = simplePlayerGenPool[0];
-    unorderedDoubleDiceGeneratorPlayer doublePlayerGen = doublePlayerGenPool[0];
-    int num = 0;
-    uint bestMove = 0;
-    float bestScore = 1.0f;
-    if(dice1 == dice2)
-    {
-      doublePlayerGen.setDice(dice1);
-      doublePlayerGen.generate();
-      num = doubleMoves.moveDepth - 1;
-      bestMove = doubleMoves.moves[UnityEngine.Random.Range(0, doubleMoves.size())];
-    }
-    else
-    {
-      if(dice1 > dice2) simplePlayerGen.setDices(dice1, dice2);
-      else simplePlayerGen.setDices(dice2, dice1);
-      simplePlayerGen.generate();
-      num = simpleMoves.moveDepth - 1;
-      bestMove = simpleMoves.moves[UnityEngine.Random.Range(0, simpleMoves.size())];
-    }
-    for(; num >= 0; num--)
-    {
-      uint move = (bestMove >> (num * 8)) & 0xff;
-      makeMovePlayer(move);
-    }
-  }
-  float evaluateMovePlayer(uint moveSequence, int num, int depth, float alpha, float beta)
-  {
-    if(num < 0) return minimaxAi(depth, alpha, beta);
-    uint move = (moveSequence >> (num * 8)) & 0xff;
+    if(moveSequence == 0) return minimaxAi(depth, alpha, beta);
+    uint move = moveSequence & 0xff;
+    moveSequence >>= 8;
     int dice = (int)(move >> 5);
     int from = (int)(move & 0b11111);
     int to = from + dice;
@@ -519,7 +405,7 @@ class Bot{
       Pos.chips[from]--;
       Pos.player_present ^= bit_mod;
 
-      eval = evaluateMovePlayer(moveSequence, num - 1, depth, alpha, beta);
+      eval = evaluateMovePlayer(moveSequence, depth, alpha, beta);
 
       Pos.player_bearoff--;
       Pos.chips[from]++;
@@ -537,7 +423,7 @@ class Bot{
       Pos.player_present ^= bit_mod;
       Pos.ai_present ^= bit_to;
 
-      eval = evaluateMovePlayer(moveSequence, num - 1, depth, alpha, beta);
+      eval = evaluateMovePlayer(moveSequence, depth, alpha, beta);
 
       Pos.chips[to] = -1;
       Pos.chips[from]++;
@@ -553,47 +439,12 @@ class Bot{
       Pos.chips[to]++;
       Pos.player_present ^= bit_mod;
 
-      eval = evaluateMovePlayer(moveSequence, num - 1, depth, alpha, beta);
+      eval = evaluateMovePlayer(moveSequence, depth, alpha, beta);
 
       Pos.chips[to]--;
       Pos.chips[from]++;
       Pos.player_present ^= bit_mod;
     }
     return eval;
-  }
-
-  void makeMovePlayer(uint move) // can be reused, not pasted
-  {
-    int dice = (int)(move >> 5);
-    int from = (int)(move & 0b11111);
-    int to = from + dice;
-    if(dice == 0) // bearoff move
-    {
-      uint bit_mod = (uint)(((Pos.chips[from] == 1) ? 1 : 0) << from);
-
-      Pos.player_bearoff++;
-      Pos.chips[from]--;
-      Pos.player_present ^= bit_mod;
-    }
-    else if(Pos.chips[to] == -1)
-    {
-      uint bit_to = (1u << to);
-      uint bit_mod = (uint)(bit_to | (((Pos.chips[from] == 1) ? 1 : 0) << from));
-      bit_to |= ((Pos.chips[25] == 0) ? 1u : 0u) << 25;
-
-      Pos.chips[to] = 1;
-      Pos.chips[from]--;
-      Pos.chips[25]--;
-      Pos.player_present ^= bit_mod;
-      Pos.ai_present ^= bit_to;
-    }
-    else
-    {
-      uint bit_mod = (uint)((((Pos.chips[to] == 0) ? 1 : 0) << to) | (((Pos.chips[from] == 1) ? 1 : 0) << from));
-
-      Pos.chips[from]--;
-      Pos.chips[to]++;
-      Pos.player_present ^= bit_mod;
-    }
   }
 }

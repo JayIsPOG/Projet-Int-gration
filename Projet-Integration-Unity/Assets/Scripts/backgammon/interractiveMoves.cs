@@ -1,5 +1,5 @@
-using UnityEngine;
 using Unity.Burst.Intrinsics;
+using UnityEngine;
 
 class interractiveMoves
 {
@@ -9,16 +9,16 @@ class interractiveMoves
   simpleDiceGeneratorPlayer singleGenerator;
   doubleDiceGeneratorPlayer doubleGenerator;
   BoardState Pos;
-
   uint moveSequence;
-  
   public AudioClip simple_move_sound;
   public AudioClip eat_move_sound;
-  public int moveTodo;
+  public int movesTodo;
+  public int movesDone;
+  static readonly uint[] masks = new uint[4]{0xff, 0xffff, 0xffffff, 0xffffffff};
   public interractiveMoves(BoardState pos, AudioClip s, AudioClip e)
   {
     Pos = pos;
-    moveTodo = 0;
+    movesTodo = 0;
     simpleMoves = new simpleMoveArray();
     doubleMoves = new doubleMoveArray();
     doubleGenerator = new doubleDiceGeneratorPlayer(0, doubleMoves, pos);
@@ -29,12 +29,15 @@ class interractiveMoves
   public void generate(int dice1, int dice2)
   {
     moveSequence = 0;
+    movesDone = 0;
+    movesTodo = 0;
     if(dice1 == dice2)
     {
       AreDiceDoubles = true;
       doubleGenerator.setDice(dice1);
       doubleGenerator.generate();
-      moveTodo = doubleMoves.moveDepth;
+      uint sampleMove = doubleGenerator.moveList.moves[0];
+      for(; sampleMove != 0; sampleMove >>= 8) movesTodo++;
     }
     else
     {
@@ -42,27 +45,28 @@ class interractiveMoves
       if(dice1 > dice2) singleGenerator.setDices(dice1, dice2);
       else singleGenerator.setDices(dice2, dice1);
       singleGenerator.generate();
-      moveTodo = simpleMoves.moveDepth;
+      uint sampleMove = singleGenerator.moveList.moves[0];
+      for(; sampleMove != 0; sampleMove >>= 8) movesTodo++;
     }
   }
 
   public bool isMoveValid(uint move)
   {
-    move = (moveSequence << 8) | move;
-    int shift = (moveTodo - 1) * 8;
+    move = moveSequence | (move << (8 * movesDone));
+    uint mask = masks[movesDone];
     
     if (AreDiceDoubles)
     {
       for(int i = 0; i < doubleMoves.size(); i++)
-        if((doubleMoves.moves[i] >> shift) == move) return true;
+        if((doubleMoves.moves[i] & mask) == move) return true;
       return false;
     }
     for(int i = 0; i < simpleMoves.size(); i++)
-      if((simpleMoves.moves[i] >> shift) == move) return true;
+      if((simpleMoves.moves[i] & mask) == move) return true;
     return false;
   }
 
-  public bool placeChip(int from, int dice) // will have to include bearoff moves
+  public bool placeChip(int from, int dice)
   {
     int to = from + dice;
     if(Pos.chips[to] < 0)
@@ -86,19 +90,17 @@ class interractiveMoves
       Pos.player_present ^= bit_mod;
     }
     
-    moveTodo--;
-    moveSequence <<= 8;
-    moveSequence |= (uint)(from | (dice << 5));
-    return moveTodo <= 0;
+    moveSequence |= (uint)(from | (dice << 5)) << (8 * movesDone);
+    movesDone++;
+    return movesTodo == movesDone;
   }
   public bool makeBearoffMove(int from)
   {
     AudioSource.PlayClipAtPoint(simple_move_sound, Camera.main.transform.position);
     Pos.player_bearoff++;
     
-    moveTodo--;
-    moveSequence <<= 8;
-    moveSequence |= (uint)(from);
-    return moveTodo <= 0;
+    moveSequence |= (uint)(from) << (8 * movesDone);
+    movesDone++;
+    return movesTodo == movesDone;
   }
 }

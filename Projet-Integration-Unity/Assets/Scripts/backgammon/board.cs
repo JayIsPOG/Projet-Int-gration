@@ -1,15 +1,19 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-/*
-there is an offset of one to the rendering and picking chips(cuz lowest board index = 1, bar = 0)
-*/
+using System.Collections;
+using System.Runtime.InteropServices;
+using System.ComponentModel;
+using System.Reflection.Emit;
+
+/////////////////////// Change bearoff logic (dice == 0 doesnt work well, just check if to is out of bounds)
+/// use bitboards for rendering ty shit
 
 public class board : MonoBehaviour
 {
 
     public Texture2D dice_texture;
-    private Texture2D[] dice_faces = new Texture2D[6];
+    public Texture2D dice_texture_opponent;
     public Texture2D black_chip_texture;
     public Texture2D white_chip_texture;
     public Texture2D black_pike;
@@ -20,93 +24,89 @@ public class board : MonoBehaviour
     Learner brain;
     private float xUnit;
     private float yUnit;
+    public float stackRatio = 0.5f;
     public float xBorder = 128;
     private float chipUnit;
     bool hasSelected = false;
     private int pick_from;
     private BoardState Pos;
-    private interractiveMoves moveGenerator;
+    private interractiveMoves moveManager;
 
     public int depth = 1;
     public int max_depth = 4;
     public int game_count = 0;
     public int wins = 0;
-
-    private List<int> dices;
     Bot bot;
     private int selectedDiceIndex;
-    public burger[] dice_animations;
     public AudioClip simple_move_sound;
     public AudioClip eat_move_sound;
+    public float slide_lenght = 0.1f;
+    public float deltaTimeSlide = 0.1f;
+    float bot_x;
+    float bot_y;
+    bool isSliding = false;
+    dice_set player_dices;
+    dice_set opponent_dices;
     void Start()
     {
-        dice_animations = new burger[4];
-        for(int i = 0; i < 4; i++) dice_animations[i] = new burger(dice_texture);
+        player_dices = new dice_set(dice_texture);
+        opponent_dices = new dice_set(dice_texture_opponent);
         brain = new Learner();
         brain.LoadWeights("burger.bin");
         Pos = new BoardState();
         bot = new Bot(Pos, brain, max_depth);
-        moveGenerator = new interractiveMoves(Pos, simple_move_sound, eat_move_sound);
+        moveManager = new interractiveMoves(Pos, simple_move_sound, eat_move_sound);
         xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
         chipUnit = xUnit * 0.78125f;
-
-        int faceHeight = dice_texture.height / 6;
-        int faceWidth = dice_texture.width;
-
-        for(int i = 0; i < 6; i++)
-        {
-            Color[] pixels = dice_texture.GetPixels(0, i * faceHeight, faceWidth, faceHeight);
-            dice_faces[5 - i] = new Texture2D(faceWidth, faceHeight);
-            dice_faces[5 - i].SetPixels(pixels);
-            dice_faces[5 - i].Apply();
-        }
-        dices = new List<int>();
-        playPlayer();
         selectedDiceIndex= 255;
+        playPlayer();
     }
-    void playBot()
+    IEnumerator playBot()
     {
         if(Pos.hasPlayerWon()){
             FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
             FindObjectOfType<DataPersistanceManager>().SaveGame();
         }
+        opponent_dices.genRandomDices();
+        yield return StartCoroutine(RollAllDice(opponent_dices));
         
-        bot.makeForDiceAI(Random.Range(1, 7), Random.Range(1, 7), depth);
+        uint moveSequence = bot.bestMoveAI(opponent_dices.dices[0], opponent_dices.dices[1], depth);
+        for(; moveSequence != 0; moveSequence >>= 8) 
+        {
+            uint move = moveSequence & 0xff;
+            int dice = (int)(move >> 5);
+            yield return StartCoroutine(makeMoveAI(move));
+            opponent_dices.removeDice(dice);
+        }
         playPlayer();
+    }
+    IEnumerator RollAllDice(dice_set set)
+    {
+        for (int i = 0; i < set.dice_count; i++)
+            StartCoroutine(set.dice_animations[i].playAnimation());
+        
+        yield return null;
+
+        bool anyRolling = true;
+        while (anyRolling)
+        {
+            anyRolling = false;
+            for (int i = 0; i < set.dice_count; i++)
+                if (set.dice_animations[i].is_rolling) anyRolling = true;
+            yield return null;
+        }
     }
     void playPlayer()
     {
         if(Pos.hasAIWon()) SceneManager.LoadScene("Main_Menu"); // fix
         Pos.playerTurn = true;
-        dices.Clear();
-        dices.Add(Random.Range(1, 7));
-        dice_animations[0].setOrientation(dices[0]);
-        dices.Add(Random.Range(1, 7));
-        dice_animations[1].setOrientation(dices[1]);
-        if(dices[0] == dices[1])
-        {
-            dices.Add(dices[0]);
-            dice_animations[2].setOrientation(dices[2]);
-            dices.Add(dices[0]);
-            dice_animations[3].setOrientation(dices[3]);
+        player_dices.genRandomDices(); // S
+        moveManager.generate(player_dices.dices[0], player_dices.dices[1]);
+        if(moveManager.movesTodo <= 0){ // player must skip his turn
+            StartCoroutine(playBot());
         }
-        moveGenerator.generate(dices[0], dices[1]);
-        if(moveGenerator.moveTodo <= 0){ // player must skip his turn
-            playBot();
-        }
-        else {
-            for(int i = 0; i < dices.Count; i++)
-                StartCoroutine(dice_animations[i].playAnimation());
-        }
-    }
-
-    void removeDiceAt(int index)
-    {
-        dices.RemoveAt(index);
-        burger temp = dice_animations[index];
-        for(int i = index + 1; i < 4; i++) dice_animations[i - 1] = dice_animations[i];
-        dice_animations[3] = temp;
+        else StartCoroutine(RollAllDice(player_dices));
     }
 
     int getMouseIndex()
@@ -132,7 +132,7 @@ public class board : MonoBehaviour
     int getDiceIndex()
     {
         int index = (int)((Screen.height - Input.mousePosition.y) / xUnit);
-        if(Input.mousePosition.x <= xUnit && index < dices.Count) return index;
+        if(Input.mousePosition.x <= xUnit && index < player_dices.dice_count) return index;
         else return 255;
     }
     void Update()
@@ -167,18 +167,15 @@ public class board : MonoBehaviour
                     {
                         Pos.chips[pick_from]--;
                         Pos.player_present ^= (Pos.chips[pick_from] == 0 ? 1u : 0u) << pick_from;
-                        if(Pos.canPlayerBearOff() && selectedDiceIndex != 255 && pick_from + dices[selectedDiceIndex] >= 25 && moveGenerator.isMoveValid((uint)pick_from))
+                        if(Pos.canPlayerBearOff() && selectedDiceIndex != 255 && pick_from + player_dices.dices[selectedDiceIndex] >= 25 && moveManager.isMoveValid((uint)pick_from))
                         {
-                            if(moveGenerator.makeBearoffMove(pick_from)) {
-                                playBot();
+                            bool isFinished = moveManager.makeBearoffMove(pick_from);
+                            player_dices.removeDiceAt(selectedDiceIndex);
+                            if(Pos.hasPlayerWon()) {
+                                FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
+                                FindObjectOfType<DataPersistanceManager>().SaveGame();
                             }
-                            else {
-                                removeDiceAt(selectedDiceIndex);
-                                if(Pos.hasPlayerWon()){
-                                    FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
-                                    FindObjectOfType<DataPersistanceManager>().SaveGame();
-                                }
-                            }
+                            if(isFinished) StartCoroutine(playBot());
                             selectedDiceIndex = 255;
                         }
                         else hasSelected = true;
@@ -193,18 +190,15 @@ public class board : MonoBehaviour
             if(hasSelected)
             {
                 int index = getMouseIndex();
-                if(index != 255 && selectedDiceIndex != 255 && pick_from + dices[selectedDiceIndex] == index && moveGenerator.isMoveValid((uint)((uint)pick_from | (uint)(dices[selectedDiceIndex] << 5))))
+                if(index != 255 && selectedDiceIndex != 255 && pick_from + player_dices.dices[selectedDiceIndex] == index && moveManager.isMoveValid((uint)((uint)pick_from | (uint)(player_dices.dices[selectedDiceIndex] << 5))))
                 {
-                    if(moveGenerator.placeChip(pick_from, dices[selectedDiceIndex])) {
-                        playBot();
+                    bool isFinished = moveManager.placeChip(pick_from, player_dices.dices[selectedDiceIndex]);
+                    player_dices.removeDiceAt(selectedDiceIndex);
+                    if(Pos.hasPlayerWon()){
+                        FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
+                        FindObjectOfType<DataPersistanceManager>().SaveGame();
                     }
-                    else {
-                        removeDiceAt(selectedDiceIndex);
-                        if(Pos.hasPlayerWon()){
-                            FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
-                            FindObjectOfType<DataPersistanceManager>().SaveGame();
-                        }
-                    }
+                    if(isFinished) StartCoroutine(playBot());
                     selectedDiceIndex= 255;
                 }
                 else
@@ -243,28 +237,31 @@ public class board : MonoBehaviour
 
         for(int i = 1; i < 7; i++)
         {
-            float x = (13 - i) * xUnit + (xUnit - chipUnit) / 2 + xBorder;
-            for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x,  j * chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
-            for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit * 0.5f, chipUnit, chipUnit), black_chip_texture);
+            float x = (13 - i) * xUnit + (xUnit - chipUnit) * 0.5f + xBorder;
+            for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x,  j * chipUnit * stackRatio, chipUnit, chipUnit), white_chip_texture);
+            for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit * stackRatio, chipUnit, chipUnit), black_chip_texture);
             
-            x = (i - 1) * xUnit + (xUnit - chipUnit) / 2 + xBorder;
-            for(int j = 0; j < Pos.chips[i + 12]; j++) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit - j * chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
-            for(int j = 0; j > Pos.chips[i + 12]; j--) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit + j * chipUnit * 0.5f, chipUnit, chipUnit), black_chip_texture);
+            x = (i - 1) * xUnit + (xUnit - chipUnit) * 0.5f + xBorder;
+            for(int j = 0; j < Pos.chips[i + 12]; j++) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit - j * chipUnit * stackRatio, chipUnit, chipUnit), white_chip_texture);
+            for(int j = 0; j > Pos.chips[i + 12]; j--) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit + j * chipUnit * stackRatio, chipUnit, chipUnit), black_chip_texture);
         }
         
         for(int i = 7; i < 13; i++)
         {
-            float x = (12 - i) * xUnit + (xUnit - chipUnit) / 2 + xBorder;
-            for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x,  j * chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
-            for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit * 0.5f, chipUnit, chipUnit), black_chip_texture);
+            float x = (12 - i) * xUnit + (xUnit - chipUnit) * 0.5f + xBorder;
+            for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x,  j * chipUnit * stackRatio, chipUnit, chipUnit), white_chip_texture);
+            for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit * stackRatio, chipUnit, chipUnit), black_chip_texture);
             
-            x = i * xUnit + (xUnit - chipUnit) / 2 + xBorder;
-            for(int j = 0; j < Pos.chips[i + 12]; j++) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit - j * chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
-            for(int j = 0; j > Pos.chips[i + 12]; j--) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit + j * chipUnit * 0.5f, chipUnit, chipUnit), black_chip_texture);
+            x = i * xUnit + (xUnit - chipUnit) * 0.5f + xBorder;
+            for(int j = 0; j < Pos.chips[i + 12]; j++) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit - j * chipUnit * stackRatio, chipUnit, chipUnit), white_chip_texture);
+            for(int j = 0; j > Pos.chips[i + 12]; j--) GUI.DrawTexture(new Rect(x, Screen.height - chipUnit + j * chipUnit * stackRatio, chipUnit, chipUnit), black_chip_texture);
         }
 
-        for(int i = 0; i < dices.Count; i++)
-            GUI.DrawTexture(new Rect(0, i * xUnit, xUnit, xUnit), dice_animations[i].texture);
+        for(int i = 0; i < player_dices.dice_count; i++)
+            GUI.DrawTexture(new Rect(0, i * xUnit, xUnit, xUnit), player_dices.dice_animations[i].texture);
+
+        for(int i = 0; i < opponent_dices.dice_count; i++)
+            GUI.DrawTexture(new Rect(Screen.width - xUnit, i * xUnit, xUnit, xUnit), opponent_dices.dice_animations[i].texture);
 
         GUIStyle font = new GUIStyle(GUI.skin.label);
         font.fontSize = 40;
@@ -273,17 +270,96 @@ public class board : MonoBehaviour
         if(Pos.chips[25] < 0)
         {
             font.normal.textColor = Color.white;
-            GUI.DrawTexture(new Rect(xUnit * 13.0f / 2 + xBorder - chipUnit * 0.5f, Screen.height - chipUnit, chipUnit, chipUnit), black_chip_texture);
-            GUI.Label(new Rect(xUnit * 13.0f / 2 + xBorder - chipUnit * 0.5f, Screen.height - chipUnit, chipUnit, chipUnit), (-Pos.chips[25]).ToString(), font);
+            GUI.DrawTexture(new Rect(xUnit * 6.5f + xBorder - chipUnit * 0.5f, Screen.height - chipUnit, chipUnit, chipUnit), black_chip_texture);
+            GUI.Label(new Rect(xUnit * 6.5f + xBorder - chipUnit * 0.5f, Screen.height - chipUnit, chipUnit, chipUnit), (-Pos.chips[25]).ToString(), font);
         }
         
         if(Pos.chips[0] > 0)
         {
             font.normal.textColor = Color.black;
-            GUI.DrawTexture(new Rect(xUnit * 13.0f / 2 + xBorder - chipUnit * 0.5f, 0, chipUnit, chipUnit), white_chip_texture);
-            GUI.Label(new Rect(xUnit * 13.0f / 2 + xBorder - chipUnit * 0.5f, 0, chipUnit, chipUnit), Pos.chips[0].ToString(), font);
+            GUI.DrawTexture(new Rect(xUnit * 6.5f + xBorder - chipUnit * 0.5f, 0, chipUnit, chipUnit), white_chip_texture);
+            GUI.Label(new Rect(xUnit * 6.5f + xBorder - chipUnit * 0.5f, 0, chipUnit, chipUnit), Pos.chips[0].ToString(), font);
         }
 
         if(hasSelected) GUI.DrawTexture(new Rect(Input.mousePosition.x - chipUnit * 0.5f, Screen.height - Input.mousePosition.y - chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
+        if(isSliding) GUI.DrawTexture(new Rect(bot_x, bot_y, chipUnit, chipUnit), black_chip_texture);
+    }
+
+    IEnumerator makeMoveAI(uint move)
+    {
+        int dice = (int)(move >> 5);
+        int from = (int)(move & 0b11111);
+        int to = from - dice;
+        uint bit_mod;
+
+        if(dice == 0) // bearoff move
+        {
+            AudioSource.PlayClipAtPoint(simple_move_sound, Camera.main.transform.position);
+            bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
+
+            Pos.ai_bearoff++;
+            Pos.chips[from]++;
+            Pos.ai_present ^= bit_mod;
+
+        }
+        else if(Pos.chips[to] == 1)
+        {
+            uint bit_to = 1u << to;
+            bit_mod = (uint)(bit_to | (((Pos.chips[from] == -1) ? 1 : 0) << from));
+            bit_to |= (Pos.chips[0] == 0) ? 1u : 0u;
+
+            Pos.chips[from]++;
+            yield return StartCoroutine(moveChipAnimation(from, to));
+            AudioSource.PlayClipAtPoint(eat_move_sound, Camera.main.transform.position);
+            Pos.chips[0]++;
+            Pos.chips[to] = -1;
+            Pos.ai_present ^= bit_mod;
+            Pos.player_present ^= bit_to;
+        }
+        else
+        {
+            bit_mod = (uint)((((Pos.chips[to] == 0) ? 1 : 0) << to) | (((Pos.chips[from] == -1) ? 1 : 0) << from));
+
+            Pos.chips[from]++;
+            yield return StartCoroutine(moveChipAnimation(from, to));
+            AudioSource.PlayClipAtPoint(simple_move_sound, Camera.main.transform.position);
+            Pos.chips[to]--;
+            Pos.ai_present ^= bit_mod;
+        }
+    }
+    float calcXPosition(int slot)
+    {
+        if(slot == 0 || slot == 25) return xUnit * 6.5f + xBorder - chipUnit * 0.5f;
+        if(slot <= 6) return (13 - slot) * xUnit + xBorder + (xUnit - chipUnit) * 0.5f;
+        if(slot <= 12) return (12 - slot) * xUnit + xBorder + (xUnit - chipUnit) * 0.5f; // simplify later
+        if(slot <= 18) return (slot - 13) * xUnit + xBorder + (xUnit - chipUnit) * 0.5f;
+        return (slot - 12) * xUnit + xBorder + (xUnit - chipUnit) * 0.5f;
+    }
+    float calcYPosition(int slot)
+    {
+        if(slot == 0) return 0;
+        if(slot == 25) return Screen.height - chipUnit;
+        if(slot <= 12) return Mathf.Abs(Pos.chips[slot]) * chipUnit * stackRatio;
+        return Screen.height - chipUnit - Mathf.Abs(Pos.chips[slot]) * chipUnit * stackRatio;
+    }
+    IEnumerator moveChipAnimation(int from, int to)
+    {
+        isSliding = true;
+        bot_x = calcXPosition(from);
+        bot_y = calcYPosition(from);
+
+        float dx = calcXPosition(to) - bot_x;
+        float dy = calcYPosition(to) - bot_y;
+        int step_num = (int)(Mathf.Sqrt(dx*dx + dy*dy) / slide_lenght);
+        dx /= step_num;
+        dy /= step_num;
+        
+        for(int i = 0; i < step_num; i++)
+        {
+            bot_x += dx;
+            bot_y += dy;
+            yield return new WaitForSeconds(deltaTimeSlide);
+        }
+        isSliding = false;
     }
 }

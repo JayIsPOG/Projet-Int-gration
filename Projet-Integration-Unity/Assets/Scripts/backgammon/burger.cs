@@ -57,7 +57,7 @@ public class burger
         System.Array.Copy(faces, size * 4, face5, 0, size);
         System.Array.Copy(faces, size * 5, face6, 0, size);
 
-        texture = new Texture2D(texture_size, texture_size); // make dimensions adaptable
+        texture = new Texture2D(texture_size, texture_size);
         texture.filterMode = FilterMode.Point;
         pixels = texture.GetPixels32();
         
@@ -107,7 +107,7 @@ public class burger
         {
             for (float cubeY = -cubeWidth / 2; cubeY < cubeWidth / 2; cubeY += 1) 
             {
-                int index = (int)((cubeY + cubeWidth / 2) * ((float)faceHeight / cubeWidth)) * faceWidth + (int)((cubeX + cubeWidth / 2) * ((float)faceWidth / cubeWidth));// maybe just increment, idk
+                int index = (int)((cubeY + cubeWidth / 2) * ((float)faceHeight / cubeWidth)) * faceWidth + (int)((cubeX + cubeWidth / 2) * ((float)faceWidth / cubeWidth));
                 calculateForSurface(cubeX, cubeY, -cubeWidth / 2, face1[index]);
                 calculateForSurface(cubeX, cubeY, cubeWidth / 2, face3[index]);
                 calculateForSurface(cubeWidth / 2, cubeY, cubeX, face2[index]);
