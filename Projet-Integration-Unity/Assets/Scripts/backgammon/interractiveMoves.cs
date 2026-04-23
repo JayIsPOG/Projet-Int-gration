@@ -36,8 +36,11 @@ class interractiveMoves
       AreDiceDoubles = true;
       doubleGenerator.setDice(dice1);
       doubleGenerator.generate();
-      uint sampleMove = doubleGenerator.moveList.moves[0];
-      for(; sampleMove != 0; sampleMove >>= 8) movesTodo++;
+      if(doubleMoves.size() > 0)
+      {
+        uint sampleMove = doubleGenerator.moveList.moves[0];
+        for(; sampleMove != 0; sampleMove >>= 8) movesTodo++;
+      }
     }
     else
     {
@@ -45,8 +48,11 @@ class interractiveMoves
       if(dice1 > dice2) singleGenerator.setDices(dice1, dice2);
       else singleGenerator.setDices(dice2, dice1);
       singleGenerator.generate();
-      uint sampleMove = singleGenerator.moveList.moves[0];
-      for(; sampleMove != 0; sampleMove >>= 8) movesTodo++;
+      if(simpleMoves.size() > 0)
+      {
+        uint sampleMove = singleGenerator.moveList.moves[0];
+        for(; sampleMove != 0; sampleMove >>= 8) movesTodo++;
+      }
     }
   }
 
@@ -94,12 +100,12 @@ class interractiveMoves
     movesDone++;
     return movesTodo == movesDone;
   }
-  public bool makeBearoffMove(int from)
+  public bool makeBearoffMove(int from, int dice)
   {
     AudioSource.PlayClipAtPoint(simple_move_sound, Camera.main.transform.position);
     Pos.player_bearoff++;
     
-    moveSequence |= (uint)(from) << (8 * movesDone);
+    moveSequence |= (uint)(from | (dice << 5)) << (8 * movesDone);
     movesDone++;
     return movesTodo == movesDone;
   }

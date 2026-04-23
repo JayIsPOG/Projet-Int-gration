@@ -17,7 +17,7 @@ public class BoardState
 		player_bearoff = 0;
 		ai_bearoff = 0;
 		playerTurn = true;
-    chips = new sbyte[26]{0, -2, 0, 0, 0, 0, 5, 0, 3, 0, 0, 0,-5, 5, 0, 0, 0,-3, 0,-5, 0, 0, 0, 0, 2, 0 }; // first is the player bar, last is opponent bar
+    chips = new sbyte[26]{1, -2, 0, -2, -3, 0, 5, 0, -1, 0, 0, 0, 0, 5, -2, 0, 0, -2, 0, -2, 0, -1, 0, 2, 2, 0 }; // first is the player bar, last is opponent bar
 		player_present = 0;
 		ai_present = 0;
 		for (int j = 0; j < 26; j++) ai_present |= (uint)(((chips[j] <= -1) ? 1 : 0) << j);
@@ -41,7 +41,7 @@ public class BoardState
     int dice = (int)(move >> 5);
     int from = (int)(move & 0b11111);
     int to = from + dice;
-    if(dice == 0) // bearoff move
+    if(to >= 25) // bearoff move
     {
       uint bit_mod = (uint)(((chips[from] == 1) ? 1 : 0) << from);
 
@@ -77,7 +77,7 @@ public class BoardState
     int to = from - dice;
     uint bit_mod;
 
-    if(dice == 0) // bearoff move
+    if(to <= 0) // bearoff move
     {
       bit_mod = (uint)(((chips[from] == -1) ? 1 : 0) << from);
 

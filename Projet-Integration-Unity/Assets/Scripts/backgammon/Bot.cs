@@ -297,7 +297,7 @@ class Bot{
     int from = (int)(move & 0b11111);
     int to = from - dice;
     float eval;
-    if(dice == 0) // bearoff move
+    if(to <= 0) // bearoff move
     {
       uint bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
 
@@ -397,7 +397,7 @@ class Bot{
     int from = (int)(move & 0b11111);
     int to = from + dice;
     float eval;
-    if(dice == 0) // bearoff move
+    if(to >= 25) // bearoff move
     {
       uint bit_mod = (uint)(((Pos.chips[from] == 1) ? 1 : 0) << from);
 

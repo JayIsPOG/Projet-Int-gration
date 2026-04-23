@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Reflection.Emit;
 
-/////////////////////// Change bearoff logic (dice == 0 doesnt work well, just check if to is out of bounds)
 /// use bitboards for rendering ty shit
 
 public class board : MonoBehaviour
@@ -42,11 +41,16 @@ public class board : MonoBehaviour
     public AudioClip eat_move_sound;
     public float slide_lenght = 0.1f;
     public float deltaTimeSlide = 0.1f;
+    public int eval_steps = 30;
+    public float evalTime = 0.3f;
+    Rect evalBar;
+    public Color evalColor;
     float bot_x;
     float bot_y;
     bool isSliding = false;
     dice_set player_dices;
     dice_set opponent_dices;
+    float pos_eval;
     void Start()
     {
         player_dices = new dice_set(dice_texture);
@@ -60,13 +64,17 @@ public class board : MonoBehaviour
         yUnit = 3 * xUnit;
         chipUnit = xUnit * 0.78125f;
         selectedDiceIndex= 255;
+        pos_eval = 0;
+        StartCoroutine(updateEval());
         playPlayer();
     }
     IEnumerator playBot()
     {
+        StartCoroutine(updateEval());
         if(Pos.hasPlayerWon()){
             FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
             FindObjectOfType<DataPersistanceManager>().SaveGame();
+            return;
         }
         opponent_dices.genRandomDices();
         yield return StartCoroutine(RollAllDice(opponent_dices));
@@ -79,6 +87,7 @@ public class board : MonoBehaviour
             yield return StartCoroutine(makeMoveAI(move));
             opponent_dices.removeDice(dice);
         }
+        StartCoroutine(updateEval());
         playPlayer();
     }
     IEnumerator RollAllDice(dice_set set)
@@ -99,14 +108,17 @@ public class board : MonoBehaviour
     }
     void playPlayer()
     {
-        if(Pos.hasAIWon()) SceneManager.LoadScene("Main_Menu"); // fix
+        if(Pos.hasAIWon()) {
+            SceneManager.LoadScene("Main_Menu");
+            return;
+        }
         Pos.playerTurn = true;
         player_dices.genRandomDices(); // S
         moveManager.generate(player_dices.dices[0], player_dices.dices[1]);
+        StartCoroutine(RollAllDice(player_dices));
         if(moveManager.movesTodo <= 0){ // player must skip his turn
             StartCoroutine(playBot());
         }
-        else StartCoroutine(RollAllDice(player_dices));
     }
 
     int getMouseIndex()
@@ -151,8 +163,7 @@ public class board : MonoBehaviour
             Pos.set();
             game_count++;
         }*/
-      
-        Debug.Log(bot.evaluator.evaluatePosition(Pos));
+
         xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
         chipUnit = xUnit * 0.78125f;
@@ -167,13 +178,15 @@ public class board : MonoBehaviour
                     {
                         Pos.chips[pick_from]--;
                         Pos.player_present ^= (Pos.chips[pick_from] == 0 ? 1u : 0u) << pick_from;
-                        if(Pos.canPlayerBearOff() && selectedDiceIndex != 255 && pick_from + player_dices.dices[selectedDiceIndex] >= 25 && moveManager.isMoveValid((uint)pick_from))
+                        uint encode_move = (uint)(pick_from | (player_dices.dices[selectedDiceIndex] << 5));
+                        if(Pos.canPlayerBearOff() && selectedDiceIndex != 255 && pick_from + player_dices.dices[selectedDiceIndex] >= 25 && moveManager.isMoveValid(encode_move))
                         {
-                            bool isFinished = moveManager.makeBearoffMove(pick_from);
+                            bool isFinished = moveManager.makeBearoffMove(pick_from, player_dices.dices[selectedDiceIndex]);
                             player_dices.removeDiceAt(selectedDiceIndex);
                             if(Pos.hasPlayerWon()) {
                                 FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
                                 FindObjectOfType<DataPersistanceManager>().SaveGame();
+                                return;
                             }
                             if(isFinished) StartCoroutine(playBot());
                             selectedDiceIndex = 255;
@@ -197,6 +210,7 @@ public class board : MonoBehaviour
                     if(Pos.hasPlayerWon()){
                         FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
                         FindObjectOfType<DataPersistanceManager>().SaveGame();
+                        return;
                     }
                     if(isFinished) StartCoroutine(playBot());
                     selectedDiceIndex= 255;
@@ -224,6 +238,10 @@ public class board : MonoBehaviour
         }
         
         GUI.DrawTexture(new Rect(6 * xUnit + xBorder + xUnit * 0.25f, 0, xUnit * 0.5f, Screen.height), Texture2D.grayTexture);
+        Texture2D evalTexture = new Texture2D(1, 1);
+        evalTexture.SetPixel(0, 0, evalColor);
+        evalTexture.Apply();
+        GUI.DrawTexture(evalBar, evalTexture);
         
         for(float i = 7; i < 13; i+=2)
         {
@@ -361,5 +379,17 @@ public class board : MonoBehaviour
             yield return new WaitForSeconds(deltaTimeSlide);
         }
         isSliding = false;
+    }
+    IEnumerator updateEval()
+    {
+        float eval = pos_eval;
+        pos_eval = bot.evaluator.evaluatePosition(Pos);
+        float de = (pos_eval - eval) / eval_steps;
+        for(int i = 0; i < eval_steps; i++)
+        {
+            eval += de;
+            evalBar = new Rect(6 * xUnit + xBorder + xUnit * 0.25f, 0, xUnit * 0.5f, Screen.height * eval);
+            yield return new WaitForSeconds(evalTime);
+        }
     }
 }
