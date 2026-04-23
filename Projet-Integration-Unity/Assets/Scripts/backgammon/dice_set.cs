@@ -6,33 +6,21 @@ using System.Runtime.InteropServices;
 using System.ComponentModel;
 public class dice_set
 {
-  public Texture2D[] dice_faces;
   public int[] dices;
   public burger[] dice_animations;
   public int dice_count;
   public dice_set(Texture2D dice_texture)
   {
-    dice_faces = new Texture2D[6];
     dice_animations = new burger[4];
     dices = new int[4];
     dice_count = 0;
     for(int i = 0; i < 4; i++) dice_animations[i] = new burger(dice_texture);
-    int faceHeight = dice_texture.height / 6;
-    int faceWidth = dice_texture.width;
-
-    for(int i = 0; i < 6; i++)
-    {
-      Color[] pixels = dice_texture.GetPixels(0, i * faceHeight, faceWidth, faceHeight);
-      dice_faces[5 - i] = new Texture2D(faceWidth, faceHeight);
-      dice_faces[5 - i].SetPixels(pixels);
-      dice_faces[5 - i].Apply();
-    }
   }
   public void genRandomDices()
   {
-    dices[0] = 1;
+    dices[0] = Random.Range(1, 7);
     dice_animations[0].setOrientation(dices[0]);
-    dices[1] = 1;
+    dices[1] = Random.Range(1, 7);
     dice_animations[1].setOrientation(dices[1]);
     dice_count = 2;
     if(dices[0] == dices[1])
@@ -46,6 +34,7 @@ public class dice_set
   }
   public void removeDiceAt(int index)
   {
+    dice_animations[index].disableHighligh();
     int dice = dices[index];
     burger temp = dice_animations[index];
     for(int i = index + 1; i < dice_count; i++) {
@@ -56,16 +45,20 @@ public class dice_set
     dice_animations[dice_count] = temp;
     dices[dice_count] = dice;
   }
-  public bool removeDice(int dice)
+  public int findDiceIndex(int dice)
   {
     for(int i = 0; i < dice_count; i++)
-    {
-      if(dices[i] == dice)
-      {
-        removeDiceAt(i);
-        return true;
-      }
-    }
-    return false;
+      if(dices[i] == dice) return i;
+    return 255;
+  }
+  public void enableHighligh(int index)
+  {
+    dice_animations[index].enableHighligh();
+    dice_animations[index].drawCube();
+  }
+  public void disableHighligh(int index)
+  {
+    dice_animations[index].disableHighligh();
+    dice_animations[index].drawCube();
   }
 }

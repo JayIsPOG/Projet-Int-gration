@@ -66,11 +66,11 @@ public class burger
         
         zBuffer = new float[texture.width * texture.height];
     }
-    public enableHighligh()
+    public void enableHighligh()
     {
         isHighlighted = true;
     }
-    public disableHighligh()
+    public void disableHighligh()
     {
         isHighlighted = false;
     }
@@ -130,17 +130,38 @@ public class burger
         }
         if (isHighlighted)
         {
-            int hIndex, prevHIndex, nextHIndex;
-            for(int i = 1; i < texture.height - 1; i++)
+            int index;
+            for(int i = 0; i < texture.height; i++) // horizontal highlight
             {
+                index = i * texture.width;
+                if(zBuffer[index] == 0 && zBuffer[index + 1] != 0) pixels[index] = highlight_color;
+
                 for(int j = 1; j < texture.width - 1; j++)
                 {
-                    int horizontalIndex = i * texture.width + j;
-                    int verticalIndex = j * texture.width + i;
-                    if(pixels[i] == transparent && pixels[i + 1] != transparent) pixels[i] = highlight_color;
+                    index = i * texture.width + j;
+                    if(zBuffer[index] == 0 && zBuffer[index + 1] != 0) pixels[index] = highlight_color;
+                    if(zBuffer[index] == 0 && zBuffer[index - 1] != 0) pixels[index] = highlight_color;
                 }
+
+                index = i * texture.width + texture.width - 1;
+                if(zBuffer[index] == 0 && zBuffer[index - 1] != 0) pixels[index] = highlight_color;
             }
-            
+
+            for(int i = 0; i < texture.width; i++) // vertical highlight
+            {
+                index = i;
+                if(zBuffer[index] == 0 && zBuffer[index + texture.width] != 0) pixels[index] = highlight_color;
+
+                for(int j = 1; j < texture.height - 1; j++)
+                {
+                    index = i + j * texture.width;
+                    if(zBuffer[index] == 0 && zBuffer[index + texture.width] != 0) pixels[index] = highlight_color;
+                    if(zBuffer[index] == 0 && zBuffer[index - texture.width] != 0) pixels[index] = highlight_color;
+                }
+
+                index = i + texture.height * (texture.height - 1);
+                if(zBuffer[index] == 0 && zBuffer[index - texture.width] != 0) pixels[index] = highlight_color;
+            }
         }
         texture.SetPixels32(pixels);
         texture.Apply();

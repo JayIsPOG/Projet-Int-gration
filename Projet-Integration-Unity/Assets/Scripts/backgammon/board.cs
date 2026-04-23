@@ -74,7 +74,8 @@ public class board : MonoBehaviour
         if(Pos.hasPlayerWon()){
             FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
             FindObjectOfType<DataPersistanceManager>().SaveGame();
-            return;
+            SceneManager.LoadScene("Back End");
+            yield return null;
         }
         opponent_dices.genRandomDices();
         yield return StartCoroutine(RollAllDice(opponent_dices));
@@ -84,8 +85,10 @@ public class board : MonoBehaviour
         {
             uint move = moveSequence & 0xff;
             int dice = (int)(move >> 5);
+            int index = opponent_dices.findDiceIndex(dice);
+            opponent_dices.enableHighligh(index);
             yield return StartCoroutine(makeMoveAI(move));
-            opponent_dices.removeDice(dice);
+            opponent_dices.removeDiceAt(index);
         }
         StartCoroutine(updateEval());
         playPlayer();
@@ -178,16 +181,10 @@ public class board : MonoBehaviour
                     {
                         Pos.chips[pick_from]--;
                         Pos.player_present ^= (Pos.chips[pick_from] == 0 ? 1u : 0u) << pick_from;
-                        uint encode_move = (uint)(pick_from | (player_dices.dices[selectedDiceIndex] << 5));
-                        if(Pos.canPlayerBearOff() && selectedDiceIndex != 255 && pick_from + player_dices.dices[selectedDiceIndex] >= 25 && moveManager.isMoveValid(encode_move))
+                        if(Pos.canPlayerBearOff() && selectedDiceIndex != 255 && pick_from + player_dices.dices[selectedDiceIndex] >= 25 && moveManager.isMoveValid((uint)(pick_from | (player_dices.dices[selectedDiceIndex] << 5))))
                         {
                             bool isFinished = moveManager.makeBearoffMove(pick_from, player_dices.dices[selectedDiceIndex]);
                             player_dices.removeDiceAt(selectedDiceIndex);
-                            if(Pos.hasPlayerWon()) {
-                                FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
-                                FindObjectOfType<DataPersistanceManager>().SaveGame();
-                                return;
-                            }
                             if(isFinished) StartCoroutine(playBot());
                             selectedDiceIndex = 255;
                         }
@@ -195,7 +192,11 @@ public class board : MonoBehaviour
                     }
                 }
                 int dice_index = getDiceIndex();
-                if(dice_index != 255) selectedDiceIndex = dice_index;
+                if(dice_index != 255) {
+                    if(selectedDiceIndex != 255) player_dices.disableHighligh(selectedDiceIndex);
+                    selectedDiceIndex = dice_index;
+                    player_dices.enableHighligh(selectedDiceIndex);
+                }
             }
         }
         else
@@ -207,11 +208,6 @@ public class board : MonoBehaviour
                 {
                     bool isFinished = moveManager.placeChip(pick_from, player_dices.dices[selectedDiceIndex]);
                     player_dices.removeDiceAt(selectedDiceIndex);
-                    if(Pos.hasPlayerWon()){
-                        FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
-                        FindObjectOfType<DataPersistanceManager>().SaveGame();
-                        return;
-                    }
                     if(isFinished) StartCoroutine(playBot());
                     selectedDiceIndex= 255;
                 }
@@ -227,9 +223,10 @@ public class board : MonoBehaviour
 
     void OnGUI()
     {
+        float x;
         for(float i = 0; i < 6; i += 2)
         {
-            float x = i * xUnit + xBorder;
+            x = i * xUnit + xBorder;
             GUI.DrawTexture(new Rect(x, 0, xUnit, yUnit), rev_black_pike);
             GUI.DrawTexture(new Rect(x, Screen.height - yUnit, xUnit, yUnit), white_pike);
             x = (i + 1) * xUnit + xBorder;
@@ -245,7 +242,7 @@ public class board : MonoBehaviour
         
         for(float i = 7; i < 13; i+=2)
         {
-            float x = i * xUnit + xBorder;
+            x = i * xUnit + xBorder;
             GUI.DrawTexture(new Rect(x, 0, xUnit, yUnit), rev_black_pike);
             GUI.DrawTexture(new Rect(x, Screen.height - yUnit, xUnit, yUnit), white_pike);
             x = (i + 1) * xUnit + xBorder;
@@ -255,7 +252,7 @@ public class board : MonoBehaviour
 
         for(int i = 1; i < 7; i++)
         {
-            float x = (13 - i) * xUnit + (xUnit - chipUnit) * 0.5f + xBorder;
+            x = (13 - i) * xUnit + (xUnit - chipUnit) * 0.5f + xBorder;
             for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x,  j * chipUnit * stackRatio, chipUnit, chipUnit), white_chip_texture);
             for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit * stackRatio, chipUnit, chipUnit), black_chip_texture);
             
@@ -266,7 +263,7 @@ public class board : MonoBehaviour
         
         for(int i = 7; i < 13; i++)
         {
-            float x = (12 - i) * xUnit + (xUnit - chipUnit) * 0.5f + xBorder;
+            x = (12 - i) * xUnit + (xUnit - chipUnit) * 0.5f + xBorder;
             for(int j = 0; j < Pos.chips[i]; j++) GUI.DrawTexture(new Rect(x,  j * chipUnit * stackRatio, chipUnit, chipUnit), white_chip_texture);
             for(int j = 0; j > Pos.chips[i]; j--) GUI.DrawTexture(new Rect(x, -j * chipUnit * stackRatio, chipUnit, chipUnit), black_chip_texture);
             
@@ -284,19 +281,20 @@ public class board : MonoBehaviour
         GUIStyle font = new GUIStyle(GUI.skin.label);
         font.fontSize = 40;
         font.alignment = TextAnchor.MiddleCenter;
-
+        
+        x = xUnit * 6.5f + xBorder - chipUnit * 0.5f;
         if(Pos.chips[25] < 0)
         {
             font.normal.textColor = Color.white;
-            GUI.DrawTexture(new Rect(xUnit * 6.5f + xBorder - chipUnit * 0.5f, Screen.height - chipUnit, chipUnit, chipUnit), black_chip_texture);
-            GUI.Label(new Rect(xUnit * 6.5f + xBorder - chipUnit * 0.5f, Screen.height - chipUnit, chipUnit, chipUnit), (-Pos.chips[25]).ToString(), font);
+            GUI.DrawTexture(new Rect(x, Screen.height - chipUnit, chipUnit, chipUnit), black_chip_texture);
+            GUI.Label(new Rect(x, Screen.height - chipUnit, chipUnit, chipUnit), (-Pos.chips[25]).ToString(), font);
         }
         
         if(Pos.chips[0] > 0)
         {
             font.normal.textColor = Color.black;
-            GUI.DrawTexture(new Rect(xUnit * 6.5f + xBorder - chipUnit * 0.5f, 0, chipUnit, chipUnit), white_chip_texture);
-            GUI.Label(new Rect(xUnit * 6.5f + xBorder - chipUnit * 0.5f, 0, chipUnit, chipUnit), Pos.chips[0].ToString(), font);
+            GUI.DrawTexture(new Rect(x, 0, chipUnit, chipUnit), white_chip_texture);
+            GUI.Label(new Rect(x, 0, chipUnit, chipUnit), Pos.chips[0].ToString(), font);
         }
 
         if(hasSelected) GUI.DrawTexture(new Rect(Input.mousePosition.x - chipUnit * 0.5f, Screen.height - Input.mousePosition.y - chipUnit * 0.5f, chipUnit, chipUnit), white_chip_texture);
@@ -310,7 +308,7 @@ public class board : MonoBehaviour
         int to = from - dice;
         uint bit_mod;
 
-        if(dice == 0) // bearoff move
+        if(to <= 0) // bearoff move
         {
             AudioSource.PlayClipAtPoint(simple_move_sound, Camera.main.transform.position);
             bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
@@ -318,7 +316,7 @@ public class board : MonoBehaviour
             Pos.ai_bearoff++;
             Pos.chips[from]++;
             Pos.ai_present ^= bit_mod;
-
+            yield return new WaitForSeconds(1.0f);
         }
         else if(Pos.chips[to] == 1)
         {

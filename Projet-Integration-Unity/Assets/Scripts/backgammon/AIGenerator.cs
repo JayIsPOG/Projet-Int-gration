@@ -1,5 +1,5 @@
 
-using Unity.Burst.Intrinsics;
+using static Unity.Burst.Intrinsics.X86.Bmi1;
 class simpleDiceGeneratorAI : generatorAI {
   public simpleMoveArray moveList;
   public int dice1;
@@ -52,13 +52,13 @@ class simpleDiceGeneratorAI : generatorAI {
 
       if ((Pos.ai_present & 0b1111110) == Pos.ai_present) { // can bear off
         uint bear_off_moves = (Pos.ai_present & bearoff_mask[dice]);
-        for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-          moveList.push_back((ushort)(move_desc | ((X86.Bmi1.tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
+        for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+          moveList.push_back((ushort)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
         }
       }
 
-      for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-        to = (int)X86.Bmi1.tzcnt_u32(moves);
+      for (; moves != 0; moves = blsr_u32(moves)) {
+        to = (int)tzcnt_u32(moves);
         from = to + dice;
         if (Pos.chips[to] <= 1) moveList.push_back((ushort)(move_desc | ((from | (dice << 5)) << shift)));
       }
@@ -112,8 +112,8 @@ class simpleDiceGeneratorAI : generatorAI {
 
       if ((Pos.ai_present & 0b1111110) == Pos.ai_present) { // can bear off
         uint bear_off_moves = (Pos.ai_present & bearoff_mask[dice1]);
-        for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-          from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
+        for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+          from = (int)tzcnt_u32(bear_off_moves);
           bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
 
           Pos.chips[from]++;
@@ -126,8 +126,8 @@ class simpleDiceGeneratorAI : generatorAI {
         }
       }
 
-      for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-        to = (int)X86.Bmi1.tzcnt_u32(moves);
+      for (; moves != 0; moves = blsr_u32(moves)) {
+        to = (int)tzcnt_u32(moves);
         from = to + dice1;
         if (Pos.chips[to] == 1) {
           bit_to = (1u << to);
@@ -233,8 +233,8 @@ class doubleDiceGeneratorAI : generatorAI
 
         if ((self_present & 0b1111110) == self_present) { // can bear off, all chips are in end region
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
-          for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
+          for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+            from = (int)tzcnt_u32(bear_off_moves);
             bit_mod = (uint)(((Pos.chips[from] == -1) ? 1 : 0) << from);
 
             Pos.chips[from]++;
@@ -247,8 +247,8 @@ class doubleDiceGeneratorAI : generatorAI
           }
         }
 
-        for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-          to = (int)X86.Bmi1.tzcnt_u32(moves);
+        for (; moves != 0; moves = blsr_u32(moves)) {
+          to = (int)tzcnt_u32(moves);
           from = to + dice;
           if (Pos.chips[to] == 1) {
             bit_to = (1u << to);
@@ -299,13 +299,13 @@ class doubleDiceGeneratorAI : generatorAI
 
         if ((self_present & 0b1111110) == self_present) { // can bear off
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
-          for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            moveList.push_back((uint)(move_desc | ((X86.Bmi1.tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
+          for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+            moveList.push_back((uint)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
           }
         }
 
-        for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-          to = (int)X86.Bmi1.tzcnt_u32(moves);
+        for (; moves != 0; moves = blsr_u32(moves)) {
+          to = (int)tzcnt_u32(moves);
           from = to + dice;
           if (Pos.chips[to] <= 1) moveList.push_back((uint)(move_desc | ((from | (dice << 5)) << shift)));
         }
