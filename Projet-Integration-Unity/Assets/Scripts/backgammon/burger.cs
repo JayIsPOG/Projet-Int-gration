@@ -6,6 +6,7 @@ using System.ComponentModel;
 public class burger
 {
     static readonly Color32 transparent = new Color32(0, 0, 0, 0);
+    static readonly Color32 highlight_color = new Color32(255, 255, 0, 255);
     static readonly float deltaTime = 0.02f;
     static readonly int steps = 40;
     static readonly float rotation = (2 * Mathf.PI) / steps;
@@ -18,6 +19,7 @@ public class burger
     float A, B, C;
     float[] zBuffer;
     public Texture2D texture;
+    bool isHighlighted;
     Color32[] face1, face2, face3, face4, face5, face6;
     Color32[] pixels;
     public bool is_rolling;
@@ -40,6 +42,7 @@ public class burger
         faceWidth = dices.width;
         faceHeight = dices.height / 6;
         Color32[] faces = dices.GetPixels32();
+        isHighlighted = false;
 
         int size = faceWidth * faceHeight;
 
@@ -62,6 +65,14 @@ public class burger
         pixels = texture.GetPixels32();
         
         zBuffer = new float[texture.width * texture.height];
+    }
+    public enableHighligh()
+    {
+        isHighlighted = true;
+    }
+    public disableHighligh()
+    {
+        isHighlighted = false;
     }
     public void setOrientation(int face)
     {
@@ -103,18 +114,33 @@ public class burger
         m10 = sinA*sinC-cosA*sinB*cosC; m11 = cosA*sinB*sinC+sinA*cosC; m12 = cosA*cosB;
         m20 = cosB*cosC;                m21 = -cosB*sinC;               m22 = sinB;
 
-        for (float cubeX = -cubeWidth / 2; cubeX < cubeWidth / 2; cubeX += 1) 
+        float halfWidth = cubeWidth * 0.5f;
+        for (float cubeX = -halfWidth; cubeX < halfWidth; cubeX += 1) 
         {
-            for (float cubeY = -cubeWidth / 2; cubeY < cubeWidth / 2; cubeY += 1) 
+            for (float cubeY = -halfWidth; cubeY < halfWidth; cubeY += 1) 
             {
-                int index = (int)((cubeY + cubeWidth / 2) * ((float)faceHeight / cubeWidth)) * faceWidth + (int)((cubeX + cubeWidth / 2) * ((float)faceWidth / cubeWidth));
-                calculateForSurface(cubeX, cubeY, -cubeWidth / 2, face1[index]);
-                calculateForSurface(cubeX, cubeY, cubeWidth / 2, face3[index]);
-                calculateForSurface(cubeWidth / 2, cubeY, cubeX, face2[index]);
-                calculateForSurface(-cubeWidth / 2, cubeY, cubeX, face5[index]);
-                calculateForSurface(cubeY, cubeWidth / 2, cubeX, face4[index]);
-                calculateForSurface(cubeY, -cubeWidth / 2, cubeX, face6[index]);
+                int index = (int)((cubeY + halfWidth) * ((float)faceHeight / cubeWidth)) * faceWidth + (int)((cubeX + halfWidth) * ((float)faceWidth / cubeWidth));
+                calculateForSurface(cubeX, cubeY, -halfWidth, face1[index]);
+                calculateForSurface(cubeX, cubeY, halfWidth, face3[index]);
+                calculateForSurface(halfWidth, cubeY, cubeX, face2[index]);
+                calculateForSurface(-halfWidth, cubeY, cubeX, face5[index]);
+                calculateForSurface(cubeY, halfWidth, cubeX, face4[index]);
+                calculateForSurface(cubeY, -halfWidth, cubeX, face6[index]);
             }
+        }
+        if (isHighlighted)
+        {
+            int hIndex, prevHIndex, nextHIndex;
+            for(int i = 1; i < texture.height - 1; i++)
+            {
+                for(int j = 1; j < texture.width - 1; j++)
+                {
+                    int horizontalIndex = i * texture.width + j;
+                    int verticalIndex = j * texture.width + i;
+                    if(pixels[i] == transparent && pixels[i + 1] != transparent) pixels[i] = highlight_color;
+                }
+            }
+            
         }
         texture.SetPixels32(pixels);
         texture.Apply();

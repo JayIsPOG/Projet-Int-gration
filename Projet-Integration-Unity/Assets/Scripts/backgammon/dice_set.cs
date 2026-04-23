@@ -30,9 +30,9 @@ public class dice_set
   }
   public void genRandomDices()
   {
-    dices[0] = Random.Range(1, 7);
+    dices[0] = 1;
     dice_animations[0].setOrientation(dices[0]);
-    dices[1] = Random.Range(1, 7);
+    dices[1] = 1;
     dice_animations[1].setOrientation(dices[1]);
     dice_count = 2;
     if(dices[0] == dices[1])

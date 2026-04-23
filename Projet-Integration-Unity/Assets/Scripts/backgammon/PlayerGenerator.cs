@@ -51,7 +51,7 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
         uint bear_off_moves = (Pos.player_present & bearoff_mask[dice]);
         for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
           from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-          moveList.push_back((ushort)(move_desc | (X86.Bmi1.tzcnt_u32(bear_off_moves) << shift)));
+          moveList.push_back((ushort)(move_desc | ((X86.Bmi1.tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
         }
       }
 
@@ -117,7 +117,7 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
           Pos.chips[from]--;
           Pos.player_present ^= bit_mod;
 
-          genSingleSimpleMove(dice2, (ushort)(from), 8);
+          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)), 8);
 
           Pos.chips[from]++;
           Pos.player_present ^= bit_mod;
@@ -240,7 +240,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
             Pos.chips[from]--;
             self_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | (from << shift)), self_present, shift + 8);
+            genForDouble(dice_index - 1,(uint)(move_desc | ((from | (dice << 5)) << shift)), self_present, shift + 8);
 
             Pos.chips[from]++;
             self_present ^= bit_mod;
@@ -300,8 +300,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
         if ((self_present & 0b01111110000000000000000000) == self_present) { // can bear off
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-            moveList.push_back((uint)(move_desc | (from << shift)));
+            moveList.push_back((uint)(move_desc | ((X86.Bmi1.tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
           }
         }
 
@@ -392,7 +391,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
             Pos.chips[from]--;
             Pos.player_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | (from << shift)), shift + 8);
+            genForDouble(dice_index - 1, (uint)(move_desc | ((from | (dice << 5)) << shift)), shift + 8);
 
             Pos.chips[from]++;
             Pos.player_present ^= bit_mod;
@@ -449,8 +448,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
         if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
           uint bear_off_moves = (Pos.player_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-            moveList.push_back((uint)(move_desc | (X86.Bmi1.tzcnt_u32(bear_off_moves) << shift)));
+            moveList.push_back((uint)(move_desc | ((X86.Bmi1.tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
           }
         }
 

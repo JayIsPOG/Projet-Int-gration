@@ -239,6 +239,9 @@ MonoBehaviour:
   eat_move_sound: {fileID: 8300000, guid: eed4d94923d3e454b9f75ac8f1feace3, type: 3}
   slide_lenght: 5
   deltaTimeSlide: 0.01
+  eval_steps: 60
+  evalTime: 0.05
+  evalColor: {r: 0.4745098, g: 0.4745098, b: 0.4745098, a: 0.3529412}
 --- !u!114 &1647343605
 MonoBehaviour:
   m_ObjectHideFlags: 0

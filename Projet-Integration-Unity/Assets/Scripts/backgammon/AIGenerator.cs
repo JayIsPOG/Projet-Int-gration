@@ -53,8 +53,7 @@ class simpleDiceGeneratorAI : generatorAI {
       if ((Pos.ai_present & 0b1111110) == Pos.ai_present) { // can bear off
         uint bear_off_moves = (Pos.ai_present & bearoff_mask[dice]);
         for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-          from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-          moveList.push_back((ushort)(move_desc | (from << shift)));
+          moveList.push_back((ushort)(move_desc | ((X86.Bmi1.tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
         }
       }
 
@@ -120,7 +119,7 @@ class simpleDiceGeneratorAI : generatorAI {
           Pos.chips[from]++;
           Pos.ai_present ^= bit_mod;
 
-          genSingleSimpleMove(dice2, (ushort)(from), 8);
+          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)), 8);
 
           Pos.chips[from]--;
           Pos.ai_present ^= bit_mod;
@@ -241,7 +240,7 @@ class doubleDiceGeneratorAI : generatorAI
             Pos.chips[from]++;
             self_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | (from << shift)), self_present, shift + 8);
+            genForDouble(dice_index - 1,  (uint)(move_desc | ((from | (dice << 5)) << shift)), self_present, shift + 8);
 
             Pos.chips[from]--;
             self_present &= ~(1u << from); // Do not consider in the future, already considered (since dices are the same, order doesnt matter)
@@ -301,8 +300,7 @@ class doubleDiceGeneratorAI : generatorAI
         if ((self_present & 0b1111110) == self_present) { // can bear off
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-            moveList.push_back((uint)(move_desc | (from << shift)));
+            moveList.push_back((uint)(move_desc | ((X86.Bmi1.tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
           }
         }
 
