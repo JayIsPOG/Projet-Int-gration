@@ -20,15 +20,17 @@ public class LightReceiverCrystal : LightEmitter
                 open = true;
             else
                 open = false;
-            if(lightPassesThrough)
-            {
-                
-            }
         }
         else
             open = false;
         if (open)
-            GetComponent<SpriteRenderer>().sprite = spriteLit;
+        {
+            if(GetComponent<SpriteRenderer>().sprite != spriteLit)
+            {
+                GetComponent<SpriteRenderer>().sprite = spriteLit;
+                GetComponent<AudioSource>().Play();
+            }
+        }
         else
             GetComponent<SpriteRenderer>().sprite = spriteUnlit;
     }
@@ -42,6 +44,6 @@ public class LightReceiverCrystal : LightEmitter
     }
     public override Vector3 GetRayStartPos(float incomingAngle)
     {
-        return transform.position + GetRotatedVector(incomingAngle) * 0.2f;
+        return transform.position + GetRotatedVector(incomingAngle) * 0.25f;
     }
 }

@@ -6,12 +6,27 @@ public class Rotate : MonoBehaviour
 {
     public GameObject rotateIcon;
     public GameObject objToRotate;
-    public bool playerIn;
+    public bool playerIn, hV; //horizontal / vertical
+    public Sprite sprite1, sprite2;
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.E) && playerIn)
         {
-            objToRotate.transform.localScale = new Vector3(-objToRotate.transform.localScale.x, 1f, 1f);
+            if (hV)
+            {
+                if(objToRotate.GetComponent<SpriteRenderer>().sprite == sprite1){
+                    objToRotate.GetComponent<SpriteRenderer>().sprite = sprite2;
+                    objToRotate.transform.Rotate(0f, 0.0f, 270.0f, Space.Self);
+                }
+                else
+                {
+                    objToRotate.GetComponent<SpriteRenderer>().sprite = sprite1;
+                    objToRotate.transform.Rotate(0f, 0.0f, 90.0f, Space.Self);
+                }
+                    
+            }else{
+                objToRotate.transform.localScale = new Vector3(-objToRotate.transform.localScale.x, 1f, 1f);
+            }
             if(objToRotate.GetComponent<SpriteSorting>().offset == 130)
                 objToRotate.GetComponent<SpriteSorting>().offset = 127;
             

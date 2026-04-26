@@ -93,43 +93,47 @@ public class LightEmitter : MonoBehaviour
     IEnumerator LightUp()
     {
         yield return new WaitForSeconds(0.001f);
-        try{
-            if(hitSaved.GetComponent<Mirror>().line == null)
-            {
-                hitSaved.GetComponent<Mirror>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
-                hitSaved.GetComponent<Mirror>().nDensity = nDensity;
-                hitSaved.GetComponent<Mirror>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
+        //Debug.Log(hitSaved);
+        if(hitSaved)
+        {
+            if(hitSaved.GetComponent<Mirror>()){
+                if(hitSaved.GetComponent<Mirror>().line == null)
+                {
+                    hitSaved.GetComponent<Mirror>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                    hitSaved.GetComponent<Mirror>().nDensity = nDensity;
+                    hitSaved.GetComponent<Mirror>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
+                }
+                hitSaved.GetComponent<Mirror>().lightSource = transform;
             }
-            hitSaved.GetComponent<Mirror>().lightSource = transform;
-        }catch{}
-        try{
-            if(hitSaved.GetComponent<Lens>().line == null)
-            {
-                hitSaved.GetComponent<Lens>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
-                hitSaved.GetComponent<Lens>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
+            if(hitSaved.GetComponent<Lens>()){
+                if(hitSaved.GetComponent<Lens>().line == null)
+                {
+                    hitSaved.GetComponent<Lens>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                    hitSaved.GetComponent<Lens>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
+                }
+                hitSaved.GetComponent<Lens>().lightSource = transform;
             }
-            hitSaved.GetComponent<Lens>().lightSource = transform;
-        }catch{}
-        try{
-            hitSaved.GetComponent<LightReceiver>().hitByLight = true;
-            hitSaved.GetComponent<LightReceiver>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
-        }catch{}
-        try{
-            if(hitSaved.GetComponent<LightReceiverCrystal>().line == null)
-            {
-                hitSaved.GetComponent<LightReceiverCrystal>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
-                hitSaved.GetComponent<LightReceiverCrystal>().nDensity = nDensity;
-                hitSaved.GetComponent<LightReceiverCrystal>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
-                hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = true;
-                hitSaved.GetComponent<LightReceiverCrystal>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
+            if(hitSaved.GetComponent<LightReceiver>()){
+                hitSaved.GetComponent<LightReceiver>().hitByLight = true;
+                hitSaved.GetComponent<LightReceiver>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
             }
-            hitSaved.GetComponent<LightReceiverCrystal>().lightSource = transform;
-        }catch{}
-        try{
-            if(hitSaved.transform.name == "light Collisions turret" && line.GetComponent<LightLine>().waveLenghtInDensity == 700)
-            {
-                hitSaved.transform.parent.gameObject.GetComponent<Turret>().Die();
+            if(hitSaved.GetComponent<LightReceiverCrystal>()){
+                if(hitSaved.GetComponent<LightReceiverCrystal>().line == null)
+                {
+                    hitSaved.GetComponent<LightReceiverCrystal>().line = Instantiate(linePrefab, new Vector3(0,0,0), Quaternion.identity);
+                    hitSaved.GetComponent<LightReceiverCrystal>().nDensity = nDensity;
+                    hitSaved.GetComponent<LightReceiverCrystal>().line.GetComponent<LightLine>().waveLenght = line.GetComponent<LightLine>().waveLenght;
+                    hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = true;
+                    hitSaved.GetComponent<LightReceiverCrystal>().waveLenghtReceived = line.GetComponent<LightLine>().waveLenghtInDensity;
+                }
+                hitSaved.GetComponent<LightReceiverCrystal>().lightSource = transform;
             }
-        }catch{}
+            if(hitSaved.transform.name == "light Collisions turret"){
+                if(line.GetComponent<LightLine>().waveLenghtInDensity == 700)
+                {
+                    hitSaved.transform.parent.gameObject.GetComponent<Turret>().Die();
+                }
+            }
+        }
     }
 }

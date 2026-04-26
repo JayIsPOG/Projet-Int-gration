@@ -10,6 +10,7 @@ public class LightReceiver : MonoBehaviour
     public bool open;
     public Sprite spriteLit, spriteUnlit;
     public bool lightPassesThrough;
+    public GameObject symbols;
 
     void Update()
     {
@@ -19,16 +20,21 @@ public class LightReceiver : MonoBehaviour
                 open = true;
             else
                 open = false;
-            if(lightPassesThrough)
-            {
-                
-            }
         }
         else
             open = false;
         if (open)
-            GetComponent<SpriteRenderer>().sprite = spriteLit;
-        else
+        {
+            if(GetComponent<SpriteRenderer>().sprite != spriteLit)
+            {
+                GetComponent<SpriteRenderer>().sprite = spriteLit;
+                symbols.SetActive(true);
+                GetComponent<AudioSource>().Play();
+            }
+        }
+        else{
             GetComponent<SpriteRenderer>().sprite = spriteUnlit;
+            symbols.SetActive(false);
+        }
     }
 }

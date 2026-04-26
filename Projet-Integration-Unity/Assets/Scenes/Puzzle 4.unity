@@ -62339,6 +62339,18 @@ PrefabInstance:
       propertyPath: waveLenghtToOpen
       value: 440
       objectReference: {fileID: 0}
+    - target: {fileID: 4882024935831364116, guid: 8518446a9b84190409f3026df222815b, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882024935831364116, guid: 8518446a9b84190409f3026df222815b, type: 3}
+      propertyPath: m_Color.g
+      value: 0.6666667
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882024935831364116, guid: 8518446a9b84190409f3026df222815b, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4882024935831364117, guid: 8518446a9b84190409f3026df222815b, type: 3}
       propertyPath: m_RootOrder
       value: 5

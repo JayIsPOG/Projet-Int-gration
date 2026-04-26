@@ -27806,6 +27806,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1402392213616137516, guid: 6aac923e72a9eb441978ef78c17864fa, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: ef93994bd7709b04f9030c42e6e2a2fa, type: 3}
     - target: {fileID: 8713834760490406919, guid: 6aac923e72a9eb441978ef78c17864fa, type: 3}
       propertyPath: m_RootOrder
       value: 11
@@ -27863,6 +27867,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5651691543600155189, guid: 121f07b51e426724eaa5bd0c4f79b326, type: 3}
+      propertyPath: m_SortingLayer
+      value: -1
+      objectReference: {fileID: 0}
     - target: {fileID: 5651691543899136693, guid: 121f07b51e426724eaa5bd0c4f79b326, type: 3}
       propertyPath: m_Name
       value: Triangle
@@ -61844,6 +61852,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4882024935831364116, guid: 8518446a9b84190409f3026df222815b, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882024935831364116, guid: 8518446a9b84190409f3026df222815b, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882024935831364116, guid: 8518446a9b84190409f3026df222815b, type: 3}
+      propertyPath: m_Color.r
+      value: 0.57254905
+      objectReference: {fileID: 0}
     - target: {fileID: 4882024935831364117, guid: 8518446a9b84190409f3026df222815b, type: 3}
       propertyPath: m_RootOrder
       value: 7
