@@ -11,10 +11,11 @@ public class LightEmitter : MonoBehaviour
     public LayerMask layerMask;
     public GameObject hitNew, hitSaved;
     public float nDensity;
-
+    public bool canUpdate;
     public float signedAngle;
     
     protected virtual void Start(){
+        canUpdate = true;
         Physics2D.IgnoreLayerCollision(6, 7, true);
         Physics2D.IgnoreLayerCollision(6, 8, true);
     }
@@ -30,34 +31,56 @@ public class LightEmitter : MonoBehaviour
     }
     public virtual void Update()
     {
-        if(line) {
-            line.GetComponent<LightLine>().nDensity = nDensity;
+        if(canUpdate)
+        {
+            if(line) {
+                StartCoroutine(UpdateTimer());
 
-            float incomingAngle = Vector3.SignedAngle(transform.up, lightSource.position - transform.position, Vector3.forward);
+                line.GetComponent<LightLine>().nDensity = nDensity;
 
-            Ray2D ray = new Ray2D(GetRayStartPos(incomingAngle), GetRotatedVector(incomingAngle));
-            RaycastHit2D hit;
+                float incomingAngle = Vector3.SignedAngle(transform.up, lightSource.position - transform.position, Vector3.forward);
 
-            line.SetPosition(0, ray.origin);
+                Ray2D ray = new Ray2D(GetRayStartPos(incomingAngle), GetRotatedVector(incomingAngle));
+                RaycastHit2D hit;
 
-            hit = Physics2D.Raycast(ray.origin, GetRotatedVector(incomingAngle), distance, layerMask);
+                line.SetPosition(0, ray.origin);
 
-            if (hit.collider)
-            {
-                line.SetPosition(1, hit.point);
-                hitNew = hit.collider.gameObject;
-            }
-            else
-                line.SetPosition(1, ray.GetPoint(distance));
+                hit = Physics2D.Raycast(ray.origin, GetRotatedVector(incomingAngle), distance, layerMask);
 
-            if(hitNew != hitSaved)
-            {
-                //Debug.Log(hitSaved is LightEmitter); //this returns false, but it should be true right ?
+                if (hit.collider)
+                {
+                    line.SetPosition(1, hit.point);
+                    hitNew = hit.collider.gameObject;
+                }
+                else
+                    line.SetPosition(1, ray.GetPoint(distance));
+
+                if(hitNew != hitSaved)
+                {
+                    //Debug.Log(hitSaved is LightEmitter); //this returns false, but it should be true right ?
+                    try{
+                        Destroy(hitSaved.GetComponent<Mirror>().line.gameObject);
+                        //hitSaved.GetComponent<Mirror>().lightSource = null;
+                    }catch{}
+                    try{
+                        Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
+                    }catch{}
+                    try{
+                        hitSaved.GetComponent<LightReceiver>().hitByLight = false;
+                    }catch{}
+                    try{
+                        hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = false;
+                        Destroy(hitSaved.GetComponent<LightReceiverCrystal>().line.gameObject);
+                    }catch{}
+                    hitSaved = hitNew;
+                    StartCoroutine(LightUp());
+                }
+            }else{
                 try{
                     Destroy(hitSaved.GetComponent<Mirror>().line.gameObject);
                     //hitSaved.GetComponent<Mirror>().lightSource = null;
                 }catch{}
-                try{
+                 try{
                     Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
                 }catch{}
                 try{
@@ -67,26 +90,9 @@ public class LightEmitter : MonoBehaviour
                     hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = false;
                     Destroy(hitSaved.GetComponent<LightReceiverCrystal>().line.gameObject);
                 }catch{}
+                hitNew = null;
                 hitSaved = hitNew;
-                StartCoroutine(LightUp());
             }
-        }else{
-            try{
-                Destroy(hitSaved.GetComponent<Mirror>().line.gameObject);
-                //hitSaved.GetComponent<Mirror>().lightSource = null;
-            }catch{}
-             try{
-                Destroy(hitSaved.GetComponent<Lens>().line.gameObject);
-            }catch{}
-            try{
-                hitSaved.GetComponent<LightReceiver>().hitByLight = false;
-            }catch{}
-            try{
-                hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = false;
-                Destroy(hitSaved.GetComponent<LightReceiverCrystal>().line.gameObject);
-            }catch{}
-            hitNew = null;
-            hitSaved = hitNew;
         }
     }
 
@@ -135,5 +141,11 @@ public class LightEmitter : MonoBehaviour
                 }
             }
         }
+    }
+    IEnumerator UpdateTimer()
+    {
+        canUpdate = false;
+        yield return new WaitForSeconds(0.0001f);
+        canUpdate = true;
     }
 }

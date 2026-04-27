@@ -12,16 +12,19 @@ public class Turret : MonoBehaviour
     public LineRenderer line;
     public LineRenderer linePrefab;
     public GameObject effectKill;
+    public GameObject circle;
     public float range = 3f;
     private bool killing;
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        
     }
 
     void OnDrawGizmos() {
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, range);
+        circle.transform.localScale = new Vector3(range, range, range);
 
         if(player != null)
             Gizmos.DrawLine(transform.position + new Vector3(0,1,0), player.position);
@@ -29,6 +32,7 @@ public class Turret : MonoBehaviour
     }
     void Update()
     {
+        circle.transform.localScale = new Vector3(range, range, range);
         Direction = player.position - transform.position - new Vector3(0,1,0);
         RaycastHit2D rayInfo = Physics2D.Raycast(transform.position + new Vector3(0,1,0), Direction, range, layerMaskPlayer);
         

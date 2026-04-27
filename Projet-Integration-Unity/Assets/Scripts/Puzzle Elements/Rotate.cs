@@ -8,6 +8,7 @@ public class Rotate : MonoBehaviour
     public GameObject objToRotate;
     public bool playerIn, hV; //horizontal / vertical
     public Sprite sprite1, sprite2;
+    public bool canEmit;
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.E) && playerIn)
@@ -15,13 +16,17 @@ public class Rotate : MonoBehaviour
             if (hV)
             {
                 if(objToRotate.GetComponent<SpriteRenderer>().sprite == sprite1){
+                    objToRotate.transform.rotation = Quaternion.Euler(0, 0, 90);
                     objToRotate.GetComponent<SpriteRenderer>().sprite = sprite2;
-                    objToRotate.transform.Rotate(0f, 0.0f, 270.0f, Space.Self);
+                    StartCoroutine(UpdateTimer());
+                    //objToRotate.transform.Rotate(0f, 0.0f, -270.0f, Space.Self);
                 }
                 else
                 {
+                    objToRotate.transform.rotation = Quaternion.Euler(0, 0, 0);
                     objToRotate.GetComponent<SpriteRenderer>().sprite = sprite1;
-                    objToRotate.transform.Rotate(0f, 0.0f, 90.0f, Space.Self);
+                    StartCoroutine(UpdateTimer());
+                    //objToRotate.transform.Rotate(0f, 0.0f, 90.0f, Space.Self);
                 }
                     
             }else{
@@ -47,5 +52,11 @@ public class Rotate : MonoBehaviour
             rotateIcon.SetActive(false);
             playerIn = false;
         }
+    }
+    IEnumerator UpdateTimer()
+    {
+        objToRotate.transform.GetChild(0).GetComponent<LightEmitter>().enabled = false;
+        yield return new WaitForSeconds(0.001f);
+        objToRotate.transform.GetChild(0).GetComponent<LightEmitter>().enabled = true;
     }
 }
