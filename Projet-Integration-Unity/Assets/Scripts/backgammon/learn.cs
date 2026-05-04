@@ -40,7 +40,12 @@ unsafe public class learn : MonoBehaviour
 
   unsafe void play()
   {
-        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
+        uint bestMove = bot.bestMovePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
+        for(; bestMove != 0; bestMove >>= 8)
+        {
+         uint move = bestMove & 0xff;
+         Pos.makeMovePlayer(move);
+       }
         Pos.playerTurn = false;
         AI.generateInputs(Pos);
         if (Pos.hasPlayerWon())
@@ -54,7 +59,12 @@ unsafe public class learn : MonoBehaviour
         }
         else AI.learnForRegular(learnRate);
 
-        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), 0);
+        bestMove = bot.bestMoveAI(rng.Next(1, 7), rng.Next(1, 7), 0);
+        for(; bestMove != 0; bestMove >>= 8)
+        {
+         uint move = bestMove & 0xff;
+         Pos.makeMovePlayer(move);
+        }
         Pos.playerTurn = true;
         AI.generateInputs(Pos);
         if (Pos.hasAIWon())

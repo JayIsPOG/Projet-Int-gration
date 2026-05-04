@@ -71,7 +71,7 @@ unsafe class Layer : System.IDisposable {
         return 2 * (Out - expectedOut);
     }
     float deriveOutput(float Out) {
-      return Out * (1.0f- Out);
+      return Out * (1.0f - Out);
     }
     public Layer(int in_num, int out_num) {
         nodes_in = in_num;

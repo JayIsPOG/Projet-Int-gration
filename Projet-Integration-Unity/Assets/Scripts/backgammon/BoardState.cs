@@ -8,7 +8,6 @@ public class BoardState
 	public bool playerTurn;
 	public byte player_bearoff;
 	public byte ai_bearoff;
-	// Start is called before the first frame update
 	public BoardState()
 	{
 		set();
@@ -37,4 +36,75 @@ public class BoardState
 	{
 		return (player_present & 0b01111110000000000000000000) == player_present;
 	}
+	public void makeMovePlayer(uint move)
+  {
+    int dice = (int)(move >> 5);
+    int from = (int)(move & 0b11111);
+    int to = from + dice;
+    if(to >= 25) // bearoff move
+    {
+      uint bit_mod = (uint)(((chips[from] == 1) ? 1 : 0) << from);
+
+      player_bearoff++;
+      chips[from]--;
+      player_present ^= bit_mod;
+    }
+    else if(chips[to] == -1)
+    {
+      uint bit_to = (1u << to);
+      uint bit_mod = (uint)(bit_to | (((chips[from] == 1) ? 1 : 0) << from));
+      bit_to |= ((chips[25] == 0) ? 1u : 0u) << 25;
+
+      chips[to] = 1;
+      chips[from]--;
+      chips[25]--;
+      player_present ^= bit_mod;
+      ai_present ^= bit_to;
+    }
+    else
+    {
+      uint bit_mod = (uint)((((chips[to] == 0) ? 1 : 0) << to) | (((chips[from] == 1) ? 1 : 0) << from));
+
+      chips[from]--;
+      chips[to]++;
+      player_present ^= bit_mod;
+    }
+  }
+	public void makeMoveAI(uint move)
+  {
+    int dice = (int)(move >> 5);
+    int from = (int)(move & 0b11111);
+    int to = from - dice;
+    uint bit_mod;
+
+    if(to <= 0) // bearoff move
+    {
+      bit_mod = (uint)(((chips[from] == -1) ? 1 : 0) << from);
+
+      ai_bearoff++;
+      chips[from]++;
+      ai_present ^= bit_mod;
+
+    }
+    else if(chips[to] == 1)
+    {
+      uint bit_to = 1u << to;
+      bit_mod = (uint)(bit_to | (((chips[from] == -1) ? 1 : 0) << from));
+      bit_to |= (chips[0] == 0) ? 1u : 0u;
+
+      chips[to] = -1;
+      chips[from]++;
+      chips[0]++;
+      ai_present ^= bit_mod;
+      player_present ^= bit_to;
+    }
+    else
+    {
+      bit_mod = (uint)((((chips[to] == 0) ? 1 : 0) << to) | (((chips[from] == -1) ? 1 : 0) << from));
+
+      chips[from]++;
+      chips[to]--;
+      ai_present ^= bit_mod;
+    }
+  }
 }

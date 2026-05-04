@@ -1,4 +1,4 @@
-using Unity.Burst.Intrinsics;
+using static Unity.Burst.Intrinsics.X86.Bmi1;
 class simpleDiceGeneratorPlayer : generatorPlayer {
 
   public simpleMoveArray moveList;
@@ -30,23 +30,17 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
     genForSimple();
 
     if (moveList.index == 0) { // no moves were possible using 2 dices, check if can use the biggest one (single move)
-      genSingleSimpleMove(dice2, 0);
+      genSingleSimpleMove(dice2, 0, 0);
 
       if (moveList.index == 0) { // no moves were possible using the biggest dice, try using the smallest only
-        genSingleSimpleMove(dice1, 0);
-
-        if (moveList.index == 0) moveList.moveDepth = 0; // no moves are possible...
-        else moveList.moveDepth = 1;
+        genSingleSimpleMove(dice1, 0, 0);
       }
-      else moveList.moveDepth = 1;
     }
-    else moveList.moveDepth = 2;
   }
 
-  void genSingleSimpleMove(int dice, ushort move_desc) {
-    move_desc <<= 8;
+  void genSingleSimpleMove(int dice, ushort move_desc, int shift) {
     if (Pos.chips[0] != 0) {
-      if (Pos.chips[dice] >= -1) moveList.push_back((ushort)(move_desc | (dice << 5)));
+      if (Pos.chips[dice] >= -1) moveList.push_back((ushort)(move_desc | ((dice << 5) << shift)));
     }
     else {
       uint moves = (uint)((Pos.player_present << dice) & 0b01111111111111111111111110);
@@ -55,16 +49,15 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
 
       if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
         uint bear_off_moves = (Pos.player_present & bearoff_mask[dice]);
-        for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-          from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-          moveList.push_back((ushort)(move_desc | X86.Bmi1.tzcnt_u32(bear_off_moves)));
+        for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+          moveList.push_back((ushort)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
         }
       }
 
-      for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-        to = (int)X86.Bmi1.tzcnt_u32(moves);
+      for (; moves != 0; moves = blsr_u32(moves)) {
+        to = (int)tzcnt_u32(moves);
         from = to - dice;
-        if (Pos.chips[to] >= -1) moveList.push_back((ushort)(move_desc | from | (dice << 5)));
+        if (Pos.chips[to] >= -1) moveList.push_back((ushort)(move_desc | ((from | (dice << 5)) << shift)));
       }
     }
   }
@@ -85,7 +78,7 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
         Pos.player_present ^= bit_mod;
         Pos.ai_present ^= bit_to;
 
-        genSingleSimpleMove(dice2, (ushort)((dice1 << 5)));
+        genSingleSimpleMove(dice2, (ushort)((dice1 << 5)), 8);
 
         Pos.chips[to] = -1;
         Pos.chips[25]++;
@@ -100,7 +93,7 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
         Pos.chips[to]++;
         Pos.player_present ^= bit_mod;
 
-        genSingleSimpleMove(dice2, (ushort)(dice1 << 5));
+        genSingleSimpleMove(dice2, (ushort)(dice1 << 5), 8);
 
         Pos.chips[to]--;
         Pos.chips[0]++;
@@ -116,22 +109,22 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
 
       if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
         uint bear_off_moves = (Pos.player_present & bearoff_mask[dice1]);
-        for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-          from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
+        for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+          from = (int)tzcnt_u32(bear_off_moves);
           bit_mod = (uint)(((Pos.chips[from] == 1) ? 1 : 0) << from);
 
           Pos.chips[from]--;
           Pos.player_present ^= bit_mod;
 
-          genSingleSimpleMove(dice2, (ushort)(from));
+          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)), 8);
 
           Pos.chips[from]++;
           Pos.player_present ^= bit_mod;
         }
       }
 
-      for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-        to = (int)X86.Bmi1.tzcnt_u32(moves);
+      for (; moves != 0; moves = blsr_u32(moves)) {
+        to = (int)tzcnt_u32(moves);
         from = to - dice1;
         if (Pos.chips[to] == -1) {
           bit_to = (1u << to);
@@ -144,7 +137,7 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
           Pos.player_present ^= bit_mod;
           Pos.ai_present ^= bit_to;
 
-          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)));
+          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)), 8);
 
           Pos.chips[to] = -1;
           Pos.chips[from]++;
@@ -159,7 +152,7 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
           Pos.chips[to]++;
           Pos.player_present ^= bit_mod;
 
-          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)));
+          genSingleSimpleMove(dice2, (ushort)(from | (dice1 << 5)), 8);
 
           Pos.chips[to]--;
           Pos.chips[from]++;
@@ -184,18 +177,14 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
     moveList.index = 0;
     int n;
     for (n = 3; n >= 0 && moveList.index == 0; n--) 
-      genForDouble(n, 0, Pos.player_present);
-
-    if(moveList.index == 0) moveList.moveDepth = 0;
-    else moveList.moveDepth = n + 2;
+      genForDouble(n, 0, Pos.player_present, 0);
   }
   
   public void setDice(int i)
   {
     dice = i;
   }
-  void genForDouble(int dice_index, uint move_desc, uint self_present) {
-    move_desc <<= 8;
+  void genForDouble(int dice_index, uint move_desc, uint self_present, int shift) {
     if (dice_index > 0) {
       if (Pos.chips[0] != 0) {
         uint bit_to;
@@ -212,7 +201,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
           self_present ^= bit_mod;
           Pos.ai_present ^= bit_to;
 
-          genForDouble(dice_index - 1, (uint)(move_desc | (dice << 5)), self_present);
+          genForDouble(dice_index - 1, (uint)(move_desc | ((dice << 5) << shift)), self_present, shift + 8);
 
           Pos.chips[to] = -1;
           Pos.chips[25]++;
@@ -227,7 +216,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
           Pos.chips[to]++;
           self_present ^= bit_mod;
 
-          genForDouble(dice_index - 1, (uint)(move_desc | (dice << 5)), self_present);
+          genForDouble(dice_index - 1, (uint)(move_desc | ((dice << 5) << shift)), self_present, shift + 8);
 
           Pos.chips[to]--;
           Pos.chips[0]++;
@@ -243,14 +232,14 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
 
         if ((self_present & 0b01111110000000000000000000) == self_present) { // can bear off
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
-          for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
+          for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+            from = (int)tzcnt_u32(bear_off_moves);
             bit_mod = (uint)(((Pos.chips[from] == 1) ? 1 : 0) << from);
 
             Pos.chips[from]--;
             self_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from), self_present);
+            genForDouble(dice_index - 1,(uint)(move_desc | ((from | (dice << 5)) << shift)), self_present, shift + 8);
 
             Pos.chips[from]++;
             self_present ^= bit_mod;
@@ -258,8 +247,8 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
           }
         }
 
-        for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-          to = (int)X86.Bmi1.tzcnt_u32(moves);
+        for (; moves != 0; moves = blsr_u32(moves)) {
+          to = (int)tzcnt_u32(moves);
           from = to - dice;
           if (Pos.chips[to] == -1) {
             bit_to = (1u << to);
@@ -272,7 +261,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
             self_present ^= bit_mod;
             Pos.ai_present ^= bit_to;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from | (dice << 5)), self_present);
+            genForDouble(dice_index - 1, (uint)(move_desc | ((from | (dice << 5)) << shift)), self_present, shift + 8);
 
             Pos.chips[to] = -1;
             Pos.chips[from]++;
@@ -288,7 +277,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
             Pos.chips[to]++;
             self_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from | (dice << 5)), self_present);
+            genForDouble(dice_index - 1, (uint)(move_desc | ((from | (dice << 5)) << shift)), self_present, shift + 8);
 
             Pos.chips[to]--;
             Pos.chips[from]++;
@@ -300,7 +289,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
     }
     else {
       if (Pos.chips[0] != 0) {
-        if (Pos.chips[dice] >= -1) moveList.push_back((uint)(move_desc | (dice << 5)));
+        if (Pos.chips[dice] >= -1) moveList.push_back((uint)(move_desc | ((dice << 5) << shift)));
       }
       else {
         uint moves = (uint)((self_present << dice) & 0b01111111111111111111111110);
@@ -309,16 +298,15 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
 
         if ((self_present & 0b01111110000000000000000000) == self_present) { // can bear off
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
-          for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-            moveList.push_back((uint)(move_desc | from));
+          for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+            moveList.push_back((uint)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
           }
         }
 
-        for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-          to = (int)X86.Bmi1.tzcnt_u32(moves);
+        for (; moves != 0; moves = blsr_u32(moves)) {
+          to = (int)tzcnt_u32(moves);
           from = to - dice;
-          if (Pos.chips[to] >= -1) moveList.push_back((uint)(move_desc | from | (dice << 5)));
+          if (Pos.chips[to] >= -1) moveList.push_back((uint)(move_desc | ((from | (dice << 5)) << shift)));
         }
       }
     }
@@ -340,18 +328,14 @@ class doubleDiceGeneratorPlayer : generatorPlayer
     moveList.index = 0;
     int n;
     for (n = 3; n >= 0 && moveList.index == 0; n--) 
-      genForDouble(n, 0);
-
-    if(moveList.index == 0) moveList.moveDepth = 0;
-    else moveList.moveDepth = n + 2;
+      genForDouble(n, 0, 0);
   }
   
   public void setDice(int i)
   {
     dice = i;
   }
-  void genForDouble(int dice_index, uint move_desc) {
-    move_desc <<= 8;
+  void genForDouble(int dice_index, uint move_desc, int shift) {
     if (dice_index > 0) {
       if (Pos.chips[0] != 0) {
         uint bit_to;
@@ -368,7 +352,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
           Pos.player_present ^= bit_mod;
           Pos.ai_present ^= bit_to;
 
-          genForDouble(dice_index - 1, (uint)(move_desc | (dice << 5)));
+          genForDouble(dice_index - 1, (uint)(move_desc | ((dice << 5) << shift)), shift + 8);
 
           Pos.chips[to] = -1;
           Pos.chips[25]++;
@@ -383,7 +367,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
           Pos.chips[to]++;
           Pos.player_present ^= bit_mod;
 
-          genForDouble(dice_index - 1, (uint)(move_desc | (dice << 5)));
+          genForDouble(dice_index - 1, (uint)(move_desc | ((dice << 5) << shift)), shift + 8);
 
           Pos.chips[to]--;
           Pos.chips[0]++;
@@ -399,22 +383,22 @@ class doubleDiceGeneratorPlayer : generatorPlayer
 
         if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
           uint bear_off_moves = (Pos.player_present & bearoff_mask[dice]);
-          for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
+          for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+            from = (int)tzcnt_u32(bear_off_moves);
             bit_mod = (uint)(((Pos.chips[from] == 1) ? 1 : 0) << from);
 
             Pos.chips[from]--;
             Pos.player_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from));
+            genForDouble(dice_index - 1, (uint)(move_desc | ((from | (dice << 5)) << shift)), shift + 8);
 
             Pos.chips[from]++;
             Pos.player_present ^= bit_mod;
           }
         }
 
-        for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-          to = (int)X86.Bmi1.tzcnt_u32(moves);
+        for (; moves != 0; moves = blsr_u32(moves)) {
+          to = (int)tzcnt_u32(moves);
           from = to - dice;
           if (Pos.chips[to] == -1) {
             bit_to = (1u << to);
@@ -427,7 +411,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
             Pos.player_present ^= bit_mod;
             Pos.ai_present ^= bit_to;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from | (dice << 5)));
+            genForDouble(dice_index - 1, (uint)(move_desc | ((from | (dice << 5)) << shift)), shift + 8);
 
             Pos.chips[to] = -1;
             Pos.chips[from]++;
@@ -442,7 +426,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
             Pos.chips[to]++;
             Pos.player_present ^= bit_mod;
 
-            genForDouble(dice_index - 1, (uint)(move_desc | from | (dice << 5)));
+            genForDouble(dice_index - 1, (uint)(move_desc | ((from | (dice << 5)) << shift)), shift + 8);
 
             Pos.chips[to]--;
             Pos.chips[from]++;
@@ -453,7 +437,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
     }
     else {
       if (Pos.chips[0] != 0) {
-        if (Pos.chips[dice] >= -1) moveList.push_back((uint)(move_desc | (dice << 5)));
+        if (Pos.chips[dice] >= -1) moveList.push_back((uint)(move_desc | ((dice << 5) << shift)));
       }
       else {
         uint moves = (uint)((Pos.player_present << dice) & 0b01111111111111111111111110);
@@ -462,16 +446,15 @@ class doubleDiceGeneratorPlayer : generatorPlayer
 
         if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
           uint bear_off_moves = (Pos.player_present & bearoff_mask[dice]);
-          for (; bear_off_moves != 0; bear_off_moves = X86.Bmi1.blsr_u32(bear_off_moves)) {
-            from = (int)X86.Bmi1.tzcnt_u32(bear_off_moves);
-            moveList.push_back((uint)(move_desc | X86.Bmi1.tzcnt_u32(bear_off_moves)));
+          for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
+            moveList.push_back((uint)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
           }
         }
 
-        for (; moves != 0; moves = X86.Bmi1.blsr_u32(moves)) {
-          to = (int)X86.Bmi1.tzcnt_u32(moves);
+        for (; moves != 0; moves = blsr_u32(moves)) {
+          to = (int)tzcnt_u32(moves);
           from = to - dice;
-          if (Pos.chips[to] >= -1) moveList.push_back((uint)(move_desc | from | (dice << 5)));
+          if (Pos.chips[to] >= -1) moveList.push_back((uint)(move_desc | ((from | (dice << 5)) << shift)));
         }
       }
     }

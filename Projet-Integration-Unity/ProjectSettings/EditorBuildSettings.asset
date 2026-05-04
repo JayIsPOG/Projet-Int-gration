@@ -23,4 +23,25 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Puzzle 4.unity
     guid: b68ba192909c54141ac8b628c11a4ff8
+  - enabled: 1
+    path: Assets/Scenes/Puzzle 5.unity
+    guid: 1e5b554501a72f74dbeff6f36b84c960
+  - enabled: 1
+    path: Assets/Scenes/Puzzle End.unity
+    guid: d2787b9bfe79bb94ca087b5244139248
+  - enabled: 1
+    path: Assets/Scenes/Fight_1.unity
+    guid: cf7350c19bdefdb40baef158dac4b9dd
+  - enabled: 1
+    path: Assets/Scenes/Fight End.unity
+    guid: 6d7d926c4a14d3243a1906d0d04e7378
+  - enabled: 1
+    path: Assets/Scenes/backgammon.unity
+    guid: 99a684a220290f748978ff0d3f77e442
+  - enabled: 1
+    path: Assets/Scenes/Back End.unity
+    guid: efbc0a867632c9249b4f3d224fcd0b1e
+  - enabled: 1
+    path: Assets/Scenes/About_Menu.unity
+    guid: 8589490554996844fbac471c8d204377
   m_configObjects: {}

@@ -8,9 +8,10 @@ public class DoorSignal : MonoBehaviour
     public bool open;
     void Update()
     {
+        bool shouldOpen = true;
         foreach(GameObject obj in gameObjects)
         {
-            bool shouldOpen = true;
+            
             if(obj.GetComponent<LightReceiverCrystal>())
             {
                 if (!obj.GetComponent<LightReceiverCrystal>().open)
@@ -21,7 +22,13 @@ public class DoorSignal : MonoBehaviour
                 if (!obj.GetComponent<LightReceiver>().open)
                     shouldOpen = false;
             }
-            open = shouldOpen;
+            if(obj.GetComponent<Pickup>())
+            {
+                if (!obj.GetComponent<Pickup>().pickedUp)
+                    shouldOpen = false;
+            }
+            
         }
+        open = shouldOpen;
     }
 }

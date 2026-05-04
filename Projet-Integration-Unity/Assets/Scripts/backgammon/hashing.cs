@@ -1,7 +1,7 @@
 
 using System.Collections.Generic;
 using System.Resources;
-using Unity.Burst.Intrinsics;
+using static Unity.Burst.Intrinsics.X86.Bmi1;
 
 public class evalInfo
 {
@@ -89,14 +89,14 @@ public class TranspositionTable
     uint slot;
 
     uint temp = pos.ai_present;
-    for (; temp != 0; temp = X86.Bmi1.blsr_u32(temp)) {
-      slot = X86.Bmi1.tzcnt_u32(temp);
+    for (; temp != 0; temp = blsr_u32(temp)) {
+      slot = tzcnt_u32(temp);
       hash ^= aiHash[slot, -pos.chips[slot] - 1];
     }
 
     temp = pos.player_present;
-    for (; temp != 0; temp = X86.Bmi1.blsr_u32(temp)) {
-      slot = X86.Bmi1.tzcnt_u32(temp);
+    for (; temp != 0; temp = blsr_u32(temp)) {
+      slot = tzcnt_u32(temp);
       hash ^= playerHash[slot, pos.chips[slot] - 1];
     }
     hash ^= turnHash[pos.playerTurn ? 1 : 0];

@@ -285,6 +285,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementSpeed: 7
+  facingDirection: 1
 --- !u!114 &4792481389240461528
 MonoBehaviour:
   m_ObjectHideFlags: 0

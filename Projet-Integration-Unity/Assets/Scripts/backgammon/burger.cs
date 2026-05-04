@@ -6,17 +6,20 @@ using System.ComponentModel;
 public class burger
 {
     static readonly Color32 transparent = new Color32(0, 0, 0, 0);
+    static readonly Color32 highlight_color = new Color32(255, 255, 0, 255);
     static readonly float deltaTime = 0.02f;
     static readonly int steps = 40;
     static readonly float rotation = (2 * Mathf.PI) / steps;
     static readonly float cubeWidth = 36;
     static readonly int distanceFromCam = 1500;
     static readonly float zoom = 889;
-    float faceWidth, faceHeight;
+    public static readonly int texture_size = 32;
+    public int faceWidth, faceHeight;
     float m00, m01, m02, m10, m11, m12, m20, m21, m22;
     float A, B, C;
     float[] zBuffer;
     public Texture2D texture;
+    bool isHighlighted;
     Color32[] face1, face2, face3, face4, face5, face6;
     Color32[] pixels;
     public bool is_rolling;
@@ -39,8 +42,9 @@ public class burger
         faceWidth = dices.width;
         faceHeight = dices.height / 6;
         Color32[] faces = dices.GetPixels32();
+        isHighlighted = false;
 
-        int size = (int)(faceWidth * faceHeight);
+        int size = faceWidth * faceHeight;
 
         face1 = new Color32[size];
         face2 = new Color32[size];
@@ -56,11 +60,19 @@ public class burger
         System.Array.Copy(faces, size * 4, face5, 0, size);
         System.Array.Copy(faces, size * 5, face6, 0, size);
 
-        texture = new Texture2D(32, 32); // make dimensions adaptable
+        texture = new Texture2D(texture_size, texture_size);
         texture.filterMode = FilterMode.Point;
         pixels = texture.GetPixels32();
         
         zBuffer = new float[texture.width * texture.height];
+    }
+    public void enableHighligh()
+    {
+        isHighlighted = true;
+    }
+    public void disableHighligh()
+    {
+        isHighlighted = false;
     }
     public void setOrientation(int face)
     {
@@ -102,17 +114,53 @@ public class burger
         m10 = sinA*sinC-cosA*sinB*cosC; m11 = cosA*sinB*sinC+sinA*cosC; m12 = cosA*cosB;
         m20 = cosB*cosC;                m21 = -cosB*sinC;               m22 = sinB;
 
-        for (float cubeX = -cubeWidth / 2; cubeX < cubeWidth / 2; cubeX += 1) 
+        float halfWidth = cubeWidth * 0.5f;
+        for (float cubeX = -halfWidth; cubeX < halfWidth; cubeX += 1) 
         {
-            for (float cubeY = -cubeWidth / 2; cubeY < cubeWidth / 2; cubeY += 1) 
+            for (float cubeY = -halfWidth; cubeY < halfWidth; cubeY += 1) 
             {
-                int index = (int)((cubeY + cubeWidth / 2) * (faceHeight / cubeWidth)) * (int)faceWidth + (int)((cubeX + cubeWidth / 2) * (faceWidth / cubeWidth));// maybe just increment, idk
-                calculateForSurface(cubeX, cubeY, -cubeWidth / 2, face1[index]);
-                calculateForSurface(cubeX, cubeY, cubeWidth / 2, face3[index]);
-                calculateForSurface(cubeWidth / 2, cubeY, cubeX, face2[index]);
-                calculateForSurface(-cubeWidth / 2, cubeY, cubeX, face5[index]);
-                calculateForSurface(cubeY, cubeWidth / 2, cubeX, face4[index]);
-                calculateForSurface(cubeY, -cubeWidth / 2, cubeX, face6[index]);
+                int index = (int)((cubeY + halfWidth) * ((float)faceHeight / cubeWidth)) * faceWidth + (int)((cubeX + halfWidth) * ((float)faceWidth / cubeWidth));
+                calculateForSurface(cubeX, cubeY, -halfWidth, face1[index]);
+                calculateForSurface(cubeX, cubeY, halfWidth, face3[index]);
+                calculateForSurface(halfWidth, cubeY, cubeX, face2[index]);
+                calculateForSurface(-halfWidth, cubeY, cubeX, face5[index]);
+                calculateForSurface(cubeY, halfWidth, cubeX, face4[index]);
+                calculateForSurface(cubeY, -halfWidth, cubeX, face6[index]);
+            }
+        }
+        if (isHighlighted)
+        {
+            int index;
+            for(int i = 0; i < texture.height; i++) // horizontal highlight
+            {
+                index = i * texture.width;
+                if(zBuffer[index] == 0 && zBuffer[index + 1] != 0) pixels[index] = highlight_color;
+
+                for(int j = 1; j < texture.width - 1; j++)
+                {
+                    index = i * texture.width + j;
+                    if(zBuffer[index] == 0 && zBuffer[index + 1] != 0) pixels[index] = highlight_color;
+                    if(zBuffer[index] == 0 && zBuffer[index - 1] != 0) pixels[index] = highlight_color;
+                }
+
+                index = i * texture.width + texture.width - 1;
+                if(zBuffer[index] == 0 && zBuffer[index - 1] != 0) pixels[index] = highlight_color;
+            }
+
+            for(int i = 0; i < texture.width; i++) // vertical highlight
+            {
+                index = i;
+                if(zBuffer[index] == 0 && zBuffer[index + texture.width] != 0) pixels[index] = highlight_color;
+
+                for(int j = 1; j < texture.height - 1; j++)
+                {
+                    index = i + j * texture.width;
+                    if(zBuffer[index] == 0 && zBuffer[index + texture.width] != 0) pixels[index] = highlight_color;
+                    if(zBuffer[index] == 0 && zBuffer[index - texture.width] != 0) pixels[index] = highlight_color;
+                }
+
+                index = i + texture.height * (texture.height - 1);
+                if(zBuffer[index] == 0 && zBuffer[index - texture.width] != 0) pixels[index] = highlight_color;
             }
         }
         texture.SetPixels32(pixels);

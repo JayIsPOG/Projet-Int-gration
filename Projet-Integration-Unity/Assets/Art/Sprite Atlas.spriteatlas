@@ -1055,6 +1055,8 @@ SpriteAtlas:
   - {fileID: 2107435602, guid: f4d4a11cef3b0a545823b6cc386123ca, type: 3}
   - {fileID: 1648341086, guid: f4d4a11cef3b0a545823b6cc386123ca, type: 3}
   - {fileID: -96429136, guid: f4d4a11cef3b0a545823b6cc386123ca, type: 3}
+  - {fileID: -505669190, guid: e191df4ddd3fb7649ad95b9f0c37d532, type: 3}
+  - {fileID: 268631815, guid: e191df4ddd3fb7649ad95b9f0c37d532, type: 3}
   - {fileID: 319137206, guid: e191df4ddd3fb7649ad95b9f0c37d532, type: 3}
   - {fileID: 21300056, guid: 9603be6d9ac69924f945566fb9497bde, type: 3}
   - {fileID: 21300064, guid: 9603be6d9ac69924f945566fb9497bde, type: 3}
@@ -3355,6 +3357,8 @@ SpriteAtlas:
   - decorative 1_11
   - decorative 1_12
   - decorative 1_13
+  - mainlevbuild 1_2
+  - mainlevbuild 1_1
   - mainlevbuild 1_0
   - decorative_28
   - decorative_32
