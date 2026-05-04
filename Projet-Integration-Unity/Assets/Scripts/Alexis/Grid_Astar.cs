@@ -206,4 +206,16 @@ public Vector3 WorldFromNode(Node node)
 
     return tilemap.GetCellCenterWorld(cellPos);
 }
+
+public Node GetRandomWalkableNode()
+{
+    List<Node> walkables = new List<Node>();
+    for (int x = 0; x < largeur; x++)
+        for (int y = 0; y < hauteur; y++)
+            if (grid[x, y].walkable)
+                walkables.Add(grid[x, y]);
+
+    if (walkables.Count == 0) return null;
+    return walkables[Random.Range(0, walkables.Count)];
+}
 }

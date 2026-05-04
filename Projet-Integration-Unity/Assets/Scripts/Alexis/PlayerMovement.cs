@@ -10,6 +10,23 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer spriteRen;
     private Animator animator;
 
+    Coroutine speedRoutine;
+
+    public void ApplySpeedBoost(float multiplier, float duration)
+    {
+        if (speedRoutine != null) StopCoroutine(speedRoutine);
+        speedRoutine = StartCoroutine(SpeedBoostRoutine(multiplier, duration));
+    }
+
+    IEnumerator SpeedBoostRoutine(float multiplier, float duration)
+    {
+        float original = movementSpeed;
+        movementSpeed *= multiplier;
+        yield return new WaitForSeconds(duration);
+        movementSpeed = original;
+        speedRoutine = null;
+    }
+
     void Start() {
         rb = GetComponent<Rigidbody2D>();
         spriteRen = GetComponent<SpriteRenderer>();

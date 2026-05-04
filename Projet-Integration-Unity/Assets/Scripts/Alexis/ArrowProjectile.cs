@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class ArrowProjectile : MonoBehaviour
 {
+    public float hitRadius = 0.6f;
+
     float speed;
     int damage;
     Vector3 targetPos;
@@ -28,7 +30,10 @@ public class ArrowProjectile : MonoBehaviour
 
         if (Vector2.Distance(transform.position, targetPos) < 0.1f)
         {
-            if (playerHealth != null && playerHealth.currentHealth > 0
+            bool playerClose = playerHealth != null
+                && Vector2.Distance(transform.position, playerHealth.transform.position) <= hitRadius;
+
+            if (playerClose && playerHealth.currentHealth > 0
                 && !(playerAttack != null && playerAttack.IsBlocking))
             {
                 playerHealth.TakeDamage(damage);

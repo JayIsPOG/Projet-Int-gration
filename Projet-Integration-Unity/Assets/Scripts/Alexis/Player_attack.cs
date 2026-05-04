@@ -19,6 +19,13 @@ public class Player_attack : MonoBehaviour
     [SerializeField] float hitboxDelay = 0.3f;
     [SerializeField] float hitboxDuration = 0.3f;
 
+    [Header("SFX")]
+    [SerializeField] AudioClip attackSfx;
+    [SerializeField] float attackSfxVolume = 1f;
+
+    float damageMultiplier = 1f;
+    Coroutine boostRoutine;
+
     public bool IsBlocking { get; private set; }
 
     // garde pour les animation events dans PlayerAnimationRelay
@@ -41,6 +48,7 @@ public class Player_attack : MonoBehaviour
         {
             animator.SetTrigger("Attack");
             leftReleased = false;
+            if (attackSfx != null) AudioSource.PlayClipAtPoint(attackSfx, transform.position, attackSfxVolume);
             StartCoroutine(AttackRoutine());
         }
 
@@ -89,11 +97,24 @@ public class Player_attack : MonoBehaviour
             if (inRange && inFront && !alreadyHit.Contains(enemy))
             {
                 alreadyHit.Add(enemy);
-                enemy.TakeDamage(attackDamage);
+                enemy.TakeDamage(Mathf.RoundToInt(attackDamage * damageMultiplier));
             }
         }
 
         isAttacking = false;
     }
 
+    public void ApplyDamageBoost(float multiplier, float duration)
+    {
+        if (boostRoutine != null) StopCoroutine(boostRoutine);
+        boostRoutine = StartCoroutine(DamageBoostRoutine(multiplier, duration));
+    }
+
+    IEnumerator DamageBoostRoutine(float multiplier, float duration)
+    {
+        damageMultiplier = multiplier;
+        yield return new WaitForSeconds(duration);
+        damageMultiplier = 1f;
+        boostRoutine = null;
+    }
 }

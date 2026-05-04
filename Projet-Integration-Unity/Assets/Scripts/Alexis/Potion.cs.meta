@@ -1,11 +1,10 @@
 fileFormatVersion: 2
-guid: 0e80d36792080ab4b8bcf2eb9e54d7a5
+guid: 2ff69c87fc9c0af4cbef03a75e2e68e3
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - hitSfx: {fileID: 8300000, guid: 91fa21e9956398643b86fb122ebf987e, type: 3}
-  - deathSfx: {fileID: 8300000, guid: c229e764f35f157468e845141f21f57b, type: 3}
+  - pickupSfx: {fileID: 8300000, guid: 37ff2a4eae9dabd438d11915da2f09ff, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
