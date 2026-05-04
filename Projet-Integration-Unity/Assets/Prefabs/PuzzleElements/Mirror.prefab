@@ -153,6 +153,7 @@ MonoBehaviour:
   hitNew: {fileID: 0}
   hitSaved: {fileID: 0}
   nDensity: 0
+  canUpdate: 0
   signedAngle: 0
 --- !u!68 &967143752491509667
 EdgeCollider2D:
@@ -413,6 +414,9 @@ MonoBehaviour:
     m_Bits: 9
   xLocked: 0
   yLocked: 0
+  surfaces:
+  - {fileID: 5155841772383886511}
+  - {fileID: 3832114318399594255}
   audioSource: {fileID: 0}
 --- !u!50 &-5911687178124450311
 Rigidbody2D:
@@ -586,6 +590,7 @@ MonoBehaviour:
   hitNew: {fileID: 0}
   hitSaved: {fileID: 0}
   nDensity: 0
+  canUpdate: 0
   signedAngle: 0
 --- !u!68 &5155841772383886500
 EdgeCollider2D:

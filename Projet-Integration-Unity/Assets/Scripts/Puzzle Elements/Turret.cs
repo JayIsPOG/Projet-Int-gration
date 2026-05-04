@@ -15,10 +15,13 @@ public class Turret : MonoBehaviour
     public GameObject circle;
     public float range = 3f;
     private bool killing;
+    private AudioSource audioSource;
+    public AudioClip[] audioClips, audioClipsDie;
+    private bool speaking;
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
-        
+        audioSource = GetComponent<AudioSource>();
     }
 
     void OnDrawGizmos() {
@@ -33,8 +36,8 @@ public class Turret : MonoBehaviour
     void Update()
     {
         circle.transform.localScale = new Vector3(range, range, range);
-        Direction = player.position - transform.position - new Vector3(0,1,0);
-        RaycastHit2D rayInfo = Physics2D.Raycast(transform.position + new Vector3(0,1,0), Direction, range, layerMaskPlayer);
+        Direction = player.position - transform.position;
+        RaycastHit2D rayInfo = Physics2D.Raycast(transform.position, Direction, range, layerMaskPlayer);
         
         if (rayInfo)
         {
@@ -58,7 +61,25 @@ public class Turret : MonoBehaviour
             else
                 StopCoroutine("Kill");
         }
+        if(Vector3.Distance(player.position, transform.position) <= range * 2)
+        {
+            if(!speaking)
+                StartCoroutine("Speak");
+        }
     }
+    IEnumerator Speak()
+    {
+        speaking = true;
+        int num = Random.Range(0, audioClips.Length * 4);
+        if(num < audioClips.Length && !audioSource.isPlaying)
+        {
+            audioSource.clip = audioClips[num];
+            audioSource.Play();
+        }
+        yield return new WaitForSeconds(10f);
+        speaking = false;
+    }
+    
 
     IEnumerator Kill()
     {
@@ -74,14 +95,18 @@ public class Turret : MonoBehaviour
         player.GetChild(0).GetChild(2).gameObject.GetComponent<SpriteRenderer>().color = player.GetChild(0).GetChild(2).gameObject.GetComponent<SpriteRenderer>().color - new Color(0,0,0,255); //leg2
         GameObject effect = Instantiate(effectKill, player.position, Quaternion.identity);
         Destroy(effect, 5f);
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(2f);
         FindObjectsByType<SceneManagerPuzzle>(FindObjectsSortMode.None)[0].CloseScene(SceneManager.GetActiveScene().name);
+        yield return new WaitForSeconds(3f);
         killing = false;
     }
 
-    public void Die()
+    public IEnumerator Die()
     {
-        Debug.Log("dies");
+        audioSource.clip = audioClipsDie[Random.Range(0, audioClipsDie.Length)];
+        audioSource.Play();
+        //Debug.Log("dies");
+        yield return new WaitForSeconds(2.5f);
         GameObject effect = Instantiate(explosionEffect, transform.position, Quaternion.identity);
         Destroy(effect, 1f);
         Destroy(gameObject, 0.5f);

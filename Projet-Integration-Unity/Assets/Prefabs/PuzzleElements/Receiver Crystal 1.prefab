@@ -465,6 +465,7 @@ MonoBehaviour:
   hitNew: {fileID: 0}
   hitSaved: {fileID: 0}
   nDensity: 1
+  canUpdate: 0
   signedAngle: 0
   hitByLight: 0
   waveLenghtReceived: 440
@@ -524,7 +525,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: -2985719898796647092, guid: 3d579a527d4ca334085339e307839e4d, type: 2}
   m_audioClip: {fileID: 8300000, guid: b3e66a44993c9a9478d55aecd3ca81b6, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.55
+  m_Volume: 0.3
   m_Pitch: 1
   Loop: 0
   Mute: 0

@@ -236,6 +236,7 @@ MonoBehaviour:
     m_Bits: 9
   xLocked: 0
   yLocked: 0
+  surfaces: []
   audioSource: {fileID: 0}
 --- !u!50 &5895968864752539955
 Rigidbody2D:

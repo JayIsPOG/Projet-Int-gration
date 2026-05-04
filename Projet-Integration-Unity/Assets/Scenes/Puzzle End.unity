@@ -65383,7 +65383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c0157423f3fd53428beb4deccccbc58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentState: 2
+  currentState: 0
   pickedUp: 0
 --- !u!1 &1953464136
 GameObject:

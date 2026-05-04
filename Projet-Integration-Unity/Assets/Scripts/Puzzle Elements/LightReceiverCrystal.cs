@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class LightReceiverCrystal : LightEmitter
 {
@@ -10,13 +11,15 @@ public class LightReceiverCrystal : LightEmitter
     public bool open;
     public Sprite spriteLit, spriteUnlit;
     public bool lightPassesThrough;
+    public Tilemap tilemap;
+    public Color colorOpen, colorClose;
 
     public override void Update()
     {
         base.Update();
         if(hitByLight)
         {
-            if(waveLenghtToOpen <= waveLenghtReceived + 10 && waveLenghtToOpen >= waveLenghtReceived - 10)
+            if(waveLenghtToOpen <= waveLenghtReceived + 30 && waveLenghtToOpen >= waveLenghtReceived - 30)
                 open = true;
             else
                 open = false;
@@ -27,12 +30,19 @@ public class LightReceiverCrystal : LightEmitter
         {
             if(GetComponent<SpriteRenderer>().sprite != spriteLit)
             {
+                tilemap.color = colorOpen;
                 GetComponent<SpriteRenderer>().sprite = spriteLit;
                 GetComponent<AudioSource>().Play();
             }
         }
         else
-            GetComponent<SpriteRenderer>().sprite = spriteUnlit;
+        {
+            if(GetComponent<SpriteRenderer>().sprite != spriteUnlit)
+            {
+                tilemap.color = colorClose;
+                GetComponent<SpriteRenderer>().sprite = spriteUnlit;
+            }
+        }
     }
 
     public override Vector3 GetRotatedVector(float incomingAngle)

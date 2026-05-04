@@ -6,6 +6,7 @@ public class LightLine : MonoBehaviour
 {
     public float nDensity, velocity, waveLenght, waveLenghtInDensity;
     public LineRenderer line;
+    public ParticleSystem ps;
 
     void Start()
     {
@@ -20,11 +21,15 @@ public class LightLine : MonoBehaviour
         Color color = Convert(waveLenghtInDensity);
         line.endColor = color;
         line.startColor = color;
+        var main = ps.main;
+        main.startColor = color;
+        ps.gameObject.transform.position = line.GetPosition(1);
     }
 
     Color Convert(float w)
     {
-        float red, green, blue;
+        float red, green, blue, alpha;
+        alpha = 1.0f;
         if (w >= 380 && w < 440)
         {
             red   = -(w - 440) / (440 - 380);
@@ -66,8 +71,9 @@ public class LightLine : MonoBehaviour
             red   = 0.0f;
             green = 0.0f;
             blue  = 0.0f;
+            alpha = 0.0f;
         }
 
-        return new Color(red, green, blue, 1f);
+        return new Color(red, green, blue, alpha);
     }
 }

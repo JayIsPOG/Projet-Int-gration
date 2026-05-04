@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class LightReceiver : MonoBehaviour
 {
@@ -11,12 +12,14 @@ public class LightReceiver : MonoBehaviour
     public Sprite spriteLit, spriteUnlit;
     public bool lightPassesThrough;
     public GameObject symbols;
+    public Tilemap tilemap;
+    public Color colorOpen, colorClose;
 
     void Update()
     {
         if(hitByLight)
         {
-            if(waveLenghtToOpen <= waveLenghtReceived + 10 && waveLenghtToOpen >= waveLenghtReceived - 10)
+            if(waveLenghtToOpen <= waveLenghtReceived + 30 && waveLenghtToOpen >= waveLenghtReceived - 30)
                 open = true;
             else
                 open = false;
@@ -30,11 +33,16 @@ public class LightReceiver : MonoBehaviour
                 GetComponent<SpriteRenderer>().sprite = spriteLit;
                 symbols.SetActive(true);
                 GetComponent<AudioSource>().Play();
+                tilemap.color = colorOpen;
             }
         }
         else{
-            GetComponent<SpriteRenderer>().sprite = spriteUnlit;
-            symbols.SetActive(false);
+            if(GetComponent<SpriteRenderer>().sprite != spriteUnlit)
+            {
+                GetComponent<SpriteRenderer>().sprite = spriteUnlit;
+                symbols.SetActive(false);
+                tilemap.color = colorClose;
+            }
         }
     }
 }

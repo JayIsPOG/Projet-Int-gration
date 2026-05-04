@@ -105,7 +105,7 @@ public class Light : MonoBehaviour
 
     IEnumerator LightUp()
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.001f);
         try{
             if(hitSaved.GetComponent<Mirror>().line == null)
             {
@@ -141,7 +141,7 @@ public class Light : MonoBehaviour
         try{
             if(hitSaved.transform.name == "light Collisions turret" && line.GetComponent<LightLine>().waveLenghtInDensity == 700)
             {
-                hitSaved.transform.parent.gameObject.GetComponent<Turret>().Die();
+                hitSaved.transform.parent.gameObject.GetComponent<Turret>().StartCoroutine("Die");
             }
         }catch{}
     }

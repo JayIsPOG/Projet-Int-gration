@@ -9,20 +9,37 @@ public class Rotate : MonoBehaviour
     public bool playerIn, hV; //horizontal / vertical
     public Sprite sprite1, sprite2;
     public bool canEmit;
+    //public GameObject[] surface;
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.E) && playerIn)
         {
+            GetComponent<AudioSource>().Play();
             if (hV)
             {
                 if(objToRotate.GetComponent<SpriteRenderer>().sprite == sprite1){
                     objToRotate.transform.rotation = Quaternion.Euler(0, 0, 90);
                     objToRotate.GetComponent<SpriteRenderer>().sprite = sprite2;
                     StartCoroutine(UpdateTimer());
+                    //foreach(GameObject e in surface)
+                    //{
+                    //    if(e.GetComponent<LightEmitter>().angleOffset == -90)
+                    //        e.GetComponent<LightEmitter>().angleOffset = 0;
+                    //    else
+                    //        e.GetComponent<LightEmitter>().angleOffset = -90;
+                    //}
+
                     //objToRotate.transform.Rotate(0f, 0.0f, -270.0f, Space.Self);
                 }
                 else
                 {
+                    //foreach(GameObject e in surface)
+                    //{
+                    //    if(e.GetComponent<LightEmitter>().angleOffset == -90)
+                    //        e.GetComponent<LightEmitter>().angleOffset = 0;
+                    //    else
+                    //        e.GetComponent<LightEmitter>().angleOffset = -90;
+                    //}
                     objToRotate.transform.rotation = Quaternion.Euler(0, 0, 0);
                     objToRotate.GetComponent<SpriteRenderer>().sprite = sprite1;
                     StartCoroutine(UpdateTimer());
@@ -56,7 +73,9 @@ public class Rotate : MonoBehaviour
     IEnumerator UpdateTimer()
     {
         objToRotate.transform.GetChild(0).GetComponent<LightEmitter>().enabled = false;
-        yield return new WaitForSeconds(0.001f);
+        objToRotate.transform.GetChild(1).GetComponent<LightEmitter>().enabled = false;
+        yield return new WaitForSeconds(0.01f);
         objToRotate.transform.GetChild(0).GetComponent<LightEmitter>().enabled = true;
+        objToRotate.transform.GetChild(1).GetComponent<LightEmitter>().enabled = true;
     }
 }
