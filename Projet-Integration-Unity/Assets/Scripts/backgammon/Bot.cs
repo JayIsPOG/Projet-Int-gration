@@ -38,6 +38,7 @@ class Bot{
   {
     if(Pos.hasPlayerWon()) return 0.0f;
 
+    Pos.playerTurn = false;
     ulong key = TT.key(Pos);
     int index = TT.getIndex(key);
     evalInfo entry = TT.table[index];
@@ -58,7 +59,6 @@ class Bot{
     else entry.reset(key);
 
     if(depth < 0) {
-      Pos.playerTurn = false;
       float eval = evaluator.evaluatePosition(Pos);
       entry.storeAll((sbyte)depth, eval);
       return eval;
@@ -144,6 +144,7 @@ class Bot{
   {
     if(Pos.hasAIWon()) return 1.0f;
 
+    Pos.playerTurn = true;
     ulong key = TT.key(Pos);
     int index = TT.getIndex(key);
     evalInfo entry = TT.table[index];
@@ -164,7 +165,6 @@ class Bot{
     else entry.reset(key);
 
     if(depth < 0) {
-      Pos.playerTurn = true;
       float eval = evaluator.evaluatePosition(Pos);
       entry.storeAll((sbyte)depth, eval);
       return eval;
@@ -250,6 +250,7 @@ class Bot{
 
   public uint bestMoveAI(int dice1, int dice2, int depth) // selects and plays the move with the highest score
   {
+    
     simpleMoveArray simpleMoves = simpleMovesPool[depth];
     doubleMoveArray doubleMoves = doubleMovesPool[depth];
     simpleDiceGeneratorAI simpleGen = simpleGenPool[depth];

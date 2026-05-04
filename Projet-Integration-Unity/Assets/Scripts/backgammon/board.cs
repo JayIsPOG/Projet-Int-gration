@@ -56,7 +56,7 @@ public class board : MonoBehaviour
         player_dices = new dice_set(dice_texture);
         opponent_dices = new dice_set(dice_texture_opponent);
         brain = new Learner();
-        brain.LoadWeights("burger.bin");
+        brain.LoadWeights("160_neurons.bin");
         Pos = new BoardState();
         bot = new Bot(Pos, brain, max_depth);
         moveManager = new interractiveMoves(Pos, simple_move_sound, eat_move_sound);
@@ -70,13 +70,14 @@ public class board : MonoBehaviour
     }
     IEnumerator playBot()
     {
-        StartCoroutine(updateEval());
-        if(Pos.hasPlayerWon()){
+        if(Pos.hasPlayerWon()) {
             FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonCompleted++;
             FindObjectOfType<DataPersistanceManager>().SaveGame();
             SceneManager.LoadScene("Back End");
             yield return null;
         }
+        Pos.playerTurn = false;
+        StartCoroutine(updateEval());
         opponent_dices.genRandomDices();
         yield return StartCoroutine(RollAllDice(opponent_dices));
         
@@ -90,7 +91,6 @@ public class board : MonoBehaviour
             yield return StartCoroutine(makeMoveAI(move));
             opponent_dices.removeDiceAt(index);
         }
-        StartCoroutine(updateEval());
         playPlayer();
     }
     IEnumerator RollAllDice(dice_set set)
@@ -116,7 +116,8 @@ public class board : MonoBehaviour
             return;
         }
         Pos.playerTurn = true;
-        player_dices.genRandomDices(); // S
+        StartCoroutine(updateEval());
+        player_dices.genRandomDices();
         moveManager.generate(player_dices.dices[0], player_dices.dices[1]);
         StartCoroutine(RollAllDice(player_dices));
         if(moveManager.movesTodo <= 0){ // player must skip his turn
@@ -153,20 +154,32 @@ public class board : MonoBehaviour
     void Update()
     {
         /*System.Random rng = new System.Random();
-        bot.makeForDicePlayer(rng.Next(1, 7), rng.Next(1, 7), depth);
-        if(Pos.hasPlayerWon())
+        uint bestMove = bot.bestMovePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
+        for(; bestMove != 0; bestMove >>= 8)
         {
-            Pos.set();
-            game_count++;
-            wins++;
+         uint move = bestMove & 0xff;
+         Pos.makeMovePlayer(move);
         }
-        bot.makeForDiceAI(rng.Next(1, 7), rng.Next(1, 7), 0);
-        if(Pos.hasAIWon()) 
+        if (Pos.hasPlayerWon())
         {
-            Pos.set();
-            game_count++;
+          game_count++;
+          Pos.set();
+        }
+
+        bestMove = bot.bestMoveAI(rng.Next(1, 7), rng.Next(1, 7), depth);
+        for(; bestMove != 0; bestMove >>= 8)
+        {
+         uint move = bestMove & 0xff;
+         Pos.makeMoveAI(move);
+        }
+        if (Pos.hasAIWon())
+        {
+          wins++;
+          game_count++;
+          Pos.set();
         }*/
 
+        Debug.Log(bot.evaluator.evaluatePosition(Pos));
         xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
         chipUnit = xUnit * 0.78125f;

@@ -47,7 +47,7 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
       int to;
       int from;
 
-      if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
+      if (moves == 0 && (Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
         uint bear_off_moves = (Pos.player_present & bearoff_mask[dice]);
         for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
           moveList.push_back((ushort)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
@@ -107,7 +107,7 @@ class simpleDiceGeneratorPlayer : generatorPlayer {
       int from;
       int to;
 
-      if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
+      if (moves == 0 && (Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
         uint bear_off_moves = (Pos.player_present & bearoff_mask[dice1]);
         for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
           from = (int)tzcnt_u32(bear_off_moves);
@@ -230,7 +230,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
         int from;
         int to;
 
-        if ((self_present & 0b01111110000000000000000000) == self_present) { // can bear off
+        if (moves == 0 && (self_present & 0b01111110000000000000000000) == self_present) { // can bear off
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
             from = (int)tzcnt_u32(bear_off_moves);
@@ -296,7 +296,7 @@ class unorderedDoubleDiceGeneratorPlayer : generatorPlayer
         int to;
         int from;
 
-        if ((self_present & 0b01111110000000000000000000) == self_present) { // can bear off
+        if (moves == 0 && (self_present & 0b01111110000000000000000000) == self_present) { // can bear off
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
             moveList.push_back((uint)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
@@ -327,7 +327,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
   public override void generate() {
     moveList.index = 0;
     int n;
-    for (n = 3; n >= 0 && moveList.index == 0; n--) 
+    for (n = 3; n >= 0 && moveList.index == 0; n--)
       genForDouble(n, 0, 0);
   }
   
@@ -381,7 +381,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
         int from;
         int to;
 
-        if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
+        if (moves == 0 && (Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
           uint bear_off_moves = (Pos.player_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
             from = (int)tzcnt_u32(bear_off_moves);
@@ -444,7 +444,7 @@ class doubleDiceGeneratorPlayer : generatorPlayer
         int to;
         int from;
 
-        if ((Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
+        if (moves == 0 && (Pos.player_present & 0b01111110000000000000000000) == Pos.player_present) { // can bear off
           uint bear_off_moves = (Pos.player_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
             moveList.push_back((uint)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));

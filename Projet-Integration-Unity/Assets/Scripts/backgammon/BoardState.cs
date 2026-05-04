@@ -17,7 +17,7 @@ public class BoardState
 		player_bearoff = 0;
 		ai_bearoff = 0;
 		playerTurn = true;
-    chips = new sbyte[26]{0, -2, 0, 0, 0, 0, 5, 0, 3, 0, 0, 0,-5, 5, 0, 0, 0,-3, 0,-5, 0, 0, 0, 0, 2, 0 }; // first is the player bar, last is opponent bar
+    chips = new sbyte[26]{0, 2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2, 0 }; // first is the player bar, last is opponent bar
 		player_present = 0;
 		ai_present = 0;
 		for (int j = 0; j < 26; j++) ai_present |= (uint)(((chips[j] <= -1) ? 1 : 0) << j);

@@ -10,12 +10,12 @@ public static unsafe class BurstForward
     [BurstCompile]
     public static void CalcOutputs(float* inputs,float* weights,float* biases,float* outputs,int nodes_in,int nodes_out)
     {
-        for (int i = 0; i < nodes_out; i++)
+        for (int i = 0; i < nodes_out; i++) // on applique la fonction b + sum(w * z) a chaque node output
         {
             float sum = biases[i];
             for (int j = 0; j < nodes_in; j++)
                 sum += inputs[j] * weights[j * nodes_out + i];
-            outputs[i] = 1.0f / (1.0f + math.exp(-sum));
+            outputs[i] = 1.0f / (1.0f + math.exp(-sum)); // applique la fonction sigmoid
         }
     }
 
@@ -24,16 +24,16 @@ public static unsafe class BurstForward
 
         for (int i = 0; i < nodes_out; i++) {
             for (int j = 0; j < nodes_in; j++) {
-                weightGradient[j * nodes_out + i] += inputs[j] * nodeValues[i];
+                weightGradient[j * nodes_out + i] += inputs[j] * nodeValues[i]; // node value deprésente (df/dv) * (dC/df), il faut ainsi le multiplier par dv/dw pour obtenir dC/dw, et dv/dw = w
             }
-            biasGradient[i] += nodeValues[i];
+            biasGradient[i] += nodeValues[i]; // node value deprésente (df/dv) * (dC/df), il faut ainsi le multiplier par dv/db pour obtenir dC/db, et dv/db = 1
         }
     }
     [BurstCompile]
     public static void calculateHiddenLayerNodeValues(float* nextWeights, float* nextNodeValues, int nextNodesOut, float* outputs, float* nodeValues, int nodes_out) {
         for (int i = 0; i < nodes_out; i++) {
             float value = 0;
-            for (int j = 0; j < nextNodesOut; j++) value += nextWeights[i * nextNodesOut + j] * nextNodeValues[j];
+            for (int j = 0; j < nextNodesOut; j++) value += nextWeights[i * nextNodesOut + j] * nextNodeValues[j]; // calcul de (df/dv) * (dC/df)
             nodeValues[i] = value * outputs[i] * (1.0f - outputs[i]);
         }
     }
@@ -71,7 +71,7 @@ unsafe class Layer : System.IDisposable {
         return 2 * (Out - expectedOut);
     }
     float deriveOutput(float Out) {
-      return Out * (1.0f - Out);
+      return Out * (1.0f- Out);
     }
     public Layer(int in_num, int out_num) {
         nodes_in = in_num;
@@ -149,7 +149,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     public float*[] curr_in_out;
     public float*[] prev_in_out;
     public Learner() {
-        int[] layerSizes = {198, 30, 1};
+        int[] layerSizes = {198, 160, 1};
         num_layers = layerSizes.Length - 1;
         layers = new Layer[num_layers];
         curr_in_out = new float*[layerSizes.Length];
@@ -176,6 +176,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     public void generateInputs(BoardState board)
     {
       float* inputs = curr_in_out[0];
+      UnsafeUtility.MemClear(inputs, 198 * sizeof(float));
       for(int i = 0; i < 24; i++)
       {
         float quantity = (float)board.chips[i + 1];
@@ -187,15 +188,6 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
               inputs[i*8+2] = 1.0f;
               inputs[i*8+3] = 0.5f * (quantity - 3);
             }
-            else {
-              inputs[i*8+2] = 0.0f;
-              inputs[i*8+3] = 0.0f;
-            }
-          }
-          else {
-            inputs[i*8+1] = 0.0f;
-            inputs[i*8+2] = 0.0f;
-            inputs[i*8+3] = 0.0f;
           }
         }
         else if(quantity <= -1.0f) {
@@ -206,26 +198,7 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
               inputs[i*8+6] = 1.0f;
               inputs[i*8+7] = 0.5f * (3 - quantity);
             }
-            else {
-              inputs[i*8+6] = 0.0f;
-              inputs[i*8+7] = 0.0f;
-            }
           }
-          else {
-            inputs[i*8+5] = 0.0f;
-            inputs[i*8+6] = 0.0f;
-            inputs[i*8+7] = 0.0f;
-          }
-        }
-        else {
-          inputs[i*8] = 0.0f;
-          inputs[i*8+1] = 0.0f;
-          inputs[i*8+2] = 0.0f;
-          inputs[i*8+3] = 0.0f;
-          inputs[i*8+4] = 0.0f;
-          inputs[i*8+5] = 0.0f;
-          inputs[i*8+6] = 0.0f;
-          inputs[i*8+7] = 0.0f;
         }
       }
       inputs[24*8] = board.playerTurn ? 1f : 0f;

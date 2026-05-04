@@ -49,8 +49,7 @@ class simpleDiceGeneratorAI : generatorAI {
       uint moves = (uint)((Pos.ai_present >> dice) & ~1);
       int to;
       int from;
-
-      if ((Pos.ai_present & 0b1111110) == Pos.ai_present) { // can bear off
+      if (moves == 0 && (Pos.ai_present & 0b1111110) == Pos.ai_present) { // can bear off
         uint bear_off_moves = (Pos.ai_present & bearoff_mask[dice]);
         for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
           moveList.push_back((ushort)(move_desc | ((tzcnt_u32(bear_off_moves) | (dice << 5)) << shift)));
@@ -110,7 +109,7 @@ class simpleDiceGeneratorAI : generatorAI {
       int from;
       int to;
 
-      if ((Pos.ai_present & 0b1111110) == Pos.ai_present) { // can bear off
+      if (moves == 0 && (Pos.ai_present & 0b1111110) == Pos.ai_present) { // can bear off
         uint bear_off_moves = (Pos.ai_present & bearoff_mask[dice1]);
         for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
           from = (int)tzcnt_u32(bear_off_moves);
@@ -231,7 +230,7 @@ class doubleDiceGeneratorAI : generatorAI
         int from;
         int to;
 
-        if ((self_present & 0b1111110) == self_present) { // can bear off, all chips are in end region
+        if (moves == 0 && (self_present & 0b1111110) == self_present) { // can bear off, all chips are in end region
           uint bear_off_moves = (self_present & bearoff_mask[dice]);
           for (; bear_off_moves != 0; bear_off_moves = blsr_u32(bear_off_moves)) {
             from = (int)tzcnt_u32(bear_off_moves);

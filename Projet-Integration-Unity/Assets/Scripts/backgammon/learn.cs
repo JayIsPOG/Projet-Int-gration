@@ -18,7 +18,7 @@ unsafe public class learn : MonoBehaviour
     Camera.main.enabled = false;
     games_played = 0;
     AI = new Learner();
-    AI.LoadWeights("burger.bin");
+    AI.LoadWeights("160_neurons.bin");
 
     Pos = new BoardState();
     bot = new Bot(Pos, AI, 0);
@@ -34,7 +34,6 @@ unsafe public class learn : MonoBehaviour
         play();
       }
       yield return null;
-      //Debug.Log((1000 * (double)games_played / (timer.ElapsedMilliseconds)).ToString());
     }
   }
 
@@ -56,6 +55,7 @@ unsafe public class learn : MonoBehaviour
           //Debug.Log(AI.getPreviousOutput()*AI.getPreviousOutput());
           AI.evaluatePosition(Pos); // init
           AI.Swap();
+          return;
         }
         else AI.learnForRegular(learnRate);
 
@@ -63,7 +63,7 @@ unsafe public class learn : MonoBehaviour
         for(; bestMove != 0; bestMove >>= 8)
         {
          uint move = bestMove & 0xff;
-         Pos.makeMovePlayer(move);
+         Pos.makeMoveAI(move);
         }
         Pos.playerTurn = true;
         AI.generateInputs(Pos);
@@ -75,6 +75,7 @@ unsafe public class learn : MonoBehaviour
           //Debug.Log((1-AI.getPreviousOutput())*(1-AI.getPreviousOutput()));
           AI.evaluatePosition(Pos); // init
           AI.Swap();
+          return;
         }
         else AI.learnForRegular(learnRate);
   }
@@ -84,7 +85,7 @@ unsafe public class learn : MonoBehaviour
   }
   void OnApplicationQuit()
   {
-      //SaveWeights("burger.bin");
+      SaveWeights("160_neurons.bin");
   }
   void SaveWeights(string filename)
   {
