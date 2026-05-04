@@ -131,6 +131,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1664799693, guid: f22699f38dbc41440bfe442addf330ad, type: 3}
+      propertyPath: hurtSfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 16bf3cd4fdf9e33439f6a1707b5f7e21, type: 3}
+    - target: {fileID: 1664799693, guid: f22699f38dbc41440bfe442addf330ad, type: 3}
       propertyPath: uiDocument
       value: 
       objectReference: {fileID: 275031376}
@@ -142,6 +146,10 @@ PrefabInstance:
       propertyPath: uiDocument
       value: 
       objectReference: {fileID: 275031376}
+    - target: {fileID: 8633941265483146249, guid: f22699f38dbc41440bfe442addf330ad, type: 3}
+      propertyPath: attackSfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 291ec7f97f4f35c45b1c11d4551a2868, type: 3}
     - target: {fileID: 8633941265483146255, guid: f22699f38dbc41440bfe442addf330ad, type: 3}
       propertyPath: m_RootOrder
       value: 10
@@ -7699,6 +7707,14 @@ MonoBehaviour:
   - {fileID: 1836303072}
   delayBetweenSpawns: 1.5
   delayBetweenWaves: 3
+  powerUpPrefabs:
+  - {fileID: 7771092515314376228, guid: 671207e605d270f4d945ea24dd184b41, type: 3}
+  - {fileID: 7771092515314376228, guid: 3c7b0d0561c877b43854e9621b90468e, type: 3}
+  - {fileID: 7771092515314376228, guid: e87c008d5c6e1eb45a80c6a99a6dcf59, type: 3}
+  - {fileID: 7771092515314376228, guid: c7929db50f5b9b44bb1ede604f8c1c08, type: 3}
+  walkableTilemap: {fileID: 162755182}
+  minDistanceFromPlayer: 3
+  maxSpawnAttempts: 30
   uiDocument: {fileID: 275031376}
 --- !u!4 &386997505
 Transform:
@@ -7793,7 +7809,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.4342527, y: 0.0029799999, z: -10}
+  m_LocalPosition: {x: 7.7688093, y: 0.00317, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -41096,6 +41112,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1340405317}
     m_Modifications:
+    - target: {fileID: 8439927335423879473, guid: 6cf69e42290446b48a4b523fffdd50de, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 7f617950bf708cc4f8b994cc356b96db, type: 2}
     - target: {fileID: 8439927335423879479, guid: 6cf69e42290446b48a4b523fffdd50de, type: 3}
       propertyPath: m_RootOrder
       value: 0

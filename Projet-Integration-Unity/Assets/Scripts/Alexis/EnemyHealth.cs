@@ -12,6 +12,11 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] float barHeight = 0.12f;
     [SerializeField] float barOffsetY = 1.7f;
 
+    [Header("SFX")]
+    [SerializeField] AudioClip hitSfx;
+    [SerializeField] AudioClip deathSfx;
+    [SerializeField] float sfxVolume = 1f;
+
     Animator animator;
     SpriteRenderer[] spriteRenderers;
     Transform healthBarParent;
@@ -105,6 +110,8 @@ public class EnemyHealth : MonoBehaviour
             return;
         }
 
+        if (hitSfx != null) AudioSource.PlayClipAtPoint(hitSfx, transform.position, sfxVolume);
+
         UpdateHealthBar();
     }
 
@@ -136,6 +143,7 @@ public class EnemyHealth : MonoBehaviour
             healthBarParent.gameObject.SetActive(false);
 
         isDead = true;
+        if (deathSfx != null) AudioSource.PlayClipAtPoint(deathSfx, transform.position, sfxVolume);
         animator.SetTrigger("Dead");
     }
 }

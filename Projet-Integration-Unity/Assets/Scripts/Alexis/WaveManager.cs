@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
 
 public class WaveManager : MonoBehaviour
@@ -12,11 +13,19 @@ public class WaveManager : MonoBehaviour
     [SerializeField] float delayBetweenSpawns = 1.5f;
     [SerializeField] float delayBetweenWaves = 3f;
 
+    [Header("Power-ups")]
+    [SerializeField] GameObject[] powerUpPrefabs;
+    [SerializeField] Tilemap walkableTilemap;
+    [SerializeField] float minDistanceFromPlayer = 3f;
+    [SerializeField] int maxSpawnAttempts = 30;
+
+    GridManager powerUpGrid;
+
     [Header("UI")]
     [SerializeField] UIDocument uiDocument;
 
     int currentWave = 0;
-    int totalWaves = 1;
+    int totalWaves = 5;
     List<EnemyHealth> aliveEnemies = new List<EnemyHealth>();
     Label waveLabel;
     VisualElement victoryPanel;
@@ -111,6 +120,8 @@ public class WaveManager : MonoBehaviour
         foreach (var corpse in FindObjectsOfType<EnemyHealth>())
             if (corpse.isDead) Destroy(corpse.gameObject);
 
+        SpawnPowerUps();
+
         int enemiesToSpawn = enemiesPerWave[currentWave - 1];
 
         for (int i = 0; i < enemiesToSpawn; i++)
@@ -127,5 +138,38 @@ public class WaveManager : MonoBehaviour
         }
 
         waveInProgress = true;
+    }
+
+    void SpawnPowerUps()
+    {
+        if (powerUpPrefabs == null || powerUpPrefabs.Length == 0 || walkableTilemap == null) return;
+
+        if (powerUpGrid == null)
+            powerUpGrid = new GridManager(walkableTilemap);
+
+        Transform player = null;
+        var pm = FindObjectOfType<PlayerMovement>();
+        if (pm != null) player = pm.transform;
+
+        // un de plus a chaque vague
+        int count = currentWave;
+
+        for (int i = 0; i < count; i++)
+        {
+            for (int attempt = 0; attempt < maxSpawnAttempts; attempt++)
+            {
+                Node n = powerUpGrid.GetRandomWalkableNode();
+                if (n == null) break;
+
+                Vector3 pos = powerUpGrid.WorldFromNode(n);
+
+                if (player != null && Vector2.Distance(pos, player.position) < minDistanceFromPlayer)
+                    continue;
+
+                GameObject prefab = powerUpPrefabs[Random.Range(0, powerUpPrefabs.Length)];
+                Instantiate(prefab, pos, Quaternion.identity);
+                break;
+            }
+        }
     }
 }

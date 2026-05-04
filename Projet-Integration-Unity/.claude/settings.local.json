@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pandoc --track-changes=all \"C:\\\\Users\\\\alexb\\\\Downloads\\\\prop.docx\" -o \"C:\\\\Users\\\\alexb\\\\Downloads\\\\prop.md\")",
+      "Read(//c/Users/alexb/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/7bcc4dc8-ae4c-472c-897d-690fd0b02bcb/0fa2c760-1a40-4933-a0d8-f6dd512a15fa/skills/docx/**)",
+      "Bash(python scripts/office/unpack.py \"C:\\\\Users\\\\alexb\\\\Downloads\\\\prop.docx\" \"C:\\\\Users\\\\alexb\\\\Downloads\\\\prop_unpacked\")",
+      "Bash(where node *)",
+      "Bash(where npm *)",
+      "Bash(npm list *)",
+      "Bash(npm --version)",
+      "Bash(python -c \"import docx; print\\(docx.__version__\\)\")",
+      "Bash(python \"C:\\\\Users\\\\alexb\\\\Downloads\\\\generate_guide.py\")"
+    ]
+  }
+}

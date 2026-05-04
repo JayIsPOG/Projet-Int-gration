@@ -9,7 +9,7 @@ public class Pushable : MonoBehaviour
     public Sprite[] grabIconSprites;
     public LayerMask wallLayer;
     public bool xLocked,yLocked;
-
+    public GameObject[] surfaces;
     public AudioSource audioSource;
 
     void Start()
@@ -50,6 +50,7 @@ public class Pushable : MonoBehaviour
     }
 
     void Drag(Vector3 direction){
+        StartCoroutine(UpdateTimer());
         audioSource.Play();
         if(Physics2D.Raycast(transform.position + direction * 1.5f, (Vector2)direction, 0.5f, wallLayer) == false){
             transform.position += direction;
@@ -60,6 +61,18 @@ public class Pushable : MonoBehaviour
         if(other.transform.tag == "Player")
         {
             grabIcon.SetActive(false);
+        }
+    }
+    IEnumerator UpdateTimer()
+    {
+        foreach(GameObject obj in surfaces)
+        {
+            obj.GetComponent<LightEmitter>().enabled = false;
+        }
+        yield return new WaitForSeconds(0.01f);
+        foreach(GameObject obj in surfaces)
+        {
+            obj.GetComponent<LightEmitter>().enabled = true;
         }
     }
 }

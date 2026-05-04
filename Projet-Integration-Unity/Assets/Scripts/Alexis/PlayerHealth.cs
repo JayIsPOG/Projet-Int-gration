@@ -7,6 +7,11 @@ public class PlayerHealth : MonoBehaviour
 {
     public int maxHealth = 30;
     public int currentHealth;
+
+    [Header("SFX")]
+    [SerializeField] AudioClip hurtSfx;
+    [SerializeField] float hurtSfxVolume = 1f;
+
     Animator animator;
     SpriteRenderer[] spriteRenderers;
     public PlayerMovement playerMovement;
@@ -15,6 +20,8 @@ public class PlayerHealth : MonoBehaviour
     VisualElement defeatPanel;
     Button defeatReplayButton;
     bool isDead = false;
+    public bool IsInvulnerable { get; private set; }
+    Coroutine invulnRoutine;
 
     void Awake()
     {
@@ -46,8 +53,12 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (IsInvulnerable) return;
+
         if(currentHealth - damage >= 0)
             currentHealth -= damage;
+
+        if (hurtSfx != null) AudioSource.PlayClipAtPoint(hurtSfx, transform.position, hurtSfxVolume);
 
         StartCoroutine(FlashRed());
 
@@ -83,5 +94,22 @@ public class PlayerHealth : MonoBehaviour
 
         if (currentHealth > maxHealth)
             currentHealth = maxHealth;
+    }
+
+    public void ApplyInvulnerability(float duration)
+    {
+        if (invulnRoutine != null) StopCoroutine(invulnRoutine);
+        invulnRoutine = StartCoroutine(InvulnRoutine(duration));
+    }
+
+    IEnumerator InvulnRoutine(float duration)
+    {
+        IsInvulnerable = true;
+        Color tint = new Color(0.6f, 0.8f, 1f, 1f);
+        foreach (var sr in spriteRenderers) sr.color = tint;
+        yield return new WaitForSeconds(duration);
+        foreach (var sr in spriteRenderers) sr.color = Color.white;
+        IsInvulnerable = false;
+        invulnRoutine = null;
     }
 }

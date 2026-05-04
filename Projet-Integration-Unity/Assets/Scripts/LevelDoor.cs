@@ -12,6 +12,7 @@ public class LevelDoor : MonoBehaviour
     public string lvlName;
     public AudioSource audioSource;
     public AudioClip openClip, closeClip;
+    public bool isPuzzleLvl = true;
     private bool saving;
     void Start()
     {
@@ -45,7 +46,8 @@ public class LevelDoor : MonoBehaviour
             if(!saving)
             {
                 saving = true;
-                FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].puzzlesCompleted ++;
+                if(isPuzzleLvl)
+                    FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].puzzlesCompleted ++;
                 FindObjectsByType<SceneManagerPuzzle>(FindObjectsSortMode.None)[0].CloseScene(lvlName);
             }
         }
