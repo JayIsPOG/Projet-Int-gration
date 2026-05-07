@@ -71,6 +71,7 @@ public class LightEmitter : MonoBehaviour
 
     void DestroyChild()
     {
+        try{
         if(hitSaved)
         {
             if(hitSaved.GetComponent<Mirror>())
@@ -88,6 +89,7 @@ public class LightEmitter : MonoBehaviour
                 Destroy(hitSaved.GetComponent<LightReceiverCrystal>().line.gameObject);
             }
         }
+        }catch{}
         hitSaved = hitNew;
     }
 
