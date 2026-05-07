@@ -88,10 +88,8 @@ unsafe class Layer : System.IDisposable {
         UnsafeUtility.MemClear(nodeValues, nodes_out * sizeof(float));
         UnsafeUtility.MemClear(weightGradient, nodes_in * nodes_out * sizeof(float));
         
-        System.Random rng = new System.Random();
-        float scale = Mathf.Sqrt(6.0f/ (nodes_in + nodes_out)); // uniform Xavier
         for (int i = 0; i < nodes_in * nodes_out; i++)
-          weights[i] = ((float)rng.NextDouble() * 2.0f- 1.0f) * scale;
+          weights[i] = 0;
         for (int i = 0; i < nodes_out; i++)
           biases[i] = 0;
     }

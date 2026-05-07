@@ -147,23 +147,24 @@ class Bot{
     Pos.playerTurn = true;
     ulong key = TT.key(Pos);
     int index = TT.getIndex(key);
-    evalInfo entry = TT.table[index];
-    if (entry.key == key) {
-      if (entry.upper_bound == entry.lower_bound && entry.udepth == entry.ldepth && entry.udepth >= depth) 
+    evalInfo entry = TT.table[index]; // obtien les paramètres d'évaluation de la position
+    if (entry.key == key) { // confirme si on la vue précédement
+      if (entry.upper_bound == entry.lower_bound && entry.udepth == entry.ldepth && entry.udepth >= depth) // confirme si elle a été explirée en détail (plus grande depth)
         return entry.upper_bound;
 
       if(entry.udepth >= depth) {
         if(entry.upper_bound <= alpha) return entry.upper_bound;
-        beta = Mathf.Min(beta, entry.upper_bound);
+        beta = Mathf.Min(beta, entry.upper_bound); // permet de diminuer beta en ce basant sur le max évalué précédement
       }
 
       if(entry.ldepth >= depth) {
         if(entry.lower_bound >= beta) return entry.lower_bound;
-        alpha = Mathf.Max(alpha, entry.lower_bound);
+        alpha = Mathf.Max(alpha, entry.lower_bound); // permet d'augmenter alpha en ce basant sur le min évalué précédement
       }
     }
     else entry.reset(key);
 
+    // on retourne l'évaluation à la fin de l'arbre
     if(depth < 0) {
       float eval = evaluator.evaluatePosition(Pos);
       entry.storeAll((sbyte)depth, eval);
@@ -187,31 +188,38 @@ class Bot{
           simpleGenerator.setDices(d1, d2);
 
           childMin = Mathf.Max(18 * (alpha - upper_bound) + 1, 0);
+          // childMin est le alpha du child, on l'obtien avec la contition de prune (upper_bound <= alpha)
+          // upper_bound - (1 - val) * (2 / 36) <= alpha
+          // (1 - val) * (2 / 36) >= - (alpha - upper_bound)
+          // 1 - val >= - (alpha - upper_bound) * (36 / 2)
+          // val <= (alpha - upper_bound) * (36 / 2) + 1
           childMax = Mathf.Min(18 * (beta - lower_bound), 1);
+          // childMax est le beta du child, on l'obtien avec la contition de prune (upper_bound >= beta)
 
           simpleGenerator.generate();
           for(int i = 0; i < _simpleMoves.size(); i++) {
             min = Mathf.Min(min, evaluateMovePlayer(_simpleMoves.moves[i], depth - 1, childMin, childMax));
             childMax = Mathf.Min(childMax, min);
-            if (childMin >= childMax) break;
+            if (childMin >= childMax) break; // Si la valeur est plus petite que le minimum, on prune
           }
-          if(_simpleMoves.size() == 0) min = minimaxAi(depth - 1, childMin, childMax);
+          if(_simpleMoves.size() == 0) min = minimaxAi(depth - 1, childMin, childMax); // skip son tour
 
           // car il y a 2 / 36 chances d'avoir une configuration de dé avec deux faces différentes
           upper_bound -= (1.0f - min) * (2.0f / 36.0f);
           lower_bound += min * (2.0f / 36.0f);
 
           
-          if(upper_bound <= alpha) {
+          if(upper_bound <= alpha) { // on ne pourra jamais atteindre la valeur minimale (alpha), on prune
             entry.storeUpper((sbyte)depth, upper_bound);
             return upper_bound;
           }
 
-          if(lower_bound >= beta) {
+          if(lower_bound >= beta) {// on ne pourra jamais atteindre la valeur maximale (bata), on prune
             entry.storeLower((sbyte)depth, lower_bound);
             return lower_bound;
           }
         }
+    // même fonctionnement que la dernière for loop, mais pour des dés identiques
     for(int d = 1; d <= 6; d++)
     {
       min = float.MaxValue;

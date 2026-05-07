@@ -55,7 +55,7 @@ public class WaveManager : MonoBehaviour
                 victoryPanel.panel, new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y));
             if (victoryReplayButton.worldBound.Contains(mousePos))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                SceneManager.LoadScene(7);
                 return;
             }
         }
