@@ -88,8 +88,11 @@ unsafe class Layer : System.IDisposable {
         UnsafeUtility.MemClear(nodeValues, nodes_out * sizeof(float));
         UnsafeUtility.MemClear(weightGradient, nodes_in * nodes_out * sizeof(float));
         
+        var rng = new Unity.Mathematics.Random((uint)System.DateTime.Now.Ticks);
+        float limit = math.sqrt(6f / (nodes_in + nodes_out));
+
         for (int i = 0; i < nodes_in * nodes_out; i++)
-          weights[i] = 0;
+            weights[i] = rng.NextFloat(-limit, limit);
         for (int i = 0; i < nodes_out; i++)
           biases[i] = 0;
     }

@@ -18,7 +18,7 @@ unsafe public class learn : MonoBehaviour
     Camera.main.enabled = false;
     games_played = 0;
     AI = new Learner();
-    AI.LoadWeights("160_neurons.bin");
+    //AI.LoadWeights("160_neurons.bin");
 
     Pos = new BoardState();
     bot = new Bot(Pos, AI, 0);
