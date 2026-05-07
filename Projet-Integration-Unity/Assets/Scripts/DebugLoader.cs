@@ -37,9 +37,7 @@ public class DebugLoader : MonoBehaviour
             if (Input.GetKey(KeyCode.F))
             {
                 if (Input.GetKey(KeyCode.Alpha1)) SceneManager.LoadScene("Fight_1");
-                if (Input.GetKey(KeyCode.Alpha2)) SceneManager.LoadScene("Fight_2");
-                if (Input.GetKey(KeyCode.Alpha3)) SceneManager.LoadScene("Fight_3");
-                if (Input.GetKey(KeyCode.Alpha4)) SceneManager.LoadScene("Fight End");
+                if (Input.GetKey(KeyCode.Alpha2)) SceneManager.LoadScene("Fight End");
             }
             if (Input.GetKey(KeyCode.B))
             {
