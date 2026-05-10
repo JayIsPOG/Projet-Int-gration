@@ -153,9 +153,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3997352ea7353a4da713302572dc1b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  learnRate: 0.0005
-  games_played: 0
+  learnRate: 0.001
+  games_played: 2117585
   plays_batch: 500
+  lambda: 0.7
 --- !u!212 &635319498
 SpriteRenderer:
   m_ObjectHideFlags: 0

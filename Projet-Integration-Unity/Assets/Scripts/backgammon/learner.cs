@@ -20,13 +20,13 @@ public static unsafe class BurstForward
     }
 
     [BurstCompile]
-    public static void updateGradients(float* inputs, float* weightGradient,float* nodeValues, float* biasGradient,int nodes_in,int nodes_out) {
+    public static void updateGradients(float* inputs, float* weightGradient,float* nodeValues, float* biasGradient,int nodes_in,int nodes_out, float lambda) {
 
         for (int i = 0; i < nodes_out; i++) {
             for (int j = 0; j < nodes_in; j++) {
-                weightGradient[j * nodes_out + i] += inputs[j] * nodeValues[i]; // node value deprésente (df/dv) * (dC/df), il faut ainsi le multiplier par dv/dw pour obtenir dC/dw, et dv/dw = w
+                weightGradient[j * nodes_out + i] = lambda * weightGradient[j * nodes_out + i] + inputs[j] * nodeValues[i]; // node value deprésente (df/dv) * (dC/df), il faut ainsi le multiplier par dv/dw pour obtenir dC/dw, et dv/dw = w
             }
-            biasGradient[i] += nodeValues[i]; // node value deprésente (df/dv) * (dC/df), il faut ainsi le multiplier par dv/db pour obtenir dC/db, et dv/db = 1
+            biasGradient[i] = lambda * biasGradient[i] + nodeValues[i]; // node value deprésente (df/dv) * (dC/df), il faut ainsi le multiplier par dv/db pour obtenir dC/db, et dv/db = 1
         }
     }
     [BurstCompile]
@@ -38,15 +38,15 @@ public static unsafe class BurstForward
         }
     }
     [BurstCompile]
-    public static void applyGradient(float learnRate, float* weights, float* weightGradient, float* biasGradient, float* biases, int nodes_in, int nodes_out) {
+    public static void applyGradient(float learnRate, float* weights, float* weightGradient, float* biasGradient, float* biases, int nodes_in, int nodes_out, float error) {
         for (int j = 0; j < nodes_in; j++) {
             for (int i = 0; i < nodes_out; i++) {
                 int index = j * nodes_out + i;
-                weights[index] -= learnRate * weightGradient[index];
+                weights[index] += learnRate * error * weightGradient[index];
             }
         }
         for (int i = 0; i < nodes_out; i++) {
-            biases[i] -= learnRate * biasGradient[i];
+            biases[i] += error * learnRate * biasGradient[i];
         }
     }
 }
@@ -88,11 +88,11 @@ unsafe class Layer : System.IDisposable {
         UnsafeUtility.MemClear(nodeValues, nodes_out * sizeof(float));
         UnsafeUtility.MemClear(weightGradient, nodes_in * nodes_out * sizeof(float));
         
-        var rng = new Unity.Mathematics.Random((uint)System.DateTime.Now.Ticks);
-        float limit = math.sqrt(6f / (nodes_in + nodes_out));
+        System.Random rng = new System.Random();
+        float scale = Mathf.Sqrt(6.0f/ (nodes_in + nodes_out)); // uniform Xavier
 
         for (int i = 0; i < nodes_in * nodes_out; i++)
-            weights[i] = rng.NextFloat(-limit, limit);
+          weights[i] = ((float)rng.NextDouble() * 2.0f - 1.0f) * scale;
         for (int i = 0; i < nodes_out; i++)
           biases[i] = 0;
     }
@@ -102,20 +102,20 @@ unsafe class Layer : System.IDisposable {
       BurstForward.CalcOutputs(inputs, weights, biases, outputs, nodes_in, nodes_out);
     }
 
-    public void calculateOutputNodeValues(float expectedOut, float output) { // the output size will always be 1 (represents the probability of winning)
-      nodeValues[0] = deriveCost(output, expectedOut) * deriveOutput(output);
+    public void calculateOutputNodeValues(float output) { // the output size will always be 1 (represents the probability of winning)
+      nodeValues[0] = /*deriveCost(output, expectedOut) * */deriveOutput(output);
     }
 
-    public unsafe void updateGradients(float* inputs) {
-      BurstForward.updateGradients(inputs, weightGradient, nodeValues, biasGradient, nodes_in, nodes_out);
+    public unsafe void updateGradients(float* inputs, float lambda) {
+      BurstForward.updateGradients(inputs, weightGradient, nodeValues, biasGradient, nodes_in, nodes_out, lambda);
     }
 
     public void calculateHiddenLayerNodeValues(Layer nextLayer, float* outputs) {
         BurstForward.calculateHiddenLayerNodeValues(nextLayer.weights, nextLayer.nodeValues, nextLayer.nodes_out, outputs, nodeValues, nodes_out);
     }
 
-    public void applyGradient(float learnRate) {
-        BurstForward.applyGradient(learnRate, weights, weightGradient, biasGradient, biases, nodes_in, nodes_out);
+    public void applyGradient(float learnRate, float error) {
+        BurstForward.applyGradient(learnRate, weights, weightGradient, biasGradient, biases, nodes_in, nodes_out, error);
     }
 
     public void clearGradients() {
@@ -143,24 +143,21 @@ These are the only inputs whose values are ever expected to exceed unity with an
 These 198 input units are fully connected to a hidden layer of 50 units, and this hidden layer is in turn connected to the single output neuron. 
 Each hidden layer neuron, and the output layer neuron, also have bias inputs whose values are held at unity. 
 */
-unsafe class Learner : System.IDisposable{ // we have to manually set the inputs via the curr_in_out parameter
+unsafe class Learner : System.IDisposable{ // we have to manually set the inputs via the in_out parameter
     //public System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
     public int num_layers;
     public Layer[] layers;
-    public float*[] curr_in_out;
-    public float*[] prev_in_out;
+    public float*[] in_out;
+    public float prev_output;
     public Learner() {
-        int[] layerSizes = {198, 160, 1};
+        int[] layerSizes = {198, 80, 1};
         num_layers = layerSizes.Length - 1;
         layers = new Layer[num_layers];
-        curr_in_out = new float*[layerSizes.Length];
-        prev_in_out = new float*[layerSizes.Length];
+        in_out = new float*[layerSizes.Length];
         for (int i = 0; i < num_layers; i++) layers[i] = new Layer(layerSizes[i], layerSizes[i + 1]);
         for (int i = 0; i < layerSizes.Length; i++) {
-          curr_in_out[i] = (float*)UnsafeUtility.Malloc(layerSizes[i] * sizeof(float), 16, Allocator.Persistent);
-          prev_in_out[i] = (float*)UnsafeUtility.Malloc(layerSizes[i] * sizeof(float), 16, Allocator.Persistent);
-          UnsafeUtility.MemClear(curr_in_out[i], layerSizes[i] * sizeof(float));
-          UnsafeUtility.MemClear(prev_in_out[i], layerSizes[i] * sizeof(float));
+          in_out[i] = (float*)UnsafeUtility.Malloc(layerSizes[i] * sizeof(float), 16, Allocator.Persistent);
+          UnsafeUtility.MemClear(in_out[i], layerSizes[i] * sizeof(float));
         }
     }
     
@@ -168,15 +165,14 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
     {
       for(int i = 0; i < num_layers + 1; i++)
       {
-        UnsafeUtility.Free(curr_in_out[i], Allocator.Persistent);
-        UnsafeUtility.Free(prev_in_out[i], Allocator.Persistent);
+        UnsafeUtility.Free(in_out[i], Allocator.Persistent);
       }
       for(int i = 0; i < num_layers; i++) layers[i].Dispose();
     }
 
     public void generateInputs(BoardState board)
     {
-      float* inputs = curr_in_out[0];
+      float* inputs = in_out[0];
       UnsafeUtility.MemClear(inputs, 198 * sizeof(float));
       for(int i = 0; i < 24; i++)
       {
@@ -209,55 +205,37 @@ unsafe class Learner : System.IDisposable{ // we have to manually set the inputs
       inputs[24*8+4] = (float)board.player_bearoff;
       inputs[24*8+5] = (float)board.ai_bearoff;
     }
-    public float getCurrentOutput()
-    {
-      return curr_in_out[num_layers][0];
-    }
-    public float getPreviousOutput()
-    {
-      return prev_in_out[num_layers][0];
-    }
     public float makeOutputs() {
-      for (int i = 0; i < num_layers; i++) layers[i].calcOutputs(curr_in_out[i], curr_in_out[i + 1]);
-      return curr_in_out[num_layers][0];
+      for (int i = 0; i < num_layers; i++) layers[i].calcOutputs(in_out[i], in_out[i + 1]);
+      return in_out[num_layers][0];
     }
 
-    void UpdateAllGradients(float expectedOutput) { // the previous output evaluation must be as close to the current one as possible
+    public void UpdateAllGradients(float error, float lambda, float learnRate)
+    {
+      for (int i = 0; i < num_layers; i++)
+          layers[i].applyGradient(learnRate, error);
+
       Layer outLayer = layers[num_layers - 1];
-      outLayer.calculateOutputNodeValues(expectedOutput, prev_in_out[num_layers][0]);
-      outLayer.updateGradients(prev_in_out[num_layers - 1]);
+      outLayer.calculateOutputNodeValues(in_out[num_layers][0]);
+      outLayer.updateGradients(in_out[num_layers - 1], lambda);
 
       for (int h = num_layers - 2; h >= 0; h--) {
-        Layer hiddenLayer = layers[h];
-        hiddenLayer.calculateHiddenLayerNodeValues(layers[h + 1], prev_in_out[h + 1]);
-        hiddenLayer.updateGradients(prev_in_out[h]);
+          layers[h].calculateHiddenLayerNodeValues(layers[h + 1], in_out[h + 1]);
+          layers[h].updateGradients(in_out[h], lambda);
       }
     }
 
-    public void learnForRegular(float learnRate)
+    public void learnForRegular(float learnRate, float lambda)
     {
-      UpdateAllGradients(makeOutputs());
-      Swap();
+      float eval = makeOutputs();
+      UpdateAllGradients(eval - prev_output, lambda, learnRate);
+      prev_output = eval;
+    }
+    public void learnGameEnd(float result, float learnRate, float lambda)
+    {
+      UpdateAllGradients(result - prev_output, lambda, learnRate);
 
       for (int i = 0; i < num_layers; i++) {
-        layers[i].applyGradient(learnRate);
-        layers[i].clearGradients();
-      }
-    }
-    public void Swap()
-    {
-      float*[] temp = curr_in_out;
-      curr_in_out = prev_in_out;
-      prev_in_out = temp;
-    }
-    public void learnGameEnd(float result, float learnRate)
-    {
-      makeOutputs();
-      UpdateAllGradients(result);
-      Swap();
-
-      for (int i = 0; i < num_layers; i++) {
-        layers[i].applyGradient(learnRate);
         layers[i].clearGradients();
       }
     }

@@ -11,20 +11,19 @@ unsafe public class learn : MonoBehaviour
   public float learnRate;
   public int games_played;
   public int plays_batch = 30;
+  public float lambda;
   System.Random rng = new System.Random();
   System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
   void Start()
   {
     Camera.main.enabled = false;
-    games_played = 0;
     AI = new Learner();
-    AI.LoadWeights("160_neurons.bin");
+    AI.LoadWeights("new_80_neurons.bin");
 
     Pos = new BoardState();
     bot = new Bot(Pos, AI, 0);
     
-    AI.evaluatePosition(Pos); // init
-    AI.Swap();
+    AI.prev_output = AI.evaluatePosition(Pos); // init
     StartCoroutine(TrainingLoop());
   }
   IEnumerator TrainingLoop()
@@ -39,6 +38,7 @@ unsafe public class learn : MonoBehaviour
 
   unsafe void play()
   {
+    learnRate = 0.01f / (1f + games_played * 0.0000025f);
         uint bestMove = bot.bestMovePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
         for(; bestMove != 0; bestMove >>= 8)
         {
@@ -47,17 +47,16 @@ unsafe public class learn : MonoBehaviour
        }
         Pos.playerTurn = false;
         AI.generateInputs(Pos);
+        AI.learnForRegular(learnRate, lambda);
         if (Pos.hasPlayerWon())
         {
-          AI.learnGameEnd(0, learnRate);
+          AI.learnGameEnd(0, learnRate, lambda);
           games_played++;
           Pos.set();
           //Debug.Log(AI.getPreviousOutput()*AI.getPreviousOutput());
-          AI.evaluatePosition(Pos); // init
-          AI.Swap();
+          AI.prev_output = AI.evaluatePosition(Pos); // init
           return;
         }
-        else AI.learnForRegular(learnRate);
 
         bestMove = bot.bestMoveAI(rng.Next(1, 7), rng.Next(1, 7), 0);
         for(; bestMove != 0; bestMove >>= 8)
@@ -67,17 +66,16 @@ unsafe public class learn : MonoBehaviour
         }
         Pos.playerTurn = true;
         AI.generateInputs(Pos);
+        AI.learnForRegular(learnRate, lambda);
         if (Pos.hasAIWon())
         {
-          AI.learnGameEnd(1, learnRate);
+          AI.learnGameEnd(1, learnRate, lambda);
           games_played++;
           Pos.set();
           //Debug.Log((1-AI.getPreviousOutput())*(1-AI.getPreviousOutput()));
-          AI.evaluatePosition(Pos); // init
-          AI.Swap();
+          AI.prev_output = AI.evaluatePosition(Pos); // init
           return;
         }
-        else AI.learnForRegular(learnRate);
   }
   void Update()
   {
@@ -85,7 +83,7 @@ unsafe public class learn : MonoBehaviour
   }
   void OnApplicationQuit()
   {
-      SaveWeights("160_neurons.bin");
+      SaveWeights("new_80_neurons.bin");
   }
   void SaveWeights(string filename)
   {
