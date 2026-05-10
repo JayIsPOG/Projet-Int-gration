@@ -12,7 +12,7 @@ public class MainMenuController : MonoBehaviour
     public Vector3[] titlePath;
     public GameObject[] keys;
 
-    public GameObject menu, atrium;
+    public GameObject menu, atrium, finalButton;
     public CanvasGroup menuCanvas, black;
     public GameObject player;
     private int currentPosition;
@@ -29,9 +29,14 @@ public class MainMenuController : MonoBehaviour
 
     void Update()
     {
-        keys[0].SetActive(FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].puzzlesKey);
-        keys[1].SetActive(FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].fightsKey);
-        keys[2].SetActive(FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0].backgammonKey);
+        GlobalData gd = FindObjectsByType<GlobalData>(FindObjectsSortMode.None)[0];
+
+        keys[0].SetActive(gd.puzzlesKey);
+        keys[1].SetActive(gd.fightsKey);
+        keys[2].SetActive(gd.backgammonKey);
+        
+        finalButton.SetActive(gd.puzzlesKey && gd.fightsKey && gd.backgammonKey);
+
         float step = 7 * Time.deltaTime;
         if(loading == true)
         {
