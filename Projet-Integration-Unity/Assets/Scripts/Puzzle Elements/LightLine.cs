@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class LightLine : MonoBehaviour
 {
-    public float nDensity, velocity, waveLenght, waveLenghtInDensity;
+    public float nDensity, waveLenght, waveLenghtInDensity;
     public LineRenderer line;
     public ParticleSystem ps;
 
@@ -16,7 +16,6 @@ public class LightLine : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        velocity = 299792458 / nDensity;
         waveLenghtInDensity = waveLenght / nDensity;
         Color color = Convert(waveLenghtInDensity);
         line.endColor = color;
