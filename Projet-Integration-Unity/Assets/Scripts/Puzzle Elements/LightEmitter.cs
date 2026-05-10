@@ -80,7 +80,9 @@ public class LightEmitter : MonoBehaviour
             else if(hitSaved.GetComponent<LightReceiverCrystal>())
             {
                 hitSaved.GetComponent<LightReceiverCrystal>().hitByLight = false;
+                try{
                 Destroy(hitSaved.GetComponent<LightReceiverCrystal>().line.gameObject);
+                }catch{}
             }
         }
         }catch{}
