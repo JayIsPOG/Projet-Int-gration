@@ -32,40 +32,34 @@ public class LightEmitter : MonoBehaviour
     }
     public virtual void Update()
     {
-        if(true)
-        {
-            if(line) {
-                line.GetComponent<LightLine>().nDensity = nDensity;
+        if(line) {
+            line.GetComponent<LightLine>().nDensity = nDensity;
 
-                float incomingAngle = Vector3.SignedAngle(transform.up, lightSource.position - transform.position, Vector3.forward);
-                signedAngle = incomingAngle;
-
-                Ray2D ray = new Ray2D(GetRayStartPos(incomingAngle), GetRotatedVector(incomingAngle));
-                RaycastHit2D hit;
-
-                line.SetPosition(0, ray.origin);
-
-                hit = Physics2D.Raycast(ray.origin, GetRotatedVector(incomingAngle), distance, layerMask);
-
-                if (hit.collider)
-                {
-                    line.SetPosition(1, hit.point);
-                    hitNew = hit.collider.gameObject;
-                }
-                else
-                    line.SetPosition(1, ray.GetPoint(distance));
-
-                if(hitNew != hitSaved)
-                {
-                    //Debug.Log(hitSaved is LightEmitter); //this returns false, but it should be true right ?
-                    DestroyChild();
-                    StopCoroutine("LightUp");
-                    StartCoroutine(LightUp());
-                }
-            }else{
-                hitNew = null;
-                DestroyChild();
+            //Obtenir l'angle incident
+            float incomingAngle = Vector3.SignedAngle(transform.up, lightSource.position - transform.position, Vector3.forward);
+            signedAngle = incomingAngle;
+            Ray2D ray = new Ray2D(GetRayStartPos(incomingAngle), GetRotatedVector(incomingAngle));
+            RaycastHit2D hit;
+            
+            line.SetPosition(0, ray.origin);
+            hit = Physics2D.Raycast(ray.origin, GetRotatedVector(incomingAngle), distance, layerMask);
+            if (hit.collider)
+            {
+                line.SetPosition(1, hit.point);
+                hitNew = hit.collider.gameObject;
             }
+            else
+                line.SetPosition(1, ray.GetPoint(distance));
+            if(hitNew != hitSaved)
+            {
+                //Debug.Log(hitSaved is LightEmitter); //this returns false, but it should be true right ?
+                DestroyChild();
+                StopCoroutine("LightUp");
+                StartCoroutine(LightUp());
+            }
+        }else{
+            hitNew = null;
+            DestroyChild();
         }
     }
 
