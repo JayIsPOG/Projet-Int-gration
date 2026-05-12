@@ -431,6 +431,10 @@ PrefabInstance:
       value: 3.86
       objectReference: {fileID: 0}
     - target: {fileID: 2707826039280447811, guid: 121f07b51e426724eaa5bd0c4f79b326, type: 3}
+      propertyPath: ShapeModule.radiusThickness
+      value: 1.0000
+      objectReference: {fileID: 0}
+    - target: {fileID: 2707826039280447811, guid: 121f07b51e426724eaa5bd0c4f79b326, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
       value: 1
       objectReference: {fileID: 0}
@@ -658,7 +662,7 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -350357871
   m_SortingLayer: -1
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
