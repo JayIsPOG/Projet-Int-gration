@@ -38,7 +38,7 @@ unsafe public class learn : MonoBehaviour
 
   unsafe void play()
   {
-    learnRate = 0.01f / (1f + games_played * 0.0000025f);
+    learnRate = 0.01f / (1f + games_played * 0.00001f);
         uint bestMove = bot.bestMovePlayer(rng.Next(1, 7), rng.Next(1, 7), 0);
         for(; bestMove != 0; bestMove >>= 8)
         {
@@ -83,7 +83,7 @@ unsafe public class learn : MonoBehaviour
   }
   void OnApplicationQuit()
   {
-      SaveWeights("new_80_neurons.bin");
+      SaveWeights("80_neurons.bin");
   }
   void SaveWeights(string filename)
   {

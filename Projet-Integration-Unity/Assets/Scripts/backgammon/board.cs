@@ -56,7 +56,7 @@ public class board : MonoBehaviour
         player_dices = new dice_set(dice_texture);
         opponent_dices = new dice_set(dice_texture_opponent);
         brain = new Learner();
-        brain.LoadWeights("80_neurons.bin");
+        brain.LoadWeights("new_80_neurons.bin");
         Pos = new BoardState();
         bot = new Bot(Pos, brain, max_depth);
         moveManager = new interractiveMoves(Pos, simple_move_sound, eat_move_sound);
@@ -179,7 +179,7 @@ public class board : MonoBehaviour
           Pos.set();
         }*/
 
-        Debug.Log(bot.evaluator.evaluatePosition(Pos));
+        //Debug.Log(bot.evaluator.evaluatePosition(Pos));
         xUnit = ((float)Screen.width - 2 * xBorder) / 13;
         yUnit = 3 * xUnit;
         chipUnit = xUnit * 0.78125f;
