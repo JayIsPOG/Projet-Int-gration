@@ -56,7 +56,7 @@ public class board : MonoBehaviour
         player_dices = new dice_set(dice_texture);
         opponent_dices = new dice_set(dice_texture_opponent);
         brain = new Learner();
-        brain.LoadWeights("new_80_neurons.bin");
+        brain.LoadWeights("80_neurons.bin");
         Pos = new BoardState();
         bot = new Bot(Pos, brain, max_depth);
         moveManager = new interractiveMoves(Pos, simple_move_sound, eat_move_sound);

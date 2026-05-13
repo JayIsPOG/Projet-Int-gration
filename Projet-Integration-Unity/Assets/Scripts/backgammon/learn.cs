@@ -18,7 +18,7 @@ unsafe public class learn : MonoBehaviour
   {
     Camera.main.enabled = false;
     AI = new Learner();
-    AI.LoadWeights("new_80_neurons.bin");
+    AI.LoadWeights("80_neurons.bin");
 
     Pos = new BoardState();
     bot = new Bot(Pos, AI, 0);
@@ -83,7 +83,7 @@ unsafe public class learn : MonoBehaviour
   }
   void OnApplicationQuit()
   {
-      SaveWeights("80_neurons.bin");
+      SaveWeights("new_80_neurons.bin");
   }
   void SaveWeights(string filename)
   {
