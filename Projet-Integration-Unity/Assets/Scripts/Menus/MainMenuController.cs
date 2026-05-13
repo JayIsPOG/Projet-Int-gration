@@ -12,7 +12,7 @@ public class MainMenuController : MonoBehaviour
     public Vector3[] titlePath;
     public GameObject[] keys;
 
-    public GameObject menu, atrium, finalButton;
+    public GameObject menu, atrium, finalButton, finalPit;
     public CanvasGroup menuCanvas, black;
     public GameObject player;
     private int currentPosition;
@@ -35,7 +35,10 @@ public class MainMenuController : MonoBehaviour
         keys[1].SetActive(gd.fightsKey);
         keys[2].SetActive(gd.backgammonKey);
         
-        finalButton.SetActive(gd.puzzlesKey && gd.fightsKey && gd.backgammonKey);
+        if(!loading)
+            finalButton.SetActive(gd.puzzlesKey && gd.fightsKey && gd.backgammonKey);
+        else
+            finalButton.SetActive(false);
 
         float step = 7 * Time.deltaTime;
         if(loading == true)
@@ -130,6 +133,10 @@ public class MainMenuController : MonoBehaviour
                     currentPosition++;
             }
         }
+        if(lvlName == "Final" && moving)
+        {
+            player.transform.localPosition = Vector3.MoveTowards(player.transform.localPosition, new Vector3(0,-6,0), step*2);
+        }
         
         if(!title && !fight && !puzzle && !backgammon)
         {
@@ -176,6 +183,13 @@ public class MainMenuController : MonoBehaviour
     {
         fight = true;
         moving = true;
+    }
+
+    public void Final()
+    {
+        finalPit.SetActive(true);
+        lvlName = "Final";
+        loading = true;
     }
 
     public void Quit()

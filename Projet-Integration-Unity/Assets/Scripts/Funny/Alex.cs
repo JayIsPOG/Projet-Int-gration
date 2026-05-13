@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Alex : MonoBehaviour
 {
-    private bool isAlexing, canAlex;
+    public bool isAlexing, canAlex;
     public float min = 30f,max = 120f;
     public AudioClip[] audioClips;
     private List<KeyCode> secretCode = new List<KeyCode>()
